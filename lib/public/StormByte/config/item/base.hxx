@@ -2,7 +2,7 @@
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/type.hxx>
-#include <StormByte/util/templates/clonable.hxx>
+#include <StormByte/util/clonable.hxx>
 
 #include <optional>
 #include <string>
@@ -26,7 +26,7 @@ namespace StormByte::Config::Item {
 	 * @class Base
 	 * @brief Base class for a configuration item
 	 */
-	class STORMBYTE_CONFIG_PUBLIC Base: public Util::Templates::Clonable<Base, std::shared_ptr<Base>> {
+	class STORMBYTE_CONFIG_PUBLIC Base: public Util::Clonable<Base, std::shared_ptr<Base>> {
 		public:
 			/**
 			 * Constructor
