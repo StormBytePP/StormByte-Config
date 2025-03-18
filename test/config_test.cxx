@@ -56,7 +56,7 @@ int test_add_and_lookup() {
 
 int test_write_and_read() {
 	int result = 0;
-    std::filesystem::path temp_file = StormByte::Util::System::TempFileName();
+    const std::filesystem::path temp_file = StormByte::Util::System::TempFileName("config");
     std::string config_content = 
         "TestInt = 42\n"
         "TestStr = \"Hello, World!\"\n";
@@ -157,7 +157,7 @@ int test_add_remove_group() {
 
 int test_write_nested_groups() {
 	int result = 0;
-    std::filesystem::path temp_file = StormByte::Util::System::TempFileName();
+    const std::filesystem::path temp_file = StormByte::Util::System::TempFileName("config");
     std::string config_content = 
         "Group1 = {\n"
         "    Group2 = {\n"
@@ -208,7 +208,7 @@ int test_write_nested_groups() {
 
 int test_complex_config_creation() {
 	int result = 0;
-    std::filesystem::path temp_file = StormByte::Util::System::TempFileName();
+    const std::filesystem::path temp_file = StormByte::Util::System::TempFileName("config");
     Config config;
 
 	try {
@@ -351,7 +351,7 @@ int good_double_conf2() {
 
 int commented_config() {
 	int result = 0;
-	const std::filesystem::path temp_file = StormByte::Util::System::TempFileName();
+	const std::filesystem::path temp_file = StormByte::Util::System::TempFileName("config");
 	Config config;
 	const std::string config_str = "# The following is a test integer\n"
 		"test_integer = 666\n"
