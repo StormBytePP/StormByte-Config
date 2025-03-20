@@ -1,7 +1,7 @@
 #pragma once
 
 #include <StormByte/exception.hxx>
-#include <StormByte/config/item/type.hxx>
+#include <StormByte/config/visibility.h>
 
 /**
  * @namespace Config
@@ -140,7 +140,7 @@ namespace StormByte::Config {
 			 * @param name name which was tried to use
 			 * @param containertype container type
 			 */
-			InvalidName(const std::string& name, const Item::ContainerType& containertype);
+			InvalidName(const std::string& name, const std::string& containertype);
 
 			/**
 			 * Copy operator

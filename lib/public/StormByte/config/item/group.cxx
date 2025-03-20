@@ -17,7 +17,7 @@ Base::PointerType Group::BeforeAdditionActions(Base::PointerType item, const OnE
 		if (!item->Name().has_value())
 			throw InvalidName();
 		else if (!item->IsNameValid()) {
-			throw InvalidName(item->Name().value(), ContainerType());
+			throw InvalidName(item->Name().value(), "Group");
 		}
 
 		// Don't use Exists here for better speed

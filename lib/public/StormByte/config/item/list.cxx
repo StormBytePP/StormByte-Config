@@ -15,7 +15,7 @@ Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const OnEx
 	
 	if (item->Type() != Type::Comment) {
 		if (item->Name().has_value()) {
-			throw InvalidName(item->Name().value(), ContainerType());
+			throw InvalidName(item->Name().value(), "List");
 		}	
 
 		auto item_iterator = std::find_if(
