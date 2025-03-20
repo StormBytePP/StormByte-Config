@@ -2,6 +2,7 @@
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/config/item/comment.hxx>
+#include <StormByte/util/serializable.hxx>
 #include <StormByte/util/string.hxx>
 
 #include <regex>

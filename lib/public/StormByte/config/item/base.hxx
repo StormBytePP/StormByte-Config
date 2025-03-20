@@ -171,5 +171,7 @@ namespace StormByte::Config::Item {
 
 		protected:
 			std::optional<std::string> m_name;				///< Item name
+
+
 	};
 }

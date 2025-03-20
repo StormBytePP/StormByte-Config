@@ -5,6 +5,7 @@ StormByte is a comprehensive, cross-platform C++ library aimed at easing system 
 ## Features
 
 - **Configuration Management**: Provides an intuitive API for reading and writing configuration files.
+- **Serialization**: Specializations of `StormByte::Util::Serializable` for all items to enable serialization to raw buffers for network sending or binary writing.
 
 ## Table of Contents
 
@@ -331,7 +332,54 @@ int main() {
 }
 ```
 
-This expanded section covers all requested features for the configuration file management in your library, with the correct handling and retrieval of comments. If there's anything specific you'd like to adjust or add, let me know!
+#### Serialization
+
+The `Config` module supports serialization of configuration items to raw buffers, which can be useful for network transmission or binary storage. This is achieved through specializations of `StormByte::Util::Serializable`.
+
+##### Example: Serialize and Deserialize a Configuration
+
+```cpp
+#include <StormByte/config/config.hxx>
+#include <StormByte/util/serializable.hxx>
+#include <fstream>
+#include <iostream>
+
+using namespace StormByte::Config;
+
+int main() {
+    // Create a configuration
+    Config config;
+    config["username"] = Item::Value<std::string>("username", "example_user");
+    config["timeout"] = Item::Value<int>("timeout", 30);
+
+    // Serialize the configuration to a buffer
+    StormByte::Util::Serializable<Config> serializable(config);
+    StormByte::Util::Buffer buffer = serializable.Serialize();
+
+    // Deserialize the configuration from the buffer
+    auto deserialized_config = StormByte::Util::Serializable<Config>::Deserialize(buffer);
+    if (!deserialized_config) {
+        std::cerr << "Failed to deserialize configuration: " << deserialized_config.error()->what() << std::endl;
+        return 1;
+    }
+
+    // Access deserialized configuration items
+    const Item::Base& username = deserialized_config.value()["username"];
+    const Item::Base& timeout = deserialized_config.value()["timeout"];
+    
+    std::cout << "Username: " << username.Value<std::string>() << std::endl;
+    std::cout << "Timeout: " << timeout.Value<int>() << std::endl;
+
+    return 0;
+}
+```
+
+#### Sharing Configuration
+
+There are two options for sharing the configuration:
+
+1. **Human-readable**: Share the configuration as a human-readable text file.
+2. **Binary serialized**: Serialize the configuration to a binary format for network transmission or binary storage.
 
 ## Contributing
 

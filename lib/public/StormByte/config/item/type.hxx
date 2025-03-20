@@ -3,6 +3,7 @@
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/visibility.h>
 
+#include <cstddef>
 #include <concepts>
 #include <string>
 #include <type_traits>
@@ -16,7 +17,7 @@ namespace StormByte::Config::Item {
 	 * @enum Type
 	 * @brief Item type
 	 */
-	enum class Type: unsigned short {
+	enum class Type: char {
 		Bool,       ///< Bool item
 		Comment,    ///< Comment item
 		Container,  ///< Container item
@@ -47,10 +48,10 @@ namespace StormByte::Config::Item {
 	 * @enum Type
 	 * @brief Comment type
 	 */
-	enum class STORMBYTE_CONFIG_PUBLIC CommentType: unsigned short {
-		SingleLineBash, 	///< Single line comment starting with # (bash style)
-		SingleLineC,		///< Single line comment starting with // (C++ style)
-		MultiLineC			///< Multi line comment starting with /* and ending with */ (C/C++ style)
+	enum class STORMBYTE_CONFIG_PUBLIC CommentType: char {
+		SingleLineBash = 2, 	///< Single line comment starting with # (bash style)
+		SingleLineC=5,		///< Single line comment starting with // (C++ style)
+		MultiLineC=8			///< Multi line comment starting with /* and ending with */ (C/C++ style)
 	};
 
 	/**
@@ -71,7 +72,7 @@ namespace StormByte::Config::Item {
 	 * @enum Type
 	 * @brief Container type
 	 */
-	enum class STORMBYTE_CONFIG_PUBLIC ContainerType: unsigned short {
+	enum class STORMBYTE_CONFIG_PUBLIC ContainerType: char {
 		Group, 	///< Group of items
 		List	///< List of items
 	};
