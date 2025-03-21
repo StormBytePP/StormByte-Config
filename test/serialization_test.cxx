@@ -1,6 +1,9 @@
 #include <StormByte/config/config.hxx>
 #include <StormByte/util/serializable.hxx>
+#include <StormByte/util/system.hxx>
 #include <StormByte/test_handlers.h>
+
+#include <fstream>
 
 using namespace StormByte::Config;
 
@@ -251,6 +254,62 @@ int test_comment_serialize() {
 	RETURN_TEST("test_comment_serialize", 0);
 }
 
+int test_config_binary_deserialize() {
+	Config cfg_human_readable, cfg_binary;
+	try {
+		std::fstream file;
+		const std::filesystem::path binary_file = CurrentFileDirectory / "files" / "config_example.bin";
+		const std::filesystem::path human_readable_file = CurrentFileDirectory / "files" / "complex_conf1.conf";
+		file.open(binary_file, std::ios::binary | std::ios::ate | std::ios::in);
+
+		if (!file.is_open()) {
+			std::cerr << "Can't open file " << binary_file.string().c_str() << std::endl;
+			RETURN_TEST("test_config_binary_deserialize", 1);
+		}
+		// Determine the file size
+		std::streamsize file_size = file.tellg();
+		file.seekg(0, std::ios::beg);
+	
+		// Create a vector of the appropriate size
+		std::vector<std::byte> buff(static_cast<std::size_t>(file_size));
+
+		// Read the file content into the vector
+		if (!file.read(reinterpret_cast<char*>(buff.data()), file_size)) {
+			std::cerr << "Failed to read file" << std::endl;
+			RETURN_TEST("test_config_binary_deserialize", 1);
+		}
+		file.close();
+
+		StormByte::Util::Buffer buffer(buff);
+		auto expected_cfg = StormByte::Util::Serializable<Config>::Deserialize(buffer);
+		if (!expected_cfg) {
+			std::cerr << expected_cfg.error()->what() << std::endl;
+			RETURN_TEST("test_config_binary_deserialize", 1);
+		}
+		else {
+			cfg_human_readable = std::move(expected_cfg.value());
+		}
+
+		// Now read the file in human readable form to compare
+		file.open(human_readable_file, std::ios::in);
+		if (!file.is_open()) {
+			std::cerr << "Can't open file " << human_readable_file.string().c_str() << std::endl;
+			RETURN_TEST("test_config_binary_deserialize", 1);
+		}
+		Config cfg_human_readable;
+		file >> cfg_human_readable;
+		file.close();
+
+		ASSERT_EQUAL("test_config_binary_deserialize", cfg_human_readable, cfg_human_readable);
+	}
+	catch(const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		RETURN_TEST("test_config_binary_deserialize", 1);
+	}
+	
+	RETURN_TEST("test_config_serialize", 0);
+}
+
 int main() {
     int result = 0;
 	result += test_serialize_value_string();
@@ -265,6 +324,7 @@ int main() {
 	result += test_serialize_nested_groups();
 	result += test_shared_ptr_string_serialize();
 	result += test_comment_serialize();
+	result += test_config_binary_deserialize();
 
     if (result == 0) {
         std::cout << "All tests passed!" << std::endl;
