@@ -77,7 +77,7 @@ namespace StormByte::Config::Item::Serialize {
 			if (!expected_base_data) return Unexpected(expected_base_data.error());
 			// We need to restore offset and store current position before to be able to look for Container or Comment type
 			std::size_t pos_after_basic_data = buffer.Position();
-			buffer.Seek(pos_before_basic_data, Util::Buffer::Absolute);
+			buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
 			switch(expected_base_data.value().first) {
 				case Type::String:
 					{
@@ -102,11 +102,11 @@ namespace StormByte::Config::Item::Serialize {
 					break;
 				case Type::Comment:
 					{
-						buffer.Seek(pos_after_basic_data, Util::Buffer::Absolute);
+						buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
 						auto expected_comment_type = Util::Serializable<CommentType>::Deserialize(buffer);
 						if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 						// We restore the offset
-						buffer.Seek(pos_before_basic_data, Util::Buffer::Absolute);
+						buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
 						switch(expected_comment_type.value()) {
 							case CommentType::SingleLineBash:
 								{
@@ -141,11 +141,11 @@ namespace StormByte::Config::Item::Serialize {
 					break;
 				case Type::Container:
 					{
-						buffer.Seek(pos_after_basic_data, Util::Buffer::Absolute);
+						buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
 						auto expected_container_type = Util::Serializable<ContainerType>::Deserialize(buffer);
 						if (!expected_container_type) return Unexpected(expected_container_type.error());
 						// We restore the offset
-						buffer.Seek(pos_before_basic_data, Util::Buffer::Absolute);
+						buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
 						switch (expected_container_type.value()) {
 							case ContainerType::Group:
 								{
@@ -255,7 +255,7 @@ namespace StormByte::Util {
 		if (!expected_base_data) return Unexpected(expected_base_data.error());
 		// We need to restore offset and store current position before to be able to look for Container or Comment type
 		std::size_t pos_after_basic_data = buffer.Position();
-		buffer.Seek(pos_before_basic_data, Util::Buffer::Absolute);
+		buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
 		std::shared_ptr<Base> item_ptr;
 		switch(expected_base_data.value().first) {
 			case Type::String:
@@ -282,11 +282,11 @@ namespace StormByte::Util {
 			case Type::Comment:
 				{
 					// We place ourselves at after item type pos to get the comment type
-					buffer.Seek(pos_after_basic_data, Util::Buffer::Absolute);
+					buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
 					auto expected_comment_type = Util::Serializable<CommentType>::Deserialize(buffer);
 					if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 					// We need to restore offset
-					buffer.Seek(pos_before_basic_data, Util::Buffer::Absolute);
+					buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
 					switch(expected_comment_type.value()) {
 						case CommentType::SingleLineBash:
 							{
@@ -322,11 +322,11 @@ namespace StormByte::Util {
 			case Type::Container:
 				{
 					// We place ourselves at after item type pos to get the container type
-					buffer.Seek(pos_after_basic_data, Util::Buffer::Absolute);
+					buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
 					auto expected_container_type = Util::Serializable<ContainerType>::Deserialize(buffer);
 					if (!expected_container_type) return Unexpected(expected_container_type.error());
 					// We need to restore offset
-					buffer.Seek(pos_before_basic_data, Util::Buffer::Absolute);
+					buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
 					switch(expected_container_type.value()) {
 						case ContainerType::Group:
 							{
