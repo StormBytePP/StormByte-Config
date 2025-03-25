@@ -6,7 +6,7 @@
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/type.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 
 /**
  * @namespace Config
@@ -28,7 +28,7 @@ namespace StormByte::Config {
 	 * - List
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Config {
-		friend class StormByte::Util::Serializable<Config>;
+		friend class StormByte::Serializable<Config>;
 		public:
 			/**
 			 * Constructor

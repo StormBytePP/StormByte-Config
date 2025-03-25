@@ -15,9 +15,9 @@ Base::PointerType Group::BeforeAdditionActions(Base::PointerType item, const OnE
 
 	if (item->Type() != Type::Comment) {
 		if (!item->Name().has_value())
-			throw InvalidName();
+			throw InvalidName("Groups need items with names");
 		else if (!item->IsNameValid()) {
-			throw InvalidName(item->Name().value(), "Group");
+			throw InvalidName("Invalid name {} while adding items to group", item->Name().value());
 		}
 
 		// Don't use Exists here for better speed

@@ -64,7 +64,7 @@ template<> StormByte::Expected<StormByte::Config::Item::Comment<StormByte::Confi
 	}
 
 	if (!comment_closed || istream.eof() || istream.fail())
-		return Unexpected<ParseError>(m_current_line, "Unclosed MultiLineC comment");
+		return StormByte::Unexpected<ParseError>("Unclosed Multi Line C command on line {}", m_current_line);
 
 	return Item::Comment<Item::CommentType::MultiLineC>(std::move(buffer));
 }
@@ -88,16 +88,16 @@ template<> StormByte::Expected<double, StormByte::Config::ParseError> Parser::Pa
 
 	// std::stod just ignore extra characters so we better check
 	if (!std::regex_match(buffer, c_double_regex))
-		return Unexpected<ParseError>(m_current_line, "Failed to parse double value '" + buffer + "'");
+		return Unexpected<ParseError>("Failed to parse double value '{}' on line ", buffer, m_current_line);
 	try {
 		double result = std::stod(buffer);
 		return result;
 	}
 	catch (std::invalid_argument&) {
-		return Unexpected<ParseError>(m_current_line, "Failed to parse double value");
+		return Unexpected<ParseError>("Failed to parse double value on line {}", m_current_line);
 	}
 	catch (std::out_of_range&) {
-		return Unexpected<ParseError>(m_current_line, "Double value " + buffer + " out of range");
+		return Unexpected<ParseError>("Double value {} is out of range on line: {}", buffer, m_current_line);
 	}
 }
 
@@ -106,16 +106,16 @@ template<> StormByte::Expected<int, StormByte::Config::ParseError> Parser::Parse
 
 	// stoi will ignore extra characters so we force check
 	if (!std::regex_match(buffer, c_int_regex))
-		return Unexpected<ParseError>(m_current_line, "Failed to parse integer value '" + buffer + '"');
+		return Unexpected<ParseError>("Failed to parse integer value '{}' on line: {}", buffer, m_current_line);
 	try {
 		int result = std::stoi(buffer);
 		return result;
 	}
 	catch (std::invalid_argument&) {
-		return Unexpected<ParseError>(m_current_line, "Failed to parse integer value '" + buffer + '"');
+		return Unexpected<ParseError>("Failed to parse integer value '{}' on line: {}", buffer, m_current_line);
 	}
 	catch (std::out_of_range&) {
-		return Unexpected<ParseError>(m_current_line, "Integer value " + buffer + " out of range");
+		return Unexpected<ParseError>("Integer value {} is out of range on line: {}", buffer, m_current_line);
 	}
 }
 
@@ -127,7 +127,7 @@ template<> StormByte::Expected<std::string, StormByte::Config::ParseError> Parse
 	bool string_closed = false;
 
 	if (istream.eof())
-		return Unexpected<ParseError>(m_current_line, "String content was expected but found EOF");
+		return Unexpected<ParseError>("String content was expected but found EOF");
 
 	// Do not skip space characters
 	bool escape_next = false;
@@ -150,7 +150,7 @@ template<> StormByte::Expected<std::string, StormByte::Config::ParseError> Parse
 					accumulator += '\t';
 					break;
 				default:
-					return Unexpected<ParseError>(m_current_line, std::string("Invalid escape sequence: \\") + std::string(1, c));
+					return Unexpected<ParseError>("Invalid escape sequence: \\{} on line: {}", std::string(1, c), m_current_line);
 					break;
 			}
 			escape_next = false;
@@ -175,7 +175,7 @@ template<> StormByte::Expected<std::string, StormByte::Config::ParseError> Parse
 
 	end:
 	if (!string_closed)
-		return Unexpected<ParseError>(m_current_line, "Expected string closure but got EOF");
+		return Unexpected<ParseError>("Expected string closure but got EOF");
 
 	return accumulator;
 }
@@ -183,7 +183,7 @@ template<> StormByte::Expected<std::string, StormByte::Config::ParseError> Parse
 template<> StormByte::Expected<bool, StormByte::Config::ParseError> Parser::ParseValue<bool>(std::istream& istream) {
 	const std::string buffer = GetStringIgnoringWS(istream);
 	if (buffer != "true" && buffer != "false")
-		return Unexpected<ParseError>(m_current_line, "Failed to parse boolean value '" + buffer + "'");
+		return Unexpected<ParseError>("Failed to parse boolean value '{}' on line: {}", buffer, m_current_line);
 	return buffer == "true";
 }
 
@@ -270,7 +270,7 @@ StormByte::Expected<StormByte::Config::Item::Base::PointerType, StormByte::Confi
 						return list.Move();
 					}
 					default:
-						return Unexpected<ParseError>(m_current_line, "Unknown container type");
+						return Unexpected<ParseError>("Unknown container type on line: {}", m_current_line);
 				}
 			}
 			else
@@ -307,7 +307,7 @@ StormByte::Expected<StormByte::Config::Item::Base::PointerType, StormByte::Confi
 				return Unexpected(std::move(res.error()));
 		}
 		default:
-			return Unexpected<ParseError>(m_current_line, "Unknown item type");
+			return Unexpected<ParseError>("Unknown item type on line: {}", m_current_line);
 	}
 }
 
@@ -330,7 +330,7 @@ StormByte::Expected<void, StormByte::Config::ParseError> Parser::Parse(std::istr
 			// Equal expected
 			std::string equal = GetStringIgnoringWS(istream);
 			if (equal != "=") {
-				return Unexpected<ParseError>(m_current_line, "Expected '=' after item name " + item_name + " but got " + equal);
+				return Unexpected<ParseError>("Expected '=' after item name {} but got {} on line: {}", item_name, equal, m_current_line);
 			}
 		}
 
@@ -358,7 +358,7 @@ StormByte::Expected<void, StormByte::Config::ParseError> Parser::Parse(std::istr
 		if (FindContainerEnd(istream, container.ContainerType())) {
 			// If it is encountered on level 0 it is a syntax error
 			if (m_container_level == 0)
-				return Unexpected<ParseError>(m_current_line, "return Unexpected container end symbol");
+				return Unexpected<ParseError>("Unexpected container end symbol on line: {}", m_current_line);
 			else
 				m_container_level--;
 			
@@ -367,7 +367,7 @@ StormByte::Expected<void, StormByte::Config::ParseError> Parser::Parse(std::istr
 
 		if (istream.fail()) {
 			if (m_container_level > 0)
-				return Unexpected<ParseError>(m_current_line, "return Unexpected EOF");
+				return Unexpected<ParseError>("Unexpected EOF");
 			else
 				halt = true;
 		}
@@ -378,7 +378,7 @@ StormByte::Expected<void, StormByte::Config::ParseError> Parser::Parse(std::istr
 StormByte::Expected<std::string, StormByte::Config::ParseError> Parser::ParseItemName(std::istream& istream) {
 	const std::string name = GetStringIgnoringWS(istream);
 	if (!Item::IsNameValid(name)) {
-		return Unexpected<ParseError>(m_current_line, "Invalid item name: " + name);
+		return Unexpected<ParseError>("Invalid item name '{}' on line: {}", name, m_current_line);
 	}
 	return name;
 }
@@ -429,7 +429,7 @@ StormByte::Expected<StormByte::Config::Item::Type, StormByte::Config::ParseError
 			type = std::make_unique<Item::Type>(Item::Type::Bool);
 			break;
 		default: {
-			return Unexpected<ParseError>(m_current_line, "return Unexpected " + std::string(1, line[0]) + " when parsing item type");
+			return Unexpected<ParseError>("Unexpected '{}' when parsing item type at line: {}", std::string(1, line[0]), m_current_line);
 		}
 	}
 	istream.seekg(start_position);
@@ -445,7 +445,7 @@ StormByte::Expected<StormByte::Config::Item::ContainerType, StormByte::Config::P
 		return Item::TypeFromStartCharacter(c);
 	}
 	catch (const StormByte::Exception&) {
-		return Unexpected<ParseError>(m_current_line, "Unknown start character " + std::string(1, c) + " for container");
+		return Unexpected<ParseError>("Unknown start character '{}' for container at line: {}", std::string(1, c), m_current_line);
 	}
 }
 

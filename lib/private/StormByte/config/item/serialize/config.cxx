@@ -1,8 +1,8 @@
 #include <StormByte/config/item/serialize/base.hxx>
 #include <StormByte/config/config.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 
-namespace StormByte::Util {
+namespace StormByte {
 	template<> STORMBYTE_CONFIG_PUBLIC
 	Buffer Serializable<StormByte::Config::Config>::SerializeComplex() const noexcept {
 		return

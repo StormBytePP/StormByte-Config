@@ -1,8 +1,8 @@
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/config/item/serialize/base.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 #include <iostream>
-namespace StormByte::Util {
+namespace StormByte {
 	using namespace StormByte::Config::Item;
 
 	// Value<std::string>

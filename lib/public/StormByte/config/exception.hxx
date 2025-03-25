@@ -16,34 +16,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param reason
 			 */
-			Exception(const std::string& reason);
-
-			/**
-			 * Copy constructor
-			 */
-			Exception(const Exception&)					= default;
-
-			/**
-			 * Move constructor
-			 */
-			Exception(Exception&&) noexcept				= default;
-
-			/**
-			 * Assignment operator
-			 */
-			Exception& operator=(const Exception&)		= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			Exception& operator=(Exception&&) noexcept	= default;
-
-			/**
-			 * Destructor
-			 */
-			~Exception() noexcept						= default;		
+			using StormByte::Exception::Exception;	
 	};
 
 	/**
@@ -54,35 +28,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param srctype item type trying to be converted
-			 * @param dsttype target type
 			 */
-			WrongValueTypeConversion(const std::string& srctype, const std::string& dsttype);
-
-			/**
-			 * Copy constructor
-			 */
-			WrongValueTypeConversion(const WrongValueTypeConversion&)				= default;
-
-			/**
-			 * Move constructor
-			 */
-			WrongValueTypeConversion(WrongValueTypeConversion&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			WrongValueTypeConversion& operator=(const WrongValueTypeConversion&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			WrongValueTypeConversion& operator=(WrongValueTypeConversion&&)			= default;
-
-			/**
-			 * Destructor
-			 */
-			~WrongValueTypeConversion() noexcept override							= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -93,35 +40,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param srctype item source type
-			 * @param dsttype destination type
 			 */
-			ValueFailure(const std::string& srctype, const std::string& dsttype);
-
-			/**
-			 * Copy constructor
-			 */
-			ValueFailure(const ValueFailure&)				= default;
-
-			/**
-			 * Move constructor
-			 */
-			ValueFailure(ValueFailure&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			ValueFailure& operator=(const ValueFailure&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			ValueFailure& operator=(ValueFailure&&)			= default;
-
-			/**
-			 * Destructor
-			 */
-			~ValueFailure() noexcept override				= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -133,39 +53,7 @@ namespace StormByte::Config {
 			/**
 			 * Constructor
 			 */
-			InvalidName();
-
-			/**
-			 * Constructor
-			 * @param name name which was tried to use
-			 * @param containertype container type
-			 */
-			InvalidName(const std::string& name, const std::string& containertype);
-
-			/**
-			 * Copy operator
-			 */
-			InvalidName(const InvalidName&)				= default;
-
-			/**
-			 * Move operator
-			 */
-			InvalidName(InvalidName&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			InvalidName& operator=(const InvalidName&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			InvalidName& operator=(InvalidName&&)		= default;
-
-			/**
-			 * Destructor
-			 */
-			~InvalidName() noexcept override			= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -176,34 +64,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param name name which was tried to use
 			 */
-			InvalidPath(const std::string& name);
-
-			/**
-			 * Copy operator
-			 */
-			InvalidPath(const InvalidPath&)				= default;
-
-			/**
-			 * Move operator
-			 */
-			InvalidPath(InvalidPath&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			InvalidPath& operator=(const InvalidPath&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			InvalidPath& operator=(InvalidPath&&)		= default;
-
-			/**
-			 * Destructor
-			 */
-			~InvalidPath() noexcept override			= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -214,35 +76,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param line the line where the error was found
-			 * @param error the error string to show
 			 */
-			ParseError(const unsigned int& line, const std::string& error);
-
-			/**
-			 * Copy constructor
-			 */
-			ParseError(const ParseError&)				= default;
-
-			/**
-			 * Move constructor
-			 */
-			ParseError(ParseError&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			ParseError& operator=(const ParseError&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			ParseError& operator=(ParseError&&)			= default;
-
-			/**
-			 * Destructor
-			 */
-			~ParseError() noexcept override				= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -253,34 +88,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param name item name which was not found
 			 */
-			ItemNotFound(const std::string& name);
-
-			/**
-			 * Copy constructor
-			 */
-			ItemNotFound(const ItemNotFound&)				= default;
-
-			/**
-			 * Move constructor
-			 */
-			ItemNotFound(ItemNotFound&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			ItemNotFound& operator=(const ItemNotFound&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			ItemNotFound& operator=(ItemNotFound&)			= default;
-
-			/**
-			 * Destructor
-			 */
-			~ItemNotFound() noexcept override				= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -292,27 +101,7 @@ namespace StormByte::Config {
 			/**
 			 * Constructor
 			 */
-			ItemAlreadyExists();
-
-			/**
-			 * Copy constructor
-			 */
-			ItemAlreadyExists(const ItemAlreadyExists&)				= default;
-
-			/**
-			 * Assignment operator
-			 */
-			ItemAlreadyExists& operator=(const ItemAlreadyExists&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			ItemAlreadyExists& operator=(ItemAlreadyExists&)		= default;
-
-			/**
-			 * Destructor
-			 */
-			virtual ~ItemAlreadyExists() noexcept					= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -323,29 +112,8 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param name item name which was not found
 			 */
-			ItemNameAlreadyExists(const std::string& name);
-
-			/**
-			 * Copy constructor
-			 */
-			ItemNameAlreadyExists(const ItemNameAlreadyExists&)				= default;
-
-			/**
-			 * Assignment operator
-			 */
-			ItemNameAlreadyExists& operator=(const ItemNameAlreadyExists&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			ItemNameAlreadyExists& operator=(ItemNameAlreadyExists&)		= default;
-
-			/**
-			 * Destructor
-			 */
-			~ItemNameAlreadyExists() noexcept override						= default;
+			using Exception::Exception;
 	};
 
 	/**
@@ -356,34 +124,7 @@ namespace StormByte::Config {
 		public:
 			/**
 			 * Constructor
-			 * @param index item index
-			 * @param size size
 			 */
-			OutOfBounds(const size_t& index, const size_t& size);
-
-			/**
-			 * Copy constructor
-			 */
-			OutOfBounds(const OutOfBounds&)				= default;
-
-			/**
-			 * Move constructor
-			 */
-			OutOfBounds(OutOfBounds&&)					= default;
-
-			/**
-			 * Assignment operator
-			 */
-			OutOfBounds& operator=(const OutOfBounds&)	= default;
-
-			/**
-			 * Move assignment operator
-			 */
-			OutOfBounds& operator=(OutOfBounds&)		= default;
-
-			/**
-			 * Destructor
-			 */
-			~OutOfBounds() noexcept override			= default;
+			using Exception::Exception;
 	};
 }

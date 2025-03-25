@@ -3,28 +3,28 @@
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/item/serialize/base.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 
 #include <format>
 #include <memory>
 #include <iostream>
 namespace StormByte::Config::Item::Serialize {
-	StormByte::Expected<BaseData, Util::BufferOverflow> DeserializeBasicData(const Util::Buffer& buffer) noexcept {
+	StormByte::Expected<BaseData, BufferOverflow> DeserializeBasicData(const Buffer& buffer) noexcept {
 		// Base data (can't call it directly as base is pure virtual)
-		auto expected_type = Util::Serializable<StormByte::Config::Item::Type>::Deserialize(buffer);
+		auto expected_type = Serializable<StormByte::Config::Item::Type>::Deserialize(buffer);
 		if (!expected_type) return Unexpected(expected_type.error());
 		
-		auto expected_name = Util::Serializable<std::optional<std::string>>::Deserialize(buffer);
+		auto expected_name = Serializable<std::optional<std::string>>::Deserialize(buffer);
 		if (!expected_name) return Unexpected(expected_name.error());
 		
 		return std::make_pair<Type, std::optional<std::string>>(std::move(expected_type.value()), std::move(expected_name.value()));
 	}
 
-	StormByte::Expected<BaseData, Util::BufferOverflow> DeserializeBasicData(const Util::Buffer& buffer, const Type& expected_item_type) noexcept {
+	StormByte::Expected<BaseData, BufferOverflow> DeserializeBasicData(const Buffer& buffer, const Type& expected_item_type) noexcept {
 		auto expected_base_data = DeserializeBasicData(buffer);
 		if (!expected_base_data) return Unexpected(expected_base_data.error());
 		if (expected_base_data.value().first != expected_item_type) {
-			return Unexpected<Util::BufferOverflow>(
+			return Unexpected<BufferOverflow>(
 				std::format(
 					"Type mismatch: Tried {} but got {}",
 					TypeToString(expected_item_type),
@@ -36,13 +36,13 @@ namespace StormByte::Config::Item::Serialize {
 		return expected_base_data.value();
 	}
 
-	StormByte::Expected<std::shared_ptr<Container>, Util::BufferOverflow> DeserializeContainer(const Util::Buffer& buffer, std::shared_ptr<Container> container) noexcept {
+	StormByte::Expected<std::shared_ptr<Container>, BufferOverflow> DeserializeContainer(const Buffer& buffer, std::shared_ptr<Container> container) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Container);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 		if (type != Type::Container) {
-			return Unexpected<Util::BufferOverflow>(
+			return Unexpected<BufferOverflow>(
 				std::format(
 					"Type mismatch: Tried {} but got {}",
 					TypeToString(container->ContainerType()),
@@ -54,10 +54,10 @@ namespace StormByte::Config::Item::Serialize {
 		if (name.has_value())
 			container->Name(name.value());
 		
-		auto container_type = Util::Serializable<ContainerType>::Deserialize(buffer);
+		auto container_type = Serializable<ContainerType>::Deserialize(buffer);
 		if (!container_type) return Unexpected(container_type.error());
 		if (container_type.value() != container->ContainerType()) {
-			return Unexpected<Util::BufferOverflow>(
+			return Unexpected<BufferOverflow>(
 				std::format(
 					"Type mismatch: Tried {} but got {}",
 					TypeToString(container->ContainerType()),
@@ -65,7 +65,7 @@ namespace StormByte::Config::Item::Serialize {
 				)
 			);
 		}
-		auto items_size = Util::Serializable<std::size_t>::Deserialize(buffer);
+		auto items_size = Serializable<std::size_t>::Deserialize(buffer);
 		if (!items_size) return Unexpected(items_size.error());
 		if (items_size.value() == 0) return container;
 
@@ -77,54 +77,54 @@ namespace StormByte::Config::Item::Serialize {
 			if (!expected_base_data) return Unexpected(expected_base_data.error());
 			// We need to restore offset and store current position before to be able to look for Container or Comment type
 			std::size_t pos_after_basic_data = buffer.Position();
-			buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
+			buffer.Seek(pos_before_basic_data, Buffer::ReadPosition::Absolute);
 			switch(expected_base_data.value().first) {
 				case Type::String:
 					{
-						auto expected_item = Util::Serializable<Value<std::string>>::Deserialize(buffer);
+						auto expected_item = Serializable<Value<std::string>>::Deserialize(buffer);
 						if (!expected_item) return Unexpected(expected_item.error());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Integer:
 					{
-						auto expected_item = Util::Serializable<Value<int>>::Deserialize(buffer);
+						auto expected_item = Serializable<Value<int>>::Deserialize(buffer);
 						if (!expected_item) return Unexpected(expected_item.error());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Double:
 					{
-						auto expected_item = Util::Serializable<Value<double>>::Deserialize(buffer);
+						auto expected_item = Serializable<Value<double>>::Deserialize(buffer);
 						if (!expected_item) return Unexpected(expected_item.error());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Comment:
 					{
-						buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
-						auto expected_comment_type = Util::Serializable<CommentType>::Deserialize(buffer);
+						buffer.Seek(pos_after_basic_data, Buffer::ReadPosition::Absolute);
+						auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
 						if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 						// We restore the offset
-						buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
+						buffer.Seek(pos_before_basic_data, Buffer::ReadPosition::Absolute);
 						switch(expected_comment_type.value()) {
 							case CommentType::SingleLineBash:
 								{
-									auto expected_item = Util::Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(buffer);
+									auto expected_item = Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(buffer);
 									if (!expected_item) return Unexpected(expected_item.error());
 									container->Add(expected_item.value());
 								}
 								break;
 							case CommentType::SingleLineC:
 								{
-									auto expected_item = Util::Serializable<Comment<CommentType::SingleLineC>>::Deserialize(buffer);
+									auto expected_item = Serializable<Comment<CommentType::SingleLineC>>::Deserialize(buffer);
 									if (!expected_item) return Unexpected(expected_item.error());
 									container->Add(std::move(expected_item.value()));
 								}
 								break;
 							case CommentType::MultiLineC:
 								{
-									auto expected_item = Util::Serializable<Comment<CommentType::MultiLineC>>::Deserialize(buffer);
+									auto expected_item = Serializable<Comment<CommentType::MultiLineC>>::Deserialize(buffer);
 									if (!expected_item) return Unexpected(expected_item.error());
 									container->Add(std::move(expected_item.value()));
 								}
@@ -134,29 +134,29 @@ namespace StormByte::Config::Item::Serialize {
 					break;
 				case Type::Bool:
 					{
-						auto expected_item = Util::Serializable<Value<bool>>::Deserialize(buffer);
+						auto expected_item = Serializable<Value<bool>>::Deserialize(buffer);
 						if (!expected_item) return Unexpected(expected_item.error());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Container:
 					{
-						buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
-						auto expected_container_type = Util::Serializable<ContainerType>::Deserialize(buffer);
+						buffer.Seek(pos_after_basic_data, Buffer::ReadPosition::Absolute);
+						auto expected_container_type = Serializable<ContainerType>::Deserialize(buffer);
 						if (!expected_container_type) return Unexpected(expected_container_type.error());
 						// We restore the offset
-						buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
+						buffer.Seek(pos_before_basic_data, Buffer::ReadPosition::Absolute);
 						switch (expected_container_type.value()) {
 							case ContainerType::Group:
 								{
-									auto expected_item = Util::Serializable<Group>::Deserialize(buffer);
+									auto expected_item = Serializable<Group>::Deserialize(buffer);
 									if (!expected_item) return Unexpected(expected_item.error());
 									container->Add(std::move(expected_item.value()));
 								}
 								break;
 							case ContainerType::List:
 								{
-									auto expected_item = Util::Serializable<List>::Deserialize(buffer);
+									auto expected_item = Serializable<List>::Deserialize(buffer);
 									if (!expected_item) return Unexpected(expected_item.error());
 									container->Add(std::move(expected_item.value()));
 								}
@@ -165,14 +165,14 @@ namespace StormByte::Config::Item::Serialize {
 					}
 					break;
 				default:
-					return StormByte::Unexpected<Util::BufferOverflow>("Unhandled item type"); // This should not happen
+					return StormByte::Unexpected<BufferOverflow>("Unhandled item type"); // This should not happen
 			}
 		}
 		return container;
 	}
 }
 
-namespace StormByte::Util {
+namespace StormByte {
 	using namespace StormByte::Config::Item;
 
 	// Base
@@ -247,7 +247,7 @@ namespace StormByte::Util {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<std::shared_ptr<Base>, Util::BufferOverflow> Serializable<std::shared_ptr<Base>>::DeserializeComplex(const Util::Buffer& buffer) noexcept {
+	StormByte::Expected<std::shared_ptr<Base>, BufferOverflow> Serializable<std::shared_ptr<Base>>::DeserializeComplex(const Buffer& buffer) noexcept {
 		// We need to look at the item type which is in base data
 		// Do not look only at the type because Containers and Comments need to look its type afterwards
 		std::size_t pos_before_basic_data = buffer.Position();
@@ -255,26 +255,26 @@ namespace StormByte::Util {
 		if (!expected_base_data) return Unexpected(expected_base_data.error());
 		// We need to restore offset and store current position before to be able to look for Container or Comment type
 		std::size_t pos_after_basic_data = buffer.Position();
-		buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
+		buffer.Seek(pos_before_basic_data, Buffer::ReadPosition::Absolute);
 		std::shared_ptr<Base> item_ptr;
 		switch(expected_base_data.value().first) {
 			case Type::String:
 				{
-					auto expected_item = Util::Serializable<Value<std::string>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<std::string>>::Deserialize(buffer);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<std::string>>(std::move(expected_item.value()));
 				}
 				break;
 			case Type::Integer:
 				{
-					auto expected_item = Util::Serializable<Value<int>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<int>>::Deserialize(buffer);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<int>>(std::move(expected_item.value()));
 				}
 				break;
 			case Type::Double:
 				{
-					auto expected_item = Util::Serializable<Value<double>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<double>>::Deserialize(buffer);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<double>>(std::move(expected_item.value()));
 				}
@@ -282,29 +282,29 @@ namespace StormByte::Util {
 			case Type::Comment:
 				{
 					// We place ourselves at after item type pos to get the comment type
-					buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
-					auto expected_comment_type = Util::Serializable<CommentType>::Deserialize(buffer);
+					buffer.Seek(pos_after_basic_data, Buffer::ReadPosition::Absolute);
+					auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
 					if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 					// We need to restore offset
-					buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
+					buffer.Seek(pos_before_basic_data, Buffer::ReadPosition::Absolute);
 					switch(expected_comment_type.value()) {
 						case CommentType::SingleLineBash:
 							{
-								auto expected_item = Util::Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(buffer);
+								auto expected_item = Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(buffer);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Comment<CommentType::SingleLineBash>>(std::move(expected_item.value()));
 							}
 							break;
 						case CommentType::SingleLineC:
 							{
-								auto expected_item = Util::Serializable<Comment<CommentType::SingleLineC>>::Deserialize(buffer);
+								auto expected_item = Serializable<Comment<CommentType::SingleLineC>>::Deserialize(buffer);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Comment<CommentType::SingleLineC>>(std::move(expected_item.value()));
 							}
 							break;
 						case CommentType::MultiLineC:
 							{
-								auto expected_item = Util::Serializable<Comment<CommentType::MultiLineC>>::Deserialize(buffer);
+								auto expected_item = Serializable<Comment<CommentType::MultiLineC>>::Deserialize(buffer);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Comment<CommentType::MultiLineC>>(std::move(expected_item.value()));
 							}
@@ -314,7 +314,7 @@ namespace StormByte::Util {
 				break;
 			case Type::Bool:
 				{
-					auto expected_item = Util::Serializable<Value<bool>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<bool>>::Deserialize(buffer);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<bool>>(std::move(expected_item.value()));
 				}
@@ -322,22 +322,22 @@ namespace StormByte::Util {
 			case Type::Container:
 				{
 					// We place ourselves at after item type pos to get the container type
-					buffer.Seek(pos_after_basic_data, Util::Buffer::ReadPosition::Absolute);
-					auto expected_container_type = Util::Serializable<ContainerType>::Deserialize(buffer);
+					buffer.Seek(pos_after_basic_data, Buffer::ReadPosition::Absolute);
+					auto expected_container_type = Serializable<ContainerType>::Deserialize(buffer);
 					if (!expected_container_type) return Unexpected(expected_container_type.error());
 					// We need to restore offset
-					buffer.Seek(pos_before_basic_data, Util::Buffer::ReadPosition::Absolute);
+					buffer.Seek(pos_before_basic_data, Buffer::ReadPosition::Absolute);
 					switch(expected_container_type.value()) {
 						case ContainerType::Group:
 							{
-								auto expected_item = Util::Serializable<Group>::Deserialize(buffer);
+								auto expected_item = Serializable<Group>::Deserialize(buffer);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Group>(std::move(expected_item.value()));
 							}
 							break;
 						case ContainerType::List:
 							{
-								auto expected_item = Util::Serializable<List>::Deserialize(buffer);
+								auto expected_item = Serializable<List>::Deserialize(buffer);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<List>(std::move(expected_item.value()));
 							}
@@ -352,6 +352,6 @@ namespace StormByte::Util {
 			return item_ptr;
 		}
 		else
-			return StormByte::Unexpected<Util::BufferOverflow>("Unknown error with item creation"); // This should not happen
+			return StormByte::Unexpected<BufferOverflow>("Unknown error with item creation"); // This should not happen
 	}
 }

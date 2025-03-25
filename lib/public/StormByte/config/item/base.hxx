@@ -2,7 +2,7 @@
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/type.hxx>
-#include <StormByte/util/clonable.hxx>
+#include <StormByte/clonable.hxx>
 
 #include <optional>
 #include <string>
@@ -26,7 +26,7 @@ namespace StormByte::Config::Item {
 	 * @class Base
 	 * @brief Base class for a configuration item
 	 */
-	class STORMBYTE_CONFIG_PUBLIC Base: public Util::Clonable<Base, std::shared_ptr<Base>> {
+	class STORMBYTE_CONFIG_PUBLIC Base: public Clonable<Base, std::shared_ptr<Base>> {
 		public:
 			/**
 			 * Constructor
@@ -154,7 +154,7 @@ namespace StormByte::Config::Item {
 					return *static_cast<const Item::Value<T>&>(*this);
 				} else {
 					// No valid match: Throw an exception for incorrect conversion
-					throw WrongValueTypeConversion(this->TypeToString(), typeid(T).name());
+					throw WrongValueTypeConversion("Wrong value type {} while expecting {}", this->TypeToString(), typeid(T).name());
 				}
 			}
 			

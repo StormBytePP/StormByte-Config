@@ -15,7 +15,7 @@ Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const OnEx
 	
 	if (item->Type() != Type::Comment) {
 		if (item->Name().has_value()) {
-			throw InvalidName(item->Name().value(), "List");
+			throw InvalidName("Item with name {} tried to be added to a list which do not support named items", item->Name().value());
 		}	
 
 		auto item_iterator = std::find_if(
@@ -35,7 +35,7 @@ Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const OnEx
 					break;
 				}
 				case OnExistingAction::ThrowException:
-					throw Config::ItemAlreadyExists();
+					throw Config::ItemAlreadyExists("Config item already exists in List");
 					break;
 			}
 		}

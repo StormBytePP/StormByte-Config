@@ -1,5 +1,5 @@
 #include <StormByte/config/item/container.hxx>
-#include <StormByte/util/string.hxx>
+#include <StormByte/string.hxx>
 
 #include <regex>
 
@@ -15,7 +15,7 @@ Base& Container::operator[](const size_t& index) {
 
 const Base& Container::operator[](const size_t& index) const {
 	if (index >= m_items.size())
-		throw OutOfBounds(index, m_items.size());
+		throw OutOfBounds("Index {} is out of bounds (max size is {})", index, m_items.size());
 	return *m_items[index];
 }
 
@@ -72,12 +72,12 @@ bool Container::Exists(const std::string& path) const {
 
 void Container::Remove(const size_t& index) {
 	if (index >= m_items.size())
-		throw OutOfBounds(index, m_items.size());
+		throw OutOfBounds("Index {} is out of bounds (max size: {})", index, m_items.size());
 	m_items.erase(m_items.begin() + index);
 }
 
 void Container::Remove(const std::string& path)  {
-	auto path_queue = Util::String::Explode(path, '/');
+	auto path_queue = String::Explode(path, '/');
 	Remove(path_queue);
 }
 
@@ -85,7 +85,7 @@ std::string Container::Serialize(const int& indent_level) const noexcept {
 	const auto enclosure_characters = EnclosureCharacters(ContainerType());
 	std::string serial = Base::Serialize(indent_level) + std::string(1, enclosure_characters.first) + "\n";
 	serial += ContentsToString(indent_level + 1);
-	serial += Util::String::Indent(indent_level) + enclosure_characters.second;
+	serial += String::Indent(indent_level) + enclosure_characters.second;
 	return serial;
 }
 
@@ -117,7 +117,7 @@ bool Container::IsPathValid(const std::string& name) noexcept {
 }
 
 const Base& Container::LookUp(const std::string& path) const {
-	auto path_queue = Util::String::Explode(path, '/');
+	auto path_queue = String::Explode(path, '/');
 	return LookUp(path_queue);
 }
 
@@ -125,7 +125,7 @@ const Base& Container::LookUp(std::queue<std::string>& path) const {
 	const std::string item_path = path.front();
 	path.pop();
 	if (path.size() == 0) {
-		if (Util::String::IsNumeric(item_path)) {
+		if (String::IsNumeric(item_path)) {
 			return *m_items.at(std::stoi(item_path));
 		}
 		else {
@@ -141,7 +141,7 @@ const Base& Container::LookUp(std::queue<std::string>& path) const {
 	}
 	else {
 		// Recursive LookUp path
-		const Base& item = Util::String::IsNumeric(item_path) ? operator[](std::stoi(item_path)) : operator[](item_path);
+		const Base& item = String::IsNumeric(item_path) ? operator[](std::stoi(item_path)) : operator[](item_path);
 		if (item.Type() != Type::Container)
 			throw Exception("Lookup path " + item_path + " applied to non container item");
 		else {
@@ -154,7 +154,7 @@ void Container::Remove(std::queue<std::string>& path) {
 	std::string item_path = path.front();
 	path.pop();
 	if (path.size() == 0) {
-		if (Util::String::IsNumeric(item_path))
+		if (String::IsNumeric(item_path))
 			Remove(std::stoi(item_path));
 		else {
 			const auto it = std::find_if(m_items.begin(), m_items.end(), [&item_path](const Base::PointerType& item) {
@@ -169,7 +169,7 @@ void Container::Remove(std::queue<std::string>& path) {
 	}
 	else {
 		// Recursive Remove path
-		Base& item = Util::String::IsNumeric(item_path) ? operator[](std::stoi(item_path)) : operator[](item_path);
+		Base& item = String::IsNumeric(item_path) ? operator[](std::stoi(item_path)) : operator[](item_path);
 		if (item.Type() != Type::Container)
 			throw Exception("Lookup path " + item_path + " applied to non container item");
 		else {

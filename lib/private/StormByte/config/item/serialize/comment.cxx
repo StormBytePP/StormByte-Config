@@ -1,10 +1,10 @@
 #include <StormByte/config/item/comment.hxx>
 #include <StormByte/config/item/serialize/base.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 
 #include <format>
 
-namespace StormByte::Util {
+namespace StormByte {
 	using namespace StormByte::Config::Item;
 	
 	// Single Line Bash

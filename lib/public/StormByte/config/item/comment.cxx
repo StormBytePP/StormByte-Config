@@ -1,19 +1,19 @@
 #include <StormByte/config/item/comment.hxx>
 #include <StormByte/config/item/serialize/base.hxx>
-#include <StormByte/util/string.hxx>
+#include <StormByte/string.hxx>
 
 #include <sstream>
 
 namespace StormByte::Config::Item {
 	template<>
 	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {
-		return Util::String::Indent(indent_level) + "#" + m_value; // It is expected to start already indented
+		return String::Indent(indent_level) + "#" + m_value; // It is expected to start already indented
 	}
 	template class Comment<CommentType::SingleLineBash>;
 
 	template<>
 	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept {
-		return Util::String::Indent(indent_level) + "//" + m_value; // It is expected to start already indented
+		return String::Indent(indent_level) + "//" + m_value; // It is expected to start already indented
 	}
 	template class Comment<CommentType::SingleLineC>;
 
@@ -22,7 +22,7 @@ namespace StormByte::Config::Item {
 		// The MultiLineC comments already have the indent
 		std::stringstream ss(m_value);
 		std::string item;
-		std::string serial = Util::String::Indent(indent_level) + "/*";
+		std::string serial = String::Indent(indent_level) + "/*";
 		std::getline(ss, item);
 		serial += item;
 		if (!ss.eof()) {

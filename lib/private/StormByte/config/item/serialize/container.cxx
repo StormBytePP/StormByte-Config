@@ -1,8 +1,8 @@
 #include <StormByte/config/item/container.hxx>
 #include <StormByte/config/item/serialize/base.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 
-namespace StormByte::Util {
+namespace StormByte {
 	using namespace StormByte::Config::Item;
 
 	// Container
