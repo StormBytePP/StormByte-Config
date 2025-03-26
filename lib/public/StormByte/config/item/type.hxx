@@ -15,22 +15,21 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @enum Type
-	 * @brief Item type
+	 * @brief Represents the type of a configuration item.
 	 */
 	enum class Type: char {
-		Bool,       ///< Bool item
-		Comment,    ///< Comment item
-		Container,  ///< Container item
-		Double,     ///< Double item
-		Integer,    ///< Integer item
-		String      ///< String item
+		Bool,       ///< Boolean item.
+		Comment,    ///< Comment item.
+		Container,  ///< Container item.
+		Double,     ///< Double-precision floating-point item.
+		Integer,    ///< Integer item.
+		String      ///< String item.
 	};
 
-
 	/**
-	 * Gets strings from Type
-	 * @param t type to convert
-	 * @return string
+	 * @brief Converts a Type to its string representation.
+	 * @param t The Type to convert.
+	 * @return The string representation of the Type.
 	 */
 	static constexpr std::string TypeToString(const Type& t) noexcept {
 		switch(t) {

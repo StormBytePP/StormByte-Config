@@ -5,126 +5,99 @@
 
 /**
  * @namespace Config
- * @brief All the classes for handling configuration files and items
+ * @brief Contains all classes and exceptions for handling configuration files and items.
  */
 namespace StormByte::Config {
 	/**
 	 * @class Exception
-	 * @brief Base class for Config exceptions
+	 * @brief Base class for all configuration-related exceptions.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Exception: public StormByte::Exception {
 		public:
 			/**
-			 * Constructor
+			 * @brief Inherits constructors from StormByte::Exception.
 			 */
 			using StormByte::Exception::Exception;	
 	};
 
 	/**
 	 * @class WrongValueTypeConversion
-	 * @brief Exception thrown when value type requested is not correct
+	 * @brief Thrown when a value is converted to an incorrect type.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC WrongValueTypeConversion final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class ValueFailure
-	 * @brief Exception thrown when setting a value to the wrong type
+	 * @brief Thrown when setting a value fails due to type mismatch.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC ValueFailure final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class InvalidName
-	 * @brief Exception thrown when adding to a group an item with invalid name
+	 * @brief Thrown when an invalid name is used for an item.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC InvalidName final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class InvalidPath
-	 * @brief Exception thrown when adding to a group an item with invalid path
+	 * @brief Thrown when an invalid path is used for an item.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC InvalidPath final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class ParseError
-	 * @brief Thrown when a parser error is found when parsing File
+	 * @brief Thrown when a parsing error occurs in a configuration file.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC ParseError final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class ItemNotFound
-	 * @brief Exception thrown lookup path fails
+	 * @brief Thrown when an item cannot be found by its path or name.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC ItemNotFound final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class ItemAlreadyExists
-	 * @brief Exception thrown when adding an item which already exists
+	 * @brief Thrown when attempting to add an item that already exists.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC ItemAlreadyExists final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class ItemNameAlreadyExists
-	 * @brief Exception thrown when adding an item which name already exists
+	 * @brief Thrown when an item's name conflicts with an existing name.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC ItemNameAlreadyExists final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 
 	/**
 	 * @class OutOfBounds
-	 * @brief Exception thrown when index is out of bounds
+	 * @brief Thrown when an index is out of bounds.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC OutOfBounds final: public Exception {
 		public:
-			/**
-			 * Constructor
-			 */
 			using Exception::Exception;
 	};
 }

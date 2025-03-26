@@ -12,31 +12,28 @@
 #include <string>
 
 namespace StormByte::Config::Item::Serialize {
-	using BaseData = std::pair<Type, std::optional<std::string>>;	///< Base data for a config item
+	using BaseData = std::pair<Type, std::optional<std::string>>;	///< Base data for a configuration item
 
 	/**
-	 * @brief Deserialize basic data for a config item
-	 * @param data Data to deserialize
-	 * @param length Length of the data
-	 * @return Expected<SerializedData, DeserializeError> Serialized data
+	 * @brief Deserializes basic data for a configuration item.
+	 * @param buffer The buffer containing serialized data.
+	 * @return Expected<BaseData, Buffers::BufferOverflow> The deserialized data or an error.
 	 */
 	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, Buffers::BufferOverflow> DeserializeBasicData(const Buffers::Simple& buffer) noexcept;
 
 	/**
-	 * @brief Deserialize basic data for a config item and checks for the item type correctness
-	 * @param data Data to deserialize
-	 * @param length Length of the data
-	 * @param item_type Type of the item
-	 * @return Expected<SerializedData, DeserializeError> Serialized data
+	 * @brief Deserializes basic data for a configuration item and validates the item type.
+	 * @param buffer The buffer containing serialized data.
+	 * @param item_type The expected type of the item.
+	 * @return Expected<BaseData, Buffers::BufferOverflow> The deserialized data or an error.
 	 */
 	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, Buffers::BufferOverflow> DeserializeBasicData(const Buffers::Simple& buffer, const Type& item_type) noexcept;
 
 	/**
-	 * @brief Deserialize a container.
-	 * @param data Data to deserialize
-	 * @param length Length of the data
-	 * @param container Container to deserialize into
-	 * @return Buffers::Simple Serialized data
+	 * @brief Deserializes a container from the buffer.
+	 * @param buffer The buffer containing serialized data.
+	 * @param container The container to deserialize into.
+	 * @return Expected<std::shared_ptr<Container>, Buffers::BufferOverflow> The deserialized container or an error.
 	 */
 	STORMBYTE_CONFIG_PRIVATE Expected<std::shared_ptr<Container>, Buffers::BufferOverflow> DeserializeContainer(const Buffers::Simple& buffer, std::shared_ptr<Container> container) noexcept;
 }

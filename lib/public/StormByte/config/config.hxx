@@ -10,22 +10,21 @@
 
 /**
  * @namespace Config
- * @brief All the classes for handling configuration files and items
+ * @brief Contains all classes and utilities for handling configuration files and items.
  */
 namespace StormByte::Config {
 	/**
 	 * @class Config
-	 * @brief Abstract class for a configuration file
+	 * @brief Abstract class representing a configuration file.
 	 * 
-	 * The configuration specs are defined by its elements, have no "root" element and can contain any number of the below:
-	 * - Bool
-	 * - Double
-	 * - Integer
-	 * - String
-	 * - SingleLineBash comment (starting with #)
-	 * - MultiLineC comment (like C/C++ MultiLineC comments)
-	 * - Group
-	 * - List
+	 * A configuration file can contain various elements, including:
+	 * - Boolean values
+	 * - Double-precision floating-point values
+	 * - Integer values
+	 * - Strings
+	 * - Comments (single-line or multi-line)
+	 * - Groups
+	 * - Lists
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Config {
 		friend class StormByte::Serializable<Config>;
@@ -194,10 +193,10 @@ namespace StormByte::Config {
 																	operator std::string() const;
 
 			/**
-			 * Adds an item to the container
-			 * @param item item to add
-			 * @throw ItemNameAlreadyExists if item name already exists
-			 * @return reference to added item
+			 * @brief Adds an item to the configuration.
+			 * @param item The item to add.
+			 * @throw ItemNameAlreadyExists if the item's name already exists.
+			 * @return A reference to the added item.
 			 */
 			inline Item::Base&										Add(const Item::Base& item) {
 				return m_root.Add(item.Clone(), m_on_existing_action);

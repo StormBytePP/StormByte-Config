@@ -9,30 +9,30 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @class List
-	 * @brief List in configuration item which can hold other items and also subgroups and sublists recursivelly separated by spaces
+	 * @brief Represents a list in a configuration file that can hold other items, subgroups, and sublists recursively.
 	 * @code
 	 * include_dirs = [
-	 * 		"/usr/include"
-	 * 		"/usr/local/include"
+	 *     "/usr/include"
+	 *     "/usr/local/include"
 	 * ]
 	 * @endcode
 	 */
 	class STORMBYTE_CONFIG_PUBLIC List final: public Container {
 		public:
 			/**
-			 * Constructor
+			 * @brief Constructs an empty List.
 			 */
 			List()												= default;
 
 			/**
-			 * Constructor
-			 * @param name list name
+			 * @brief Constructs a List with the given name.
+			 * @param name The name of the list.
 			 */
 			List(const std::string& name);
 
 			/**
-			 * Constructor
-			 * @param name list name
+			 * @brief Constructs a List with the given name.
+			 * @param name The name of the list.
 			 */
 			List(std::string&& name);
 

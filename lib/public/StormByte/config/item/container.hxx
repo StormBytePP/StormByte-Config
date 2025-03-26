@@ -15,14 +15,13 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @class Container
-	 * @brief Container class for a container of configuration items
+	 * @brief Represents a container that can hold multiple configuration items.
 	 * @tparam T container type
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Container: public Base {
 		public:
 			/**
-			 * Constructor
-			 * @param type container type
+			 * @brief Constructs an empty Container.
 			 */
 			Container()											= default;
 
@@ -141,11 +140,10 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Adds an item to the container (pointer type, virtual pure)
-			 * @param item item to add
-			 * @param on_existing action to take if item name already exists
-			 * @throw ItemNameAlreadyExists if item name already exists
-			 * @return reference to added item
+			 * @brief Adds an item to the container.
+			 * @param item The item to add.
+			 * @param on_existing The action to take if the item name already exists.
+			 * @return A reference to the added item.
 			 */
 			Base& Add(Base::PointerType item, const OnExistingAction& on_existing);
 

@@ -9,30 +9,30 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @class Group
-	 * @brief Group in configuration item which can hold other items and also subgroups and sublists recursivelly separated by spaces
+	 * @brief Represents a group in a configuration file that can hold other items, subgroups, and sublists recursively.
 	 * @code
 	 * settings = {
-	 * 		username = "StormByte"
-	 * 		credit = 66.5
+	 *     username = "StormByte"
+	 *     credit = 66.5
 	 * }
 	 * @endcode
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Group: public Container {
 		public:
 			/**
-			 * Constructor
+			 * @brief Constructs an empty Group.
 			 */
-			Group()												= default;
+			Group() = default;
 
 			/**
-			 * Constructor
-			 * @param name group name
+			 * @brief Constructs a Group with the given name.
+			 * @param name The name of the group.
 			 */
 			Group(const std::string& name);
 
 			/**
-			 * Constructor
-			 * @param name group name
+			 * @brief Constructs a Group with the given name.
+			 * @param name The name of the group.
 			 */
 			Group(std::string&& name);
 

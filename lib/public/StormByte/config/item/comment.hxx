@@ -11,15 +11,15 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @class Comment
-	 * @brief Class for a comment item
-	 * @tparam T comment type
+	 * @brief Represents a comment item in a configuration file.
+	 * @tparam T The type of the comment (e.g., single-line or multi-line).
 	 */
 	template<CommentType T>
 	class STORMBYTE_CONFIG_PUBLIC Comment final: public Value<std::string> {
 		public:
 			/**
-			 * Constructor
-			 * @param comment comment string
+			 * @brief Constructs a Comment with the given string.
+			 * @param comment The comment string.
 			 */
 			Comment(const std::string& comment):Value<std::string>(comment) {}
 

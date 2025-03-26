@@ -9,15 +9,15 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @class Value
-	 * @brief Class for a item value in a configuration file
-	 * @tparam T item type (only std::string, int, double, bool allowed)
+	 * @brief Represents a configuration item with a value.
+	 * @tparam T The type of the value (only std::string, int, double, or bool allowed).
 	 */
 	template<AllowedValueType T>
 	class STORMBYTE_CONFIG_PUBLIC Value: public Base {
 		public:
 			/**
-			 * Constructor
-			 * @param value item value
+			 * @brief Constructs a Value with the given value.
+			 * @param value The value of the item.
 			 */
 			Value(const T& value):Base(), m_value(value) {}
 
@@ -97,8 +97,8 @@ namespace StormByte::Config::Item {
 			virtual ~Value() noexcept override				= default;
 
 			/**
-			 * Gets the item type
-			 * @return item type
+			 * @brief Gets the type of the item.
+			 * @return Item::Type The type of the item.
 			 */
 			constexpr virtual Item::Type 					Type() const noexcept override {
 				if constexpr (std::is_same_v<T, std::string>) {
@@ -112,9 +112,9 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Equality operator
-			 * @param single item to compare
-			 * @return is equal?
+			 * @brief Checks if two Value objects are equal.
+			 * @param single The Value object to compare.
+			 * @return True if equal, false otherwise.
 			 */
 			bool											operator==(const Value<T>& single) const noexcept {
 				// Compare the Base class
@@ -155,9 +155,9 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Serializes the item
-			 * @param indent_level intentation level
-			 * @return serialized string
+			 * @brief Serializes the item to a string.
+			 * @param indent_level The indentation level for serialization.
+			 * @return The serialized string.
 			 */
 			std::string 									Serialize(const int& indent_level) const noexcept override;
 
@@ -178,7 +178,7 @@ namespace StormByte::Config::Item {
 			}
 
 		protected:
-			T m_value;										///< Item value
+			T m_value;										///< The value of the item.
 	};
 
 	// Deduction guides

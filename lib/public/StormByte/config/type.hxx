@@ -2,16 +2,16 @@
 
 /**
  * @namespace Config
- * @brief All the classes for handling configuration files and items
+ * @brief Contains all classes and enums for handling configuration files and items.
  */
 namespace StormByte::Config {
 	/**
 	 * @enum OnExistingAction
-	 * @brief Action to take when a name is already in use
+	 * @brief Specifies the action to take when a name conflict occurs.
 	 */
 	enum class OnExistingAction: unsigned short {
-		Keep,			///< Keep existing item
-		Overwrite,		///< Overwrite existing item
-		ThrowException	///< Throw exception
+		Keep,			///< Retain the existing item.
+		Overwrite,		///< Replace the existing item with the new one.
+		ThrowException	///< Throw an exception to indicate the conflict.
 	};
 }

@@ -24,19 +24,19 @@ namespace StormByte::Config::Item {
 	
 	/**
 	 * @class Base
-	 * @brief Base class for a configuration item
+	 * @brief The base class for all configuration items.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Base: public Clonable<Base, std::shared_ptr<Base>> {
 		public:
 			/**
-			 * Constructor
-			 * @param type item type
+			 * @brief Constructs a Base item with an optional name.
+			 * @param name The name of the item.
 			 */
 			Base() 											= default;
 
 			/**
-			 * Constructor
-			 * @param name item name
+			 * @brief Constructs a Base item with an optional name.
+			 * @param name The name of the item.
 			 */
 			Base(const std::string& name);
 
@@ -88,8 +88,8 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Gets the item name
-			 * @return item name
+			 * @brief Gets the name of the item.
+			 * @return The name of the item.
 			 */
 			constexpr const std::optional<std::string>& 	Name() const noexcept {
 				return m_name;
