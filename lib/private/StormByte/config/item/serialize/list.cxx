@@ -7,7 +7,7 @@ namespace StormByte {
 
 	// List
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer Serializable<List>::SerializeComplex() const noexcept {
+	Buffers::Simple Serializable<List>::SerializeComplex() const noexcept {
 		return Serializable<Container>(m_data).Serialize();
 	}
 
@@ -17,7 +17,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<List, BufferOverflow> Serializable<List>::DeserializeComplex(const Buffer& buffer) noexcept {
+	StormByte::Expected<List, Buffers::BufferOverflow> Serializable<List>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
 		std::shared_ptr<Container> list = std::make_shared<List>();
 		auto expected_group = Serialize::DeserializeContainer(buffer, list);
 		if (!expected_group) return Unexpected(expected_group.error());

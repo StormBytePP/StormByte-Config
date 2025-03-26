@@ -4,7 +4,7 @@
 
 namespace StormByte {
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer Serializable<StormByte::Config::Config>::SerializeComplex() const noexcept {
+	Buffers::Simple Serializable<StormByte::Config::Config>::SerializeComplex() const noexcept {
 		return
 			Serializable<std::optional<StormByte::Config::OnExistingAction>>(m_data.m_on_existing_action).Serialize() <<
 			Serializable<StormByte::Config::Item::Container>(m_data.m_root).Serialize();
@@ -18,7 +18,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<StormByte::Config::Config, BufferOverflow> Serializable<StormByte::Config::Config>::DeserializeComplex(const Buffer& buffer) noexcept {
+	StormByte::Expected<StormByte::Config::Config, Buffers::BufferOverflow> Serializable<StormByte::Config::Config>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
 		StormByte::Config::Config config;
 		auto expected_on_existing_action = Serializable<std::optional<StormByte::Config::OnExistingAction>>::Deserialize(buffer);
 		if (!expected_on_existing_action) return StormByte::Unexpected(expected_on_existing_action.error());

@@ -10,7 +10,7 @@ using namespace StormByte::Config;
 int test_serialize_value_string() {
 	Item::Value<std::string> value("test", "Hello, World!");
 	StormByte::Serializable<Item::Value<std::string>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Value<std::string>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -23,7 +23,7 @@ int test_serialize_value_string() {
 int test_serialize_value_int() {
 	Item::Value<int> value("test", 62);
 	StormByte::Serializable<Item::Value<int>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Value<int>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -36,7 +36,7 @@ int test_serialize_value_int() {
 int test_serialize_value_double() {
 	Item::Value<double> value("test", 62.78);
 	StormByte::Serializable<Item::Value<double>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Value<double>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -49,7 +49,7 @@ int test_serialize_value_double() {
 int test_serialize_value_bool() {
 	Item::Value<bool> value("test", true);
 	StormByte::Serializable<Item::Value<bool>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Value<bool>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -62,7 +62,7 @@ int test_serialize_value_bool() {
 int test_serialize_comment_single_bash() {
 	Item::Comment<Item::CommentType::SingleLineBash> value("Single line comment in bash");
 	StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineBash>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineBash>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -75,7 +75,7 @@ int test_serialize_comment_single_bash() {
 int test_serialize_comment_single_C() {
 	Item::Comment<Item::CommentType::SingleLineC> value("Single line comment in C");
 	StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineC>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineC>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -91,7 +91,7 @@ int test_serialize_comment_multi_C() {
 		"And another one"
 	);
 	StormByte::Serializable<Item::Comment<Item::CommentType::MultiLineC>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<Item::Comment<Item::CommentType::MultiLineC>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -114,7 +114,7 @@ int test_serialize_group() {
 		"And another one"
 	));
 	StormByte::Serializable<Item::Group> serializable(group);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 
 	auto expected_group = StormByte::Serializable<Item::Group>::Deserialize(buffer);
 	if (!expected_group) {
@@ -138,7 +138,7 @@ int test_serialize_list() {
 		"And another one"
 	));
 	StormByte::Serializable<Item::List> serializable(list);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 
 	auto expected_list = StormByte::Serializable<Item::List>::Deserialize(buffer);
 	if (!expected_list) {
@@ -174,7 +174,7 @@ int test_serialize_nested_groups() {
 	));
 	group.Add(nested_group);
 	StormByte::Serializable<Item::Group> serializable(group);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 
 	auto expected_group = StormByte::Serializable<Item::Group>::Deserialize(buffer);
 	if (!expected_group) {
@@ -188,7 +188,7 @@ int test_serialize_nested_groups() {
 int test_shared_ptr_string_serialize() {
 	std::shared_ptr<Item::Base> value = std::make_shared<Item::Value<std::string>>("test", "Hello, World!");
 	StormByte::Serializable<std::shared_ptr<Item::Base>> serializable(value);
-	StormByte::Buffer buffer = serializable.Serialize();
+	StormByte::Buffers::Simple buffer = serializable.Serialize();
 	auto expected_value = StormByte::Serializable<std::shared_ptr<Item::Base>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
@@ -280,7 +280,7 @@ int test_config_binary_deserialize() {
 		}
 		file.close();
 
-		StormByte::Buffer buffer(buff);
+		StormByte::Buffers::Simple buffer(buff);
 		auto expected_cfg = StormByte::Serializable<Config>::Deserialize(buffer);
 		if (!expected_cfg) {
 			std::cerr << expected_cfg.error()->what() << std::endl;

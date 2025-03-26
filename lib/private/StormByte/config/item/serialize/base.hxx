@@ -1,11 +1,11 @@
 #pragma once
 
-#include <StormByte/expected.hxx>
+#include <StormByte/buffers/simple.hxx>
 #include <StormByte/config/item/container.hxx>
 #include <StormByte/config/item/type.hxx>
 #include <StormByte/config/visibility.h>
-#include <StormByte/buffer.hxx>
 #include <StormByte/exception.hxx>
+#include <StormByte/expected.hxx>
 
 #include <memory>
 #include <optional>
@@ -20,7 +20,7 @@ namespace StormByte::Config::Item::Serialize {
 	 * @param length Length of the data
 	 * @return Expected<SerializedData, DeserializeError> Serialized data
 	 */
-	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, BufferOverflow> DeserializeBasicData(const Buffer& buffer) noexcept;
+	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, Buffers::BufferOverflow> DeserializeBasicData(const Buffers::Simple& buffer) noexcept;
 
 	/**
 	 * @brief Deserialize basic data for a config item and checks for the item type correctness
@@ -29,14 +29,14 @@ namespace StormByte::Config::Item::Serialize {
 	 * @param item_type Type of the item
 	 * @return Expected<SerializedData, DeserializeError> Serialized data
 	 */
-	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, BufferOverflow> DeserializeBasicData(const Buffer& buffer, const Type& item_type) noexcept;
+	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, Buffers::BufferOverflow> DeserializeBasicData(const Buffers::Simple& buffer, const Type& item_type) noexcept;
 
 	/**
 	 * @brief Deserialize a container.
 	 * @param data Data to deserialize
 	 * @param length Length of the data
 	 * @param container Container to deserialize into
-	 * @return Buffer Serialized data
+	 * @return Buffers::Simple Serialized data
 	 */
-	STORMBYTE_CONFIG_PRIVATE Expected<std::shared_ptr<Container>, BufferOverflow> DeserializeContainer(const Buffer& buffer, std::shared_ptr<Container> container) noexcept;
+	STORMBYTE_CONFIG_PRIVATE Expected<std::shared_ptr<Container>, Buffers::BufferOverflow> DeserializeContainer(const Buffers::Simple& buffer, std::shared_ptr<Container> container) noexcept;
 }

@@ -9,7 +9,7 @@ namespace StormByte {
 	
 	// Single Line Bash
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer Serializable<Comment<CommentType::SingleLineBash>>::SerializeComplex() const noexcept {
+	Buffers::Simple Serializable<Comment<CommentType::SingleLineBash>>::SerializeComplex() const noexcept {
 		return
 			Serializable<Base>(m_data).Serialize() <<
 			Serializable<CommentType>(m_data.CommentType()).Serialize() <<
@@ -25,7 +25,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Comment<CommentType::SingleLineBash>, BufferOverflow> Serializable<Comment<CommentType::SingleLineBash>>::DeserializeComplex(const Buffer& buffer) noexcept {
+	Expected<Comment<CommentType::SingleLineBash>, Buffers::BufferOverflow> Serializable<Comment<CommentType::SingleLineBash>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Comment);
 		if (!expected_base) return Unexpected(expected_base.error());
@@ -35,9 +35,9 @@ namespace StormByte {
 		auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
 		if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 		if (expected_comment_type.value() != CommentType::SingleLineBash) {
-			return Unexpected<BufferOverflow>(
+			return Unexpected<Buffers::BufferOverflow>(
 				std::format(
-					"AType mismatch: Tried {} but got {}",
+					"Type mismatch: Tried {} but got {}",
 					TypeToString(CommentType::SingleLineBash),
 					TypeToString(expected_comment_type.value())
 				)
@@ -55,7 +55,7 @@ namespace StormByte {
 
 	// Single Line C
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer Serializable<Comment<CommentType::SingleLineC>>::SerializeComplex() const noexcept {
+	Buffers::Simple Serializable<Comment<CommentType::SingleLineC>>::SerializeComplex() const noexcept {
 		return
 			Serializable<Base>(m_data).Serialize() <<
 			Serializable<CommentType>(m_data.CommentType()).Serialize() <<
@@ -71,7 +71,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Comment<CommentType::SingleLineC>, BufferOverflow> Serializable<Comment<CommentType::SingleLineC>>::DeserializeComplex(const Buffer& buffer) noexcept {
+	Expected<Comment<CommentType::SingleLineC>, Buffers::BufferOverflow> Serializable<Comment<CommentType::SingleLineC>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Comment);
 		if (!expected_base) return Unexpected(expected_base.error());
@@ -81,9 +81,9 @@ namespace StormByte {
 		auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
 		if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 		if (expected_comment_type.value() != CommentType::SingleLineC) {
-			return Unexpected<BufferOverflow>(
+			return Unexpected<Buffers::BufferOverflow>(
 				std::format(
-					"BType mismatch: Tried {} but got {}",
+					"Type mismatch: Tried {} but got {}",
 					TypeToString(CommentType::SingleLineC),
 					TypeToString(expected_comment_type.value())
 				)
@@ -101,7 +101,7 @@ namespace StormByte {
 
 	// Multi Line C
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer Serializable<Comment<CommentType::MultiLineC>>::SerializeComplex() const noexcept {
+	Buffers::Simple Serializable<Comment<CommentType::MultiLineC>>::SerializeComplex() const noexcept {
 		return
 			Serializable<Base>(m_data).Serialize() <<
 			Serializable<CommentType>(m_data.CommentType()).Serialize() <<
@@ -117,7 +117,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Comment<CommentType::MultiLineC>, BufferOverflow> Serializable<Comment<CommentType::MultiLineC>>::DeserializeComplex(const Buffer& buffer) noexcept {
+	Expected<Comment<CommentType::MultiLineC>, Buffers::BufferOverflow> Serializable<Comment<CommentType::MultiLineC>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Comment);
 		if (!expected_base) return Unexpected(expected_base.error());
@@ -127,9 +127,9 @@ namespace StormByte {
 		auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
 		if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 		if (expected_comment_type.value() != CommentType::MultiLineC) {
-			return Unexpected<BufferOverflow>(
+			return Unexpected<Buffers::BufferOverflow>(
 				std::format(
-					"CType mismatch: Tried {} but got {}",
+					"Type mismatch: Tried {} but got {}",
 					TypeToString(CommentType::MultiLineC),
 					TypeToString(expected_comment_type.value())
 				)
