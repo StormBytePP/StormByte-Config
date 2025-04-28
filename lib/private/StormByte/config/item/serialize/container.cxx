@@ -7,8 +7,8 @@ namespace StormByte {
 
 	// Container
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffers::Simple Serializable<Container>::SerializeComplex() const noexcept {
-		Buffers::Simple buffer = Serializable<Base>(m_data).Serialize() <<
+	Buffer::Simple Serializable<Container>::SerializeComplex() const noexcept {
+		Buffer::Simple buffer = Serializable<Base>(m_data).Serialize() <<
 			Serializable<ContainerType>(m_data.ContainerType()).Serialize() <<
 			Serializable<std::size_t>(m_data.Items().size()).Serialize();
 		for (auto& item : m_data.Items()) {

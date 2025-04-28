@@ -7,7 +7,7 @@ namespace StormByte {
 
 	// Value<std::string>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffers::Simple Serializable<Value<std::string>>::SerializeComplex() const noexcept {
+	Buffer::Simple Serializable<Value<std::string>>::SerializeComplex() const noexcept {
 		return Serializable<Base>(m_data).Serialize() << Serializable<std::string>(*m_data).Serialize();
 	}
 
@@ -17,7 +17,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<std::string>, Buffers::BufferOverflow> Serializable<Value<std::string>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
+	Expected<Value<std::string>, Buffer::BufferOverflow> Serializable<Value<std::string>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::String);
 		if (!expected_base) return Unexpected(expected_base.error());
@@ -37,7 +37,7 @@ namespace StormByte {
 
 	// Value<int>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffers::Simple Serializable<Value<int>>::SerializeComplex() const noexcept {
+	Buffer::Simple Serializable<Value<int>>::SerializeComplex() const noexcept {
 		return Serializable<Base>(m_data).Serialize() << Serializable<int>(*m_data).Serialize();
 	}
 
@@ -47,7 +47,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<int>, Buffers::BufferOverflow> Serializable<Value<int>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
+	Expected<Value<int>, Buffer::BufferOverflow> Serializable<Value<int>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Integer);
 		if (!expected_base) return Unexpected(expected_base.error());
@@ -66,7 +66,7 @@ namespace StormByte {
 
 	// Value<double>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffers::Simple Serializable<Value<double>>::SerializeComplex() const noexcept {
+	Buffer::Simple Serializable<Value<double>>::SerializeComplex() const noexcept {
 		return Serializable<Base>(m_data).Serialize() << Serializable<double>(*m_data).Serialize();
 	}
 
@@ -76,7 +76,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<double>, Buffers::BufferOverflow> Serializable<Value<double>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
+	Expected<Value<double>, Buffer::BufferOverflow> Serializable<Value<double>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Double);
 		if (!expected_base) return Unexpected(expected_base.error());
@@ -95,7 +95,7 @@ namespace StormByte {
 
 	// Value<bool>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffers::Simple Serializable<Value<bool>>::SerializeComplex() const noexcept {
+	Buffer::Simple Serializable<Value<bool>>::SerializeComplex() const noexcept {
 		return Serializable<Base>(m_data).Serialize() << Serializable<bool>(*m_data).Serialize();
 	}
 
@@ -105,7 +105,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<bool>, Buffers::BufferOverflow> Serializable<Value<bool>>::DeserializeComplex(const Buffers::Simple& buffer) noexcept {
+	Expected<Value<bool>, Buffer::BufferOverflow> Serializable<Value<bool>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
 		// Base data
 		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Bool);
 		if (!expected_base) return Unexpected(expected_base.error());
