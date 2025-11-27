@@ -4,10 +4,11 @@
 
 namespace StormByte {
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<StormByte::Config::Config>::SerializeComplex() const noexcept {
-		return
-			Serializable<std::optional<StormByte::Config::OnExistingAction>>(m_data.m_on_existing_action).Serialize() <<
-			Serializable<StormByte::Config::Item::Container>(m_data.m_root).Serialize();
+	std::vector<std::byte> Serializable<StormByte::Config::Config>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<std::optional<StormByte::Config::OnExistingAction>>(m_data.m_on_existing_action).Serialize();
+		std::vector<std::byte> container_data = Serializable<StormByte::Config::Item::Container>(m_data.m_root).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(container_data.begin()), std::make_move_iterator(container_data.end()));
+		return buffer;
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
@@ -18,14 +19,26 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<StormByte::Config::Config, Buffer::BufferOverflow> Serializable<StormByte::Config::Config>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	StormByte::Expected<StormByte::Config::Config, DeserializeError> Serializable<StormByte::Config::Config>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		StormByte::Config::Config config;
-		auto expected_on_existing_action = Serializable<std::optional<StormByte::Config::OnExistingAction>>::Deserialize(buffer);
+		std::size_t offset = 0;
+		
+		if (offset >= data.size())
+			return StormByte::Unexpected<DeserializeError>("Insufficient data for on_existing_action");
+		
+		std::vector<std::byte> action_data(data.begin() + offset, data.end());
+		auto expected_on_existing_action = Serializable<std::optional<StormByte::Config::OnExistingAction>>::Deserialize(action_data);
 		if (!expected_on_existing_action) return StormByte::Unexpected(expected_on_existing_action.error());
+		offset += Serializable<std::optional<StormByte::Config::OnExistingAction>>::Size(expected_on_existing_action.value());
+		
 		if (expected_on_existing_action.value().has_value())
 			config.OnExistingAction(expected_on_existing_action.value().value());
 
-		auto expected_root = Serializable<StormByte::Config::Item::Group>::Deserialize(buffer);
+		if (offset >= data.size())
+			return StormByte::Unexpected<DeserializeError>("Insufficient data for root group");
+		
+		std::vector<std::byte> root_data(data.begin() + offset, data.end());
+		auto expected_root = Serializable<StormByte::Config::Item::Group>::Deserialize(root_data);
 		if (!expected_root) return StormByte::Unexpected(expected_root.error());
 		config.m_root = std::move(expected_root.value());
 

@@ -7,7 +7,7 @@ namespace StormByte {
 
 	// Group
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Group>::SerializeComplex() const noexcept {
+	std::vector<std::byte> Serializable<Group>::SerializeComplex() const noexcept {
 		return Serializable<Container>(m_data).Serialize();
 	}
 
@@ -17,9 +17,10 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<Group, Buffer::BufferOverflow> Serializable<Group>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	StormByte::Expected<Group, DeserializeError> Serializable<Group>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		std::shared_ptr<Container> group = std::make_shared<Group>();
-		auto expected_group = Serialize::DeserializeContainer(buffer, group);
+		std::size_t offset = 0;
+		auto expected_group = Serialize::DeserializeContainer(data, offset, group);
 		if (!expected_group) return Unexpected(expected_group.error());
 		return *std::static_pointer_cast<Group>(group);
 	}

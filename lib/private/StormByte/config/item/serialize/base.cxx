@@ -9,22 +9,32 @@
 #include <memory>
 #include <iostream>
 namespace StormByte::Config::Item::Serialize {
-	StormByte::Expected<BaseData, Buffer::BufferOverflow> DeserializeBasicData(const Buffer::Simple& buffer) noexcept {
+	StormByte::Expected<BaseData, DeserializeError> DeserializeBasicData(const std::vector<std::byte>& data, std::size_t& offset) noexcept {
 		// Base data (can't call it directly as base is pure virtual)
-		auto expected_type = Serializable<StormByte::Config::Item::Type>::Deserialize(buffer);
-		if (!expected_type) return Unexpected(expected_type.error());
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for type");
 		
-		auto expected_name = Serializable<std::optional<std::string>>::Deserialize(buffer);
+		std::vector<std::byte> type_data(data.begin() + offset, data.end());
+		auto expected_type = Serializable<StormByte::Config::Item::Type>::Deserialize(type_data);
+		if (!expected_type) return Unexpected(expected_type.error());
+		offset += Serializable<StormByte::Config::Item::Type>::Size(expected_type.value());
+		
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for name");
+		
+		std::vector<std::byte> name_data(data.begin() + offset, data.end());
+		auto expected_name = Serializable<std::optional<std::string>>::Deserialize(name_data);
 		if (!expected_name) return Unexpected(expected_name.error());
+		offset += Serializable<std::optional<std::string>>::Size(expected_name.value());
 		
 		return std::make_pair<Type, std::optional<std::string>>(std::move(expected_type.value()), std::move(expected_name.value()));
 	}
 
-	StormByte::Expected<BaseData, Buffer::BufferOverflow> DeserializeBasicData(const Buffer::Simple& buffer, const Type& expected_item_type) noexcept {
-		auto expected_base_data = DeserializeBasicData(buffer);
+	StormByte::Expected<BaseData, DeserializeError> DeserializeBasicData(const std::vector<std::byte>& data, std::size_t& offset, const Type& expected_item_type) noexcept {
+		auto expected_base_data = DeserializeBasicData(data, offset);
 		if (!expected_base_data) return Unexpected(expected_base_data.error());
 		if (expected_base_data.value().first != expected_item_type) {
-			return Unexpected<Buffer::BufferOverflow>(
+			return Unexpected<DeserializeError>(
 				std::format(
 					"Type mismatch: Tried {} but got {}",
 					TypeToString(expected_item_type),
@@ -36,13 +46,13 @@ namespace StormByte::Config::Item::Serialize {
 		return expected_base_data.value();
 	}
 
-	StormByte::Expected<std::shared_ptr<Container>, Buffer::BufferOverflow> DeserializeContainer(const Buffer::Simple& buffer, std::shared_ptr<Container> container) noexcept {
+	StormByte::Expected<std::shared_ptr<Container>, DeserializeError> DeserializeContainer(const std::vector<std::byte>& data, std::size_t& offset, std::shared_ptr<Container> container) noexcept {
 		// Base data
-		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Container);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Container);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 		if (type != Type::Container) {
-			return Unexpected<Buffer::BufferOverflow>(
+			return Unexpected<DeserializeError>(
 				std::format(
 					"Type mismatch: Tried {} but got {}",
 					TypeToString(container->ContainerType()),
@@ -52,12 +62,18 @@ namespace StormByte::Config::Item::Serialize {
 		}
 		
 		if (name.has_value())
-			container->Name(name.value());
+			container->Name(std::move(name.value()));
 		
-		auto container_type = Serializable<ContainerType>::Deserialize(buffer);
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for container type");
+		
+		std::vector<std::byte> container_type_data(data.begin() + offset, data.end());
+		auto container_type = Serializable<ContainerType>::Deserialize(container_type_data);
 		if (!container_type) return Unexpected(container_type.error());
+		offset += Serializable<ContainerType>::Size(container_type.value());
+		
 		if (container_type.value() != container->ContainerType()) {
-			return Unexpected<Buffer::BufferOverflow>(
+			return Unexpected<DeserializeError>(
 				std::format(
 					"Type mismatch: Tried {} but got {}",
 					TypeToString(container->ContainerType()),
@@ -65,67 +81,89 @@ namespace StormByte::Config::Item::Serialize {
 				)
 			);
 		}
-		auto items_size = Serializable<std::size_t>::Deserialize(buffer);
+		
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for items size");
+		
+		std::vector<std::byte> items_size_data(data.begin() + offset, data.end());
+		auto items_size = Serializable<std::size_t>::Deserialize(items_size_data);
 		if (!items_size) return Unexpected(items_size.error());
+		offset += Serializable<std::size_t>::Size(items_size.value());
+		
 		if (items_size.value() == 0) return container;
 
 		for (size_t i = 0; i < items_size.value(); i++) {
 			// We get basic data to know who to delegate the deserialization to
 			// Do not look only at the type because Containers and Comments need to look its type afterwards
-			std::size_t pos_before_basic_data = buffer.Position();
-			auto expected_base_data = Serialize::DeserializeBasicData(buffer);
+			std::size_t pos_before_basic_data = offset;
+			std::size_t temp_offset = offset;
+			auto expected_base_data = Serialize::DeserializeBasicData(data, temp_offset);
 			if (!expected_base_data) return Unexpected(expected_base_data.error());
-			// We need to restore offset and store current position before to be able to look for Container or Comment type
-			std::size_t pos_after_basic_data = buffer.Position();
-			buffer.Seek(pos_before_basic_data, Buffer::Read::Position::Absolute);
+			// We need to store current position after to be able to look for Container or Comment type
+			std::size_t pos_after_basic_data = temp_offset;
+			
 			switch(expected_base_data.value().first) {
 				case Type::String:
 					{
-						auto expected_item = Serializable<Value<std::string>>::Deserialize(buffer);
+						std::vector<std::byte> item_data(data.begin() + offset, data.end());
+						auto expected_item = Serializable<Value<std::string>>::Deserialize(item_data);
 						if (!expected_item) return Unexpected(expected_item.error());
+						offset += Serializable<Value<std::string>>::Size(expected_item.value());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Integer:
 					{
-						auto expected_item = Serializable<Value<int>>::Deserialize(buffer);
+						std::vector<std::byte> item_data(data.begin() + offset, data.end());
+						auto expected_item = Serializable<Value<int>>::Deserialize(item_data);
 						if (!expected_item) return Unexpected(expected_item.error());
+						offset += Serializable<Value<int>>::Size(expected_item.value());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Double:
 					{
-						auto expected_item = Serializable<Value<double>>::Deserialize(buffer);
+						std::vector<std::byte> item_data(data.begin() + offset, data.end());
+						auto expected_item = Serializable<Value<double>>::Deserialize(item_data);
 						if (!expected_item) return Unexpected(expected_item.error());
+						offset += Serializable<Value<double>>::Size(expected_item.value());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Comment:
 					{
-						buffer.Seek(pos_after_basic_data, Buffer::Read::Position::Absolute);
-						auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
+						if (pos_after_basic_data >= data.size())
+							return Unexpected<DeserializeError>("Insufficient data for comment type");
+						
+						std::vector<std::byte> comment_type_data(data.begin() + pos_after_basic_data, data.end());
+						auto expected_comment_type = Serializable<CommentType>::Deserialize(comment_type_data);
 						if (!expected_comment_type) return Unexpected(expected_comment_type.error());
-						// We restore the offset
-						buffer.Seek(pos_before_basic_data, Buffer::Read::Position::Absolute);
+						
 						switch(expected_comment_type.value()) {
 							case CommentType::SingleLineBash:
 								{
-									auto expected_item = Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(buffer);
+									std::vector<std::byte> item_data(data.begin() + offset, data.end());
+									auto expected_item = Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(item_data);
 									if (!expected_item) return Unexpected(expected_item.error());
+									offset += Serializable<Comment<CommentType::SingleLineBash>>::Size(expected_item.value());
 									container->Add(expected_item.value());
 								}
 								break;
 							case CommentType::SingleLineC:
 								{
-									auto expected_item = Serializable<Comment<CommentType::SingleLineC>>::Deserialize(buffer);
+									std::vector<std::byte> item_data(data.begin() + offset, data.end());
+									auto expected_item = Serializable<Comment<CommentType::SingleLineC>>::Deserialize(item_data);
 									if (!expected_item) return Unexpected(expected_item.error());
+									offset += Serializable<Comment<CommentType::SingleLineC>>::Size(expected_item.value());
 									container->Add(std::move(expected_item.value()));
 								}
 								break;
 							case CommentType::MultiLineC:
 								{
-									auto expected_item = Serializable<Comment<CommentType::MultiLineC>>::Deserialize(buffer);
+									std::vector<std::byte> item_data(data.begin() + offset, data.end());
+									auto expected_item = Serializable<Comment<CommentType::MultiLineC>>::Deserialize(item_data);
 									if (!expected_item) return Unexpected(expected_item.error());
+									offset += Serializable<Comment<CommentType::MultiLineC>>::Size(expected_item.value());
 									container->Add(std::move(expected_item.value()));
 								}
 								break;
@@ -134,30 +172,38 @@ namespace StormByte::Config::Item::Serialize {
 					break;
 				case Type::Bool:
 					{
-						auto expected_item = Serializable<Value<bool>>::Deserialize(buffer);
+						std::vector<std::byte> item_data(data.begin() + offset, data.end());
+						auto expected_item = Serializable<Value<bool>>::Deserialize(item_data);
 						if (!expected_item) return Unexpected(expected_item.error());
+						offset += Serializable<Value<bool>>::Size(expected_item.value());
 						container->Add(std::move(expected_item.value()));
 					}
 					break;
 				case Type::Container:
 					{
-						buffer.Seek(pos_after_basic_data, Buffer::Read::Position::Absolute);
-						auto expected_container_type = Serializable<ContainerType>::Deserialize(buffer);
+						if (pos_after_basic_data >= data.size())
+							return Unexpected<DeserializeError>("Insufficient data for container type");
+						
+						std::vector<std::byte> container_type_data(data.begin() + pos_after_basic_data, data.end());
+						auto expected_container_type = Serializable<ContainerType>::Deserialize(container_type_data);
 						if (!expected_container_type) return Unexpected(expected_container_type.error());
-						// We restore the offset
-						buffer.Seek(pos_before_basic_data, Buffer::Read::Position::Absolute);
+						
 						switch (expected_container_type.value()) {
 							case ContainerType::Group:
 								{
-									auto expected_item = Serializable<Group>::Deserialize(buffer);
+									std::vector<std::byte> item_data(data.begin() + offset, data.end());
+									auto expected_item = Serializable<Group>::Deserialize(item_data);
 									if (!expected_item) return Unexpected(expected_item.error());
+									offset += Serializable<Group>::Size(expected_item.value());
 									container->Add(std::move(expected_item.value()));
 								}
 								break;
 							case ContainerType::List:
 								{
-									auto expected_item = Serializable<List>::Deserialize(buffer);
+									std::vector<std::byte> item_data(data.begin() + offset, data.end());
+									auto expected_item = Serializable<List>::Deserialize(item_data);
 									if (!expected_item) return Unexpected(expected_item.error());
+									offset += Serializable<List>::Size(expected_item.value());
 									container->Add(std::move(expected_item.value()));
 								}
 								break;
@@ -165,7 +211,7 @@ namespace StormByte::Config::Item::Serialize {
 					}
 					break;
 				default:
-					return StormByte::Unexpected<Buffer::BufferOverflow>("Unhandled item type"); // This should not happen
+					return StormByte::Unexpected<DeserializeError>("Unhandled item type"); // This should not happen
 			}
 		}
 		return container;
@@ -177,8 +223,11 @@ namespace StormByte {
 
 	// Base
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Base>::SerializeComplex() const noexcept {
-		return Serializable<Type>(m_data.Type()).Serialize() << Serializable<std::optional<std::string>>(m_data.Name()).Serialize();
+	std::vector<std::byte> Serializable<Base>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<Type>(m_data.Type()).Serialize();
+		std::vector<std::byte> name_data = Serializable<std::optional<std::string>>(m_data.Name()).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(name_data.begin()), std::make_move_iterator(name_data.end()));
+		return buffer;
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
@@ -188,32 +237,32 @@ namespace StormByte {
 
 	// std::shared_ptr<Base>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<std::shared_ptr<Base>>::SerializeComplex() const noexcept {
-		Buffer::Simple buffer; // Every item will serialize its base data
+	std::vector<std::byte> Serializable<std::shared_ptr<Base>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer; // Every item will serialize its base data
 		switch(m_data->Type()) {
 			case Type::String:
-				buffer << Serializable<Value<std::string>>(static_cast<Value<std::string>&>(*m_data)).Serialize();
+				buffer = Serializable<Value<std::string>>(static_cast<Value<std::string>&>(*m_data)).Serialize();
 				break;
 			case Type::Integer:
-				buffer << Serializable<Value<int>>(static_cast<Value<int>&>(*m_data)).Serialize();
+				buffer = Serializable<Value<int>>(static_cast<Value<int>&>(*m_data)).Serialize();
 				break;
 			case Type::Double:
-				buffer << Serializable<Value<double>>(static_cast<Value<double>&>(*m_data)).Serialize();
+				buffer = Serializable<Value<double>>(static_cast<Value<double>&>(*m_data)).Serialize();
 				break;
 			case Type::Comment:
 				if (std::dynamic_pointer_cast<Comment<CommentType::SingleLineBash>>(m_data)) {
-					buffer << Serializable<Comment<CommentType::SingleLineBash>>(static_cast<Comment<CommentType::SingleLineBash>&>(*m_data)).Serialize();
+					buffer = Serializable<Comment<CommentType::SingleLineBash>>(static_cast<Comment<CommentType::SingleLineBash>&>(*m_data)).Serialize();
 				} else if (std::dynamic_pointer_cast<Comment<CommentType::SingleLineC>>(m_data)) {
-					buffer << Serializable<Comment<CommentType::SingleLineC>>(static_cast<Comment<CommentType::SingleLineC>&>(*m_data)).Serialize();
+					buffer = Serializable<Comment<CommentType::SingleLineC>>(static_cast<Comment<CommentType::SingleLineC>&>(*m_data)).Serialize();
 				} else if (std::dynamic_pointer_cast<Comment<CommentType::MultiLineC>>(m_data)) {
-					buffer << Serializable<Comment<CommentType::MultiLineC>>(static_cast<Comment<CommentType::MultiLineC>&>(*m_data)).Serialize();
+					buffer = Serializable<Comment<CommentType::MultiLineC>>(static_cast<Comment<CommentType::MultiLineC>&>(*m_data)).Serialize();
 				}
 				break;
 			case Type::Bool:
-				buffer << Serializable<Value<bool>>(static_cast<Value<bool>&>(*m_data)).Serialize();
+				buffer = Serializable<Value<bool>>(static_cast<Value<bool>&>(*m_data)).Serialize();
 				break;
 			case Type::Container:
-				buffer << Serializable<Container>(static_cast<Container&>(*m_data)).Serialize();
+				buffer = Serializable<Container>(static_cast<Container&>(*m_data)).Serialize();
 				break;
 		}
 		return buffer;
@@ -247,64 +296,68 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<std::shared_ptr<Base>, Buffer::BufferOverflow> Serializable<std::shared_ptr<Base>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	StormByte::Expected<std::shared_ptr<Base>, DeserializeError> Serializable<std::shared_ptr<Base>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		// We need to look at the item type which is in base data
 		// Do not look only at the type because Containers and Comments need to look its type afterwards
-		std::size_t pos_before_basic_data = buffer.Position();
-		auto expected_base_data = Serialize::DeserializeBasicData(buffer);
+		std::size_t offset = 0;
+		std::size_t pos_before_basic_data = offset;
+		std::size_t temp_offset = offset;
+		auto expected_base_data = Serialize::DeserializeBasicData(data, temp_offset);
 		if (!expected_base_data) return Unexpected(expected_base_data.error());
-		// We need to restore offset and store current position before to be able to look for Container or Comment type
-		std::size_t pos_after_basic_data = buffer.Position();
-		buffer.Seek(pos_before_basic_data, Buffer::Read::Position::Absolute);
+		// We need to store current position after to be able to look for Container or Comment type
+		std::size_t pos_after_basic_data = temp_offset;
+		
 		std::shared_ptr<Base> item_ptr;
 		switch(expected_base_data.value().first) {
 			case Type::String:
 				{
-					auto expected_item = Serializable<Value<std::string>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<std::string>>::Deserialize(data);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<std::string>>(std::move(expected_item.value()));
 				}
 				break;
 			case Type::Integer:
 				{
-					auto expected_item = Serializable<Value<int>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<int>>::Deserialize(data);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<int>>(std::move(expected_item.value()));
 				}
 				break;
 			case Type::Double:
 				{
-					auto expected_item = Serializable<Value<double>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<double>>::Deserialize(data);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<double>>(std::move(expected_item.value()));
 				}
 				break;
 			case Type::Comment:
 				{
-					// We place ourselves at after item type pos to get the comment type
-					buffer.Seek(pos_after_basic_data, Buffer::Read::Position::Absolute);
-					auto expected_comment_type = Serializable<CommentType>::Deserialize(buffer);
+					// We look at after item type pos to get the comment type
+					if (pos_after_basic_data >= data.size())
+						return Unexpected<DeserializeError>("Insufficient data for comment type");
+					
+					std::vector<std::byte> comment_type_data(data.begin() + pos_after_basic_data, data.end());
+					auto expected_comment_type = Serializable<CommentType>::Deserialize(comment_type_data);
 					if (!expected_comment_type) return Unexpected(expected_comment_type.error());
-					// We need to restore offset
-					buffer.Seek(pos_before_basic_data, Buffer::Read::Position::Absolute);
+					
 					switch(expected_comment_type.value()) {
 						case CommentType::SingleLineBash:
 							{
-								auto expected_item = Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(buffer);
+								auto expected_item = Serializable<Comment<CommentType::SingleLineBash>>::Deserialize(data);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Comment<CommentType::SingleLineBash>>(std::move(expected_item.value()));
 							}
 							break;
 						case CommentType::SingleLineC:
 							{
-								auto expected_item = Serializable<Comment<CommentType::SingleLineC>>::Deserialize(buffer);
+								auto expected_item = Serializable<Comment<CommentType::SingleLineC>>::Deserialize(data);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Comment<CommentType::SingleLineC>>(std::move(expected_item.value()));
 							}
 							break;
 						case CommentType::MultiLineC:
 							{
-								auto expected_item = Serializable<Comment<CommentType::MultiLineC>>::Deserialize(buffer);
+								auto expected_item = Serializable<Comment<CommentType::MultiLineC>>::Deserialize(data);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Comment<CommentType::MultiLineC>>(std::move(expected_item.value()));
 							}
@@ -314,30 +367,32 @@ namespace StormByte {
 				break;
 			case Type::Bool:
 				{
-					auto expected_item = Serializable<Value<bool>>::Deserialize(buffer);
+					auto expected_item = Serializable<Value<bool>>::Deserialize(data);
 					if (!expected_item) return Unexpected(expected_item.error());
 					item_ptr = std::make_shared<Value<bool>>(std::move(expected_item.value()));
 				}
 				break;
 			case Type::Container:
 				{
-					// We place ourselves at after item type pos to get the container type
-					buffer.Seek(pos_after_basic_data, Buffer::Read::Position::Absolute);
-					auto expected_container_type = Serializable<ContainerType>::Deserialize(buffer);
+					// We look at after item type pos to get the container type
+					if (pos_after_basic_data >= data.size())
+						return Unexpected<DeserializeError>("Insufficient data for container type");
+					
+					std::vector<std::byte> container_type_data(data.begin() + pos_after_basic_data, data.end());
+					auto expected_container_type = Serializable<ContainerType>::Deserialize(container_type_data);
 					if (!expected_container_type) return Unexpected(expected_container_type.error());
-					// We need to restore offset
-					buffer.Seek(pos_before_basic_data, Buffer::Read::Position::Absolute);
+					
 					switch(expected_container_type.value()) {
 						case ContainerType::Group:
 							{
-								auto expected_item = Serializable<Group>::Deserialize(buffer);
+								auto expected_item = Serializable<Group>::Deserialize(data);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<Group>(std::move(expected_item.value()));
 							}
 							break;
 						case ContainerType::List:
 							{
-								auto expected_item = Serializable<List>::Deserialize(buffer);
+								auto expected_item = Serializable<List>::Deserialize(data);
 								if (!expected_item) return Unexpected(expected_item.error());
 								item_ptr = std::make_shared<List>(std::move(expected_item.value()));
 							}
@@ -348,10 +403,10 @@ namespace StormByte {
 		}
 		if (item_ptr) {
 			if (expected_base_data.value().second.has_value())
-				item_ptr->Name(expected_base_data.value().second.value());
+				item_ptr->Name(std::move(expected_base_data.value().second.value()));
 			return item_ptr;
 		}
 		else
-			return StormByte::Unexpected<Buffer::BufferOverflow>("Unknown error with item creation"); // This should not happen
+			return StormByte::Unexpected<DeserializeError>("Unknown error with item creation"); // This should not happen
 	}
 }

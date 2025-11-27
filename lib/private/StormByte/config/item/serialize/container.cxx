@@ -7,12 +7,15 @@ namespace StormByte {
 
 	// Container
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Container>::SerializeComplex() const noexcept {
-		Buffer::Simple buffer = Serializable<Base>(m_data).Serialize() <<
-			Serializable<ContainerType>(m_data.ContainerType()).Serialize() <<
-			Serializable<std::size_t>(m_data.Items().size()).Serialize();
+	std::vector<std::byte> Serializable<Container>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
+		std::vector<std::byte> container_type_data = Serializable<ContainerType>(m_data.ContainerType()).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(container_type_data.begin()), std::make_move_iterator(container_type_data.end()));
+		std::vector<std::byte> size_data = Serializable<std::size_t>(m_data.Items().size()).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(size_data.begin()), std::make_move_iterator(size_data.end()));
 		for (auto& item : m_data.Items()) {
-			buffer << Serializable<std::shared_ptr<Base>>(item).Serialize();
+			std::vector<std::byte> item_data = Serializable<std::shared_ptr<Base>>(item).Serialize();
+			buffer.insert(buffer.end(), std::make_move_iterator(item_data.begin()), std::make_move_iterator(item_data.end()));
 		}
 		return buffer;
 	}

@@ -7,8 +7,11 @@ namespace StormByte {
 
 	// Value<std::string>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Value<std::string>>::SerializeComplex() const noexcept {
-		return Serializable<Base>(m_data).Serialize() << Serializable<std::string>(*m_data).Serialize();
+	std::vector<std::byte> Serializable<Value<std::string>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
+		std::vector<std::byte> value_data = Serializable<std::string>(*m_data).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
+		return buffer;
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
@@ -17,18 +20,23 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<std::string>, Buffer::BufferOverflow> Serializable<Value<std::string>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	Expected<Value<std::string>, DeserializeError> Serializable<Value<std::string>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		// Base data
-		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::String);
+		std::size_t offset = 0;
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::String);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
 		// Now the string data
-		auto expected_data = Serializable<std::string>::Deserialize(buffer);
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for string value");
+		
+		std::vector<std::byte> string_data(data.begin() + offset, data.end());
+		auto expected_data = Serializable<std::string>::Deserialize(string_data);
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
-		Value<std::string> value(expected_data.value());
+		Value<std::string> value(std::move(expected_data.value()));
 		if (name.has_value())
 			value.Name(name.value());
 			
@@ -37,8 +45,11 @@ namespace StormByte {
 
 	// Value<int>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Value<int>>::SerializeComplex() const noexcept {
-		return Serializable<Base>(m_data).Serialize() << Serializable<int>(*m_data).Serialize();
+	std::vector<std::byte> Serializable<Value<int>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
+		std::vector<std::byte> value_data = Serializable<int>(*m_data).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
+		return buffer;
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
@@ -47,27 +58,35 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<int>, Buffer::BufferOverflow> Serializable<Value<int>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	Expected<Value<int>, DeserializeError> Serializable<Value<int>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		// Base data
-		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Integer);
+		std::size_t offset = 0;
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Integer);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
 		// Now the int data
-		auto expected_data = Serializable<int>::Deserialize(buffer);
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for int value");
+		
+		std::vector<std::byte> int_data(data.begin() + offset, data.end());
+		auto expected_data = Serializable<int>::Deserialize(int_data);
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
 		Value<int> value(expected_data.value());
 		if (name.has_value())
-			value.Name(name.value());
+			value.Name(std::move(name.value()));
 		return value;
 	}
 
 	// Value<double>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Value<double>>::SerializeComplex() const noexcept {
-		return Serializable<Base>(m_data).Serialize() << Serializable<double>(*m_data).Serialize();
+	std::vector<std::byte> Serializable<Value<double>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
+		std::vector<std::byte> value_data = Serializable<double>(*m_data).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
+		return buffer;
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
@@ -76,27 +95,35 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<double>, Buffer::BufferOverflow> Serializable<Value<double>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	Expected<Value<double>, DeserializeError> Serializable<Value<double>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		// Base data
-		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Double);
+		std::size_t offset = 0;
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Double);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
 		// Now the double data
-		auto expected_data = Serializable<double>::Deserialize(buffer);
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for double value");
+		
+		std::vector<std::byte> double_data(data.begin() + offset, data.end());
+		auto expected_data = Serializable<double>::Deserialize(double_data);
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
 		Value<double> value(expected_data.value());
 		if (name.has_value())
-			value.Name(name.value());
+			value.Name(std::move(name.value()));
 		return value;
 	}
 
 	// Value<bool>
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Buffer::Simple Serializable<Value<bool>>::SerializeComplex() const noexcept {
-		return Serializable<Base>(m_data).Serialize() << Serializable<bool>(*m_data).Serialize();
+	std::vector<std::byte> Serializable<Value<bool>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
+		std::vector<std::byte> value_data = Serializable<bool>(*m_data).Serialize();
+		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
+		return buffer;
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
@@ -105,20 +132,25 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<bool>, Buffer::BufferOverflow> Serializable<Value<bool>>::DeserializeComplex(const Buffer::Simple& buffer) noexcept {
+	Expected<Value<bool>, DeserializeError> Serializable<Value<bool>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
 		// Base data
-		auto expected_base = Serialize::DeserializeBasicData(buffer, Type::Bool);
+		std::size_t offset = 0;
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Bool);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
-		// Now the double data
-		auto expected_data = Serializable<bool>::Deserialize(buffer);
+		// Now the bool data
+		if (offset >= data.size())
+			return Unexpected<DeserializeError>("Insufficient data for bool value");
+		
+		std::vector<std::byte> bool_data(data.begin() + offset, data.end());
+		auto expected_data = Serializable<bool>::Deserialize(bool_data);
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
 		Value<bool> value(expected_data.value());
 		if (name.has_value())
-			value.Name(name.value());
+			value.Name(std::move(name.value()));
 		return value;
 	}
 }
