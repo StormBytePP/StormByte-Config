@@ -17,7 +17,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	StormByte::Expected<Group, DeserializeError> Serializable<Group>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
+	StormByte::Expected<Group, DeserializeError> Serializable<Group>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::shared_ptr<Container> group = std::make_shared<Group>();
 		std::size_t offset = 0;
 		auto expected_group = Serialize::DeserializeContainer(data, offset, group);

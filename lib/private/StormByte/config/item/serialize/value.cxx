@@ -20,7 +20,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<std::string>, DeserializeError> Serializable<Value<std::string>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
+	Expected<Value<std::string>, DeserializeError> Serializable<Value<std::string>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::String);
@@ -31,8 +31,7 @@ namespace StormByte {
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for string value");
 		
-		std::vector<std::byte> string_data(data.begin() + offset, data.end());
-		auto expected_data = Serializable<std::string>::Deserialize(string_data);
+		auto expected_data = Serializable<std::string>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
@@ -58,7 +57,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<int>, DeserializeError> Serializable<Value<int>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
+	Expected<Value<int>, DeserializeError> Serializable<Value<int>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Integer);
@@ -69,8 +68,7 @@ namespace StormByte {
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for int value");
 		
-		std::vector<std::byte> int_data(data.begin() + offset, data.end());
-		auto expected_data = Serializable<int>::Deserialize(int_data);
+		auto expected_data = Serializable<int>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
@@ -95,7 +93,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<double>, DeserializeError> Serializable<Value<double>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
+	Expected<Value<double>, DeserializeError> Serializable<Value<double>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Double);
@@ -106,8 +104,7 @@ namespace StormByte {
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for double value");
 		
-		std::vector<std::byte> double_data(data.begin() + offset, data.end());
-		auto expected_data = Serializable<double>::Deserialize(double_data);
+		auto expected_data = Serializable<double>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
@@ -132,7 +129,7 @@ namespace StormByte {
 	}
 
 	template<> STORMBYTE_CONFIG_PUBLIC
-	Expected<Value<bool>, DeserializeError> Serializable<Value<bool>>::DeserializeComplex(const std::vector<std::byte>& data) noexcept {
+	Expected<Value<bool>, DeserializeError> Serializable<Value<bool>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Bool);
@@ -143,8 +140,7 @@ namespace StormByte {
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for bool value");
 		
-		std::vector<std::byte> bool_data(data.begin() + offset, data.end());
-		auto expected_data = Serializable<bool>::Deserialize(bool_data);
+		auto expected_data = Serializable<bool>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
 		
 		// Create the Value
