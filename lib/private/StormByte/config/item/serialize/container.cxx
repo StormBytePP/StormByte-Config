@@ -11,7 +11,7 @@ namespace StormByte {
 		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
 		std::vector<std::byte> container_type_data = Serializable<ContainerType>(m_data.ContainerType()).Serialize();
 		buffer.insert(buffer.end(), std::make_move_iterator(container_type_data.begin()), std::make_move_iterator(container_type_data.end()));
-		std::vector<std::byte> size_data = Serializable<std::size_t>(m_data.Items().size()).Serialize();
+		std::vector<std::byte> size_data = Serializable<std::uint64_t>(static_cast<std::uint64_t>(m_data.Items().size())).Serialize();
 		buffer.insert(buffer.end(), std::make_move_iterator(size_data.begin()), std::make_move_iterator(size_data.end()));
 		for (auto& item : m_data.Items()) {
 			std::vector<std::byte> item_data = Serializable<std::shared_ptr<Base>>(item).Serialize();
@@ -24,7 +24,7 @@ namespace StormByte {
 	std::size_t Serializable<Container>::SizeComplex(const Container& data) noexcept {
 		std::size_t size = Serializable<Base>::Size(data) +
 			Serializable<ContainerType>::Size(data.ContainerType()) +
-			Serializable<std::size_t>::Size(data.Items().size());
+			Serializable<std::uint64_t>::Size(static_cast<std::uint64_t>(data.Items().size()));
 		for (const auto& item : data.Items()) {
 			size += Serializable<std::shared_ptr<Base>>::Size(item);
 		}

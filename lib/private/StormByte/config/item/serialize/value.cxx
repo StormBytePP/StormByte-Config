@@ -23,7 +23,7 @@ namespace StormByte {
 	Expected<Value<std::string>, DeserializeError> Serializable<Value<std::string>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::String);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::String);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
@@ -60,7 +60,7 @@ namespace StormByte {
 	Expected<Value<int>, DeserializeError> Serializable<Value<int>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Integer);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Integer);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
@@ -96,7 +96,7 @@ namespace StormByte {
 	Expected<Value<double>, DeserializeError> Serializable<Value<double>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Double);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Double);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
@@ -132,7 +132,7 @@ namespace StormByte {
 	Expected<Value<bool>, DeserializeError> Serializable<Value<bool>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Bool);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Bool);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 

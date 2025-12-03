@@ -30,7 +30,7 @@ namespace StormByte {
 	Expected<Comment<CommentType::SingleLineBash>, DeserializeError> Serializable<Comment<CommentType::SingleLineBash>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Comment);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Comment);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
@@ -87,7 +87,7 @@ namespace StormByte {
 	Expected<Comment<CommentType::SingleLineC>, DeserializeError> Serializable<Comment<CommentType::SingleLineC>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Comment);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Comment);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
@@ -144,7 +144,7 @@ namespace StormByte {
 	Expected<Comment<CommentType::MultiLineC>, DeserializeError> Serializable<Comment<CommentType::MultiLineC>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		// Base data
 		std::size_t offset = 0;
-		auto expected_base = Serialize::DeserializeBasicData(data, offset, Type::Comment);
+		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Comment);
 		if (!expected_base) return Unexpected(expected_base.error());
 		auto [type, name] = expected_base.value();
 
