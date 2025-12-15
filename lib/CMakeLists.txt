@@ -6,7 +6,6 @@ file(GLOB_RECURSE STORMBYTE_CONFIG_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LI
 # Library
 add_library(StormByte-Config SHARED ${STORMBYTE_CONFIG_SOURCES})
 add_library(StormByte::Config ALIAS StormByte-Config)
-target_link_libraries(StormByte-Config PUBLIC StormByte)
 set_target_properties(StormByte-Config PROPERTIES
 	LINKER_LANGUAGE CXX
 	SOVERSION		${CMAKE_PROJECT_VERSION}
