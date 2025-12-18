@@ -33,8 +33,12 @@ target_include_directories(StormByte-Config
 	SYSTEM BEFORE PUBLIC "${CMAKE_CURRENT_LIST_DIR}/public" "${CMAKE_CURRENT_LIST_DIR}/private"
 )
 
-# Install
-if (NOT STORMBYTE_AS_DEPENDENCY)
+# Install (on Windows only install DLLs)
+if (WIN32)
+	install(TARGETS StormByte StormByte-Config
+		RUNTIME 		DESTINATION ${CMAKE_INSTALL_BINDIR}
+	)
+elseif (NOT STORMBYTE_AS_DEPENDENCY)
 	install(TARGETS StormByte-Config
 		ARCHIVE 		DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 		LIBRARY 		DESTINATION "${CMAKE_INSTALL_LIBDIR}"
