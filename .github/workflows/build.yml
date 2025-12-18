@@ -42,9 +42,9 @@ jobs:
         cxx: ${{ steps.install-toolchain.outputs.cxx_compiler }}
         configure-options: >-
           -G Ninja
-          -DENABLE_TEST=ON
           -DENABLE_ASAN=ON
-          -DWITH_SYSTEM_STORMBYTE=OFF
+          -DENABLE_TEST=ON
+          -DWITH_STORMBYTE=BUNDLED
           ${{ matrix.compiler == 'clang' && format('-DCMAKE_CXX_FLAGS=-stdlib={0}', matrix.stdlib) || '' }}
         build-type: ${{ env.BUILD_TYPE }}
         run-test: true
@@ -77,8 +77,7 @@ jobs:
           configure-options: >-
             -G Ninja
             -DENABLE_TEST=ON
-            -DENABLE_ASAN=ON
-            -DWITH_SYSTEM_STORMBYTE=OFF
+            -DWITH_STORMBYTE=BUNDLED
           build-type: ${{ env.BUILD_TYPE }}
 
       - name: Copy DLLs
