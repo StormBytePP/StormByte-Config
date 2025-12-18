@@ -1,5 +1,5 @@
-option(WITH_SYSTEM_STORMBYTE "Use system StormByte" OFF)
-if(WITH_SYSTEM_STORMBYTE)
+set(WITH_STORMBYTE BUNDLED CACHE STRING "Use StormByte core library (SYSTEM/BUNDLED)" FORCE)
+if(WITH_STORMBYTE STREQUAL "SYSTEM")
 	find_package(StormByte REQUIRED)
 else()
 	if (NOT TARGET StormByte)

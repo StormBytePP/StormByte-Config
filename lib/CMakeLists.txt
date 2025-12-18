@@ -33,21 +33,3 @@ target_include_directories(StormByte-Config
 	SYSTEM BEFORE PUBLIC "${CMAKE_CURRENT_LIST_DIR}/public" "${CMAKE_CURRENT_LIST_DIR}/private"
 )
 
-# Install (on Windows only install DLLs)
-if (WIN32)
-	install(TARGETS StormByte StormByte-Config
-		RUNTIME 		DESTINATION ${CMAKE_INSTALL_BINDIR}
-	)
-elseif (NOT STORMBYTE_AS_DEPENDENCY)
-	install(TARGETS StormByte-Config
-		ARCHIVE 		DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		LIBRARY 		DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-		RUNTIME 		DESTINATION ${CMAKE_INSTALL_BINDIR}
-	)
-	install(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/public/StormByte/"
-		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/StormByte"
-		FILES_MATCHING
-		PATTERN "*.h"
-		PATTERN "*.hxx"
-	)
-endif()
