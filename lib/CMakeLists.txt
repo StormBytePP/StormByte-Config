@@ -22,7 +22,7 @@ if(MSVC)
 	target_compile_options(StormByte-Config PRIVATE /EHsc)
 	target_compile_options(StormByte-Config PRIVATE $<$<CONFIG:Release>:/O2>)
 	target_compile_options(StormByte-Config PRIVATE $<$<CONFIG:Debug>:/Od>)
-	target_link_options(StormByte-Config PRIVATE $<$<CONFIG:Release>:/LTCG /GL>)
+	target_compile_definitions(StormByte-Config PUBLIC UNICODE NOMINMAX) # Create problems if disabled
 else()
 	set(CMAKE_CXX_FLAGS_DEBUG "-pipe -g -ggdb -Wall -Wextra -Wnon-virtual-dtor -pedantic -pedantic-errors -O0")
 	target_compile_options(StormByte-Config PRIVATE -fvisibility=hidden $<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>)
