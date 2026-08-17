@@ -9,4 +9,4 @@ else()
 	add_subdirectory(base)
 endif()
 
-target_link_libraries(StormByte-Config StormByte)
+target_link_libraries(StormByte-Config PUBLIC StormByte)
