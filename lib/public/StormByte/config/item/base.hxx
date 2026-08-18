@@ -118,6 +118,20 @@ namespace StormByte::Config::Item {
 			constexpr virtual Type 							Type() const noexcept = 0;
 
 			/**
+			 * @brief Returns the comment type if this item is a Comment, otherwise std::nullopt.
+			 *
+			 * This method is used by the serialization layer to determine the concrete
+			 * Comment specialization (SingleLineBash, SingleLineC or MultiLineC)
+			 * without relying on RTTI / dynamic_cast, which can fail under certain
+			 * compilers and standard libraries (especially Clang + libc++).
+			 *
+			 * @return The CommentType if this is a comment, std::nullopt otherwise.
+			 */
+			virtual std::optional<CommentType> GetCommentType() const noexcept {
+				return std::nullopt;
+			}
+
+			/**
 			 * Gets the item type as string
 			 * @return item type as string
 			 */

@@ -74,6 +74,19 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
+			 * @brief Returns the concrete comment type of this Comment specialization.
+			 *
+			 * Overrides Base::GetCommentType() so that the serialization code can
+			 * correctly identify which Comment template instantiation this object is
+			 * without using dynamic_cast / RTTI.
+			 *
+			 * @return The CommentType corresponding to the template parameter T.
+			 */
+			std::optional<CommentType> GetCommentType() const noexcept override {
+				return T;
+			}
+
+			/**
 			 * Gets the comment string
 			 * @return comment string
 			 */

@@ -8,6 +8,7 @@
 #include <format>
 #include <memory>
 #include <iostream>
+
 namespace StormByte::Config::Item::Serialize {
 	Expected<BaseData, DeserializeError> DeserializeBasicData(std::span<const std::byte> data, std::size_t& offset) noexcept {
 		// Base data (can't call it directly as base is pure virtual)
@@ -240,15 +241,23 @@ namespace StormByte {
 			case StormByte::Config::Item::Type::Double:
 				buffer = Serializable<Value<double>>(static_cast<Value<double>&>(*m_data)).Serialize();
 				break;
-			case StormByte::Config::Item::Type::Comment:
-				if (std::dynamic_pointer_cast<Comment<CommentType::SingleLineBash>>(m_data)) {
-					buffer = Serializable<Comment<StormByte::Config::Item::CommentType::SingleLineBash>>(static_cast<Comment<StormByte::Config::Item::CommentType::SingleLineBash>&>(*m_data)).Serialize();
-				} else if (std::dynamic_pointer_cast<Comment<CommentType::SingleLineC>>(m_data)) {
-					buffer = Serializable<Comment<StormByte::Config::Item::CommentType::SingleLineC>>(static_cast<Comment<StormByte::Config::Item::CommentType::SingleLineC>&>(*m_data)).Serialize();
-				} else if (std::dynamic_pointer_cast<Comment<CommentType::MultiLineC>>(m_data)) {
-					buffer = Serializable<Comment<StormByte::Config::Item::CommentType::MultiLineC>>(static_cast<Comment<StormByte::Config::Item::CommentType::MultiLineC>&>(*m_data)).Serialize();
+			case StormByte::Config::Item::Type::Comment: {
+				auto opt = m_data->GetCommentType();
+				if (opt) {
+					switch (*opt) {
+						case CommentType::SingleLineBash:
+							buffer = Serializable<Comment<CommentType::SingleLineBash>>(static_cast<Comment<CommentType::SingleLineBash>&>(*m_data)).Serialize();
+							break;
+						case CommentType::SingleLineC:
+							buffer = Serializable<Comment<CommentType::SingleLineC>>(static_cast<Comment<CommentType::SingleLineC>&>(*m_data)).Serialize();
+							break;
+						case CommentType::MultiLineC:
+							buffer = Serializable<Comment<CommentType::MultiLineC>>(static_cast<Comment<CommentType::MultiLineC>&>(*m_data)).Serialize();
+							break;
+					}
 				}
 				break;
+			}
 			case StormByte::Config::Item::Type::Bool:
 				buffer = Serializable<Value<bool>>(static_cast<Value<bool>&>(*m_data)).Serialize();
 				break;
@@ -269,15 +278,20 @@ namespace StormByte {
 				return Serializable<Value<int>>::Size(static_cast<Value<int>&>(*data));
 			case StormByte::Config::Item::Type::Double:
 				return Serializable<Value<double>>::Size(static_cast<Value<double>&>(*data));
-			case StormByte::Config::Item::Type::Comment:
-				if (std::dynamic_pointer_cast<Comment<StormByte::Config::Item::CommentType::SingleLineBash>>(data)) {
-					return Serializable<Comment<StormByte::Config::Item::CommentType::SingleLineBash>>::Size(static_cast<Comment<StormByte::Config::Item::CommentType::SingleLineBash>&>(*data));
-				} else if (std::dynamic_pointer_cast<Comment<StormByte::Config::Item::CommentType::SingleLineC>>(data)) {
-					return Serializable<Comment<StormByte::Config::Item::CommentType::SingleLineC>>::Size(static_cast<Comment<StormByte::Config::Item::CommentType::SingleLineC>&>(*data));
-				} else if (std::dynamic_pointer_cast<Comment<StormByte::Config::Item::CommentType::MultiLineC>>(data)) {
-					return Serializable<Comment<StormByte::Config::Item::CommentType::MultiLineC>>::Size(static_cast<Comment<StormByte::Config::Item::CommentType::MultiLineC>&>(*data));
+			case StormByte::Config::Item::Type::Comment: {
+				auto opt = data->GetCommentType();
+				if (opt) {
+					switch (*opt) {
+						case CommentType::SingleLineBash:
+							return Serializable<Comment<CommentType::SingleLineBash>>::Size(static_cast<Comment<CommentType::SingleLineBash>&>(*data));
+						case CommentType::SingleLineC:
+							return Serializable<Comment<CommentType::SingleLineC>>::Size(static_cast<Comment<CommentType::SingleLineC>&>(*data));
+						case CommentType::MultiLineC:
+							return Serializable<Comment<CommentType::MultiLineC>>::Size(static_cast<Comment<CommentType::MultiLineC>&>(*data));
+					}
 				}
-				break; // This should not happen but if I add a comment type without putting it here, it will break
+				break;
+			}
 			case StormByte::Config::Item::Type::Bool:
 				return Serializable<Value<bool>>::Size(static_cast<Value<bool>&>(*data));
 			case StormByte::Config::Item::Type::Container:

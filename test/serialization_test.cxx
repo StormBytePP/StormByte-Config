@@ -1,3 +1,7 @@
+//==============================================================================
+// FILE: test/serialization_test.cxx
+//==============================================================================
+
 #include <StormByte/config/config.hxx>
 #include <StormByte/serializable.hxx>
 #include <StormByte/system.hxx>
@@ -27,10 +31,10 @@ int test_serialize_value_int() {
 	auto expected_value = StormByte::Serializable<Item::Value<int>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_string", 1);
+		RETURN_TEST("test_serialize_value_int", 1);
 	}
-	ASSERT_TRUE("test_serialize_value_string", value == expected_value.value());
-	RETURN_TEST("test_serialize_value_string", 0);
+	ASSERT_TRUE("test_serialize_value_int", value == expected_value.value());
+	RETURN_TEST("test_serialize_value_int", 0);
 }
 
 int test_serialize_value_double() {
@@ -40,10 +44,10 @@ int test_serialize_value_double() {
 	auto expected_value = StormByte::Serializable<Item::Value<double>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_string", 1);
+		RETURN_TEST("test_serialize_value_double", 1);
 	}
-	ASSERT_TRUE("test_serialize_value_string", value == expected_value.value());
-	RETURN_TEST("test_serialize_value_string", 0);
+	ASSERT_TRUE("test_serialize_value_double", value == expected_value.value());
+	RETURN_TEST("test_serialize_value_double", 0);
 }
 
 int test_serialize_value_bool() {
@@ -53,10 +57,10 @@ int test_serialize_value_bool() {
 	auto expected_value = StormByte::Serializable<Item::Value<bool>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_string", 1);
+		RETURN_TEST("test_serialize_value_bool", 1);
 	}
-	ASSERT_TRUE("test_serialize_value_string", value == expected_value.value());
-	RETURN_TEST("test_serialize_value_string", 0);
+	ASSERT_TRUE("test_serialize_value_bool", value == expected_value.value());
+	RETURN_TEST("test_serialize_value_bool", 0);
 }
 
 int test_serialize_comment_single_bash() {
@@ -79,10 +83,10 @@ int test_serialize_comment_single_C() {
 	auto expected_value = StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineC>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_comment_single_bash", 1);
+		RETURN_TEST("test_serialize_comment_single_C", 1);
 	}
-	ASSERT_TRUE("test_serialize_comment_single_bash", value == expected_value.value());
-	RETURN_TEST("test_serialize_comment_single_bash", 0);
+	ASSERT_TRUE("test_serialize_comment_single_C", value == expected_value.value());
+	RETURN_TEST("test_serialize_comment_single_C", 0);
 }
 
 int test_serialize_comment_multi_C() {
@@ -95,10 +99,10 @@ int test_serialize_comment_multi_C() {
 	auto expected_value = StormByte::Serializable<Item::Comment<Item::CommentType::MultiLineC>>::Deserialize(buffer);
 	if (!expected_value) {
 		std::cerr << "Expecting value! " << expected_value.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_comment_single_bash", 1);
+		RETURN_TEST("test_serialize_comment_multi_C", 1);
 	}
-	ASSERT_TRUE("test_serialize_comment_single_bash", value == expected_value.value());
-	RETURN_TEST("test_serialize_comment_single_bash", 0);
+	ASSERT_TRUE("test_serialize_comment_multi_C", value == expected_value.value());
+	RETURN_TEST("test_serialize_comment_multi_C", 0);
 }
 
 int test_serialize_group() {
@@ -118,7 +122,7 @@ int test_serialize_group() {
 
 	auto expected_group = StormByte::Serializable<Item::Group>::Deserialize(buffer);
 	if (!expected_group) {
-		std::cerr << expected_group.error()->what() << std::endl;
+		std::cerr << "Expecting value! " << expected_group.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_group", 1);
 	}
 	ASSERT_TRUE("test_serialize_group", group == expected_group.value());
@@ -212,13 +216,6 @@ int test_comment_serialize() {
 	StormByte::Serializable<Item::Comment<Item::CommentType::MultiLineC>> serializableMC(valueMC);
 	StormByte::Serializable<std::shared_ptr<Item::Base>> serializableMC_ptr(valueMC_ptr);
 
-	// std::cout << "Single Bash: " << std::endl << serializableSB.Serialize().HexData() << std::endl;
-	// std::cout << "Single Bash PTR: " << std::endl << serializableSB_ptr.Serialize().HexData() << std::endl;
-	// std::cout << "Single C: " << std::endl << serializableSC.Serialize().HexData() << std::endl;
-	// std::cout << "Single C PTR: " << std::endl << serializableSC_ptr.Serialize().HexData() << std::endl;
-	// std::cout << "Multi C: " << std::endl << serializableMC.Serialize().HexData() << std::endl;
-	// std::cout << "Multi C PTR: " << std::endl << serializableMC_ptr.Serialize().HexData() << std::endl;
-
 	auto expected_valueSB = StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineBash>>::Deserialize(serializableSB.Serialize());
 	auto expected_valueSB_ptr = StormByte::Serializable<std::shared_ptr<Item::Base>>::Deserialize(serializableSB_ptr.Serialize());
 	auto expected_valueSC = StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineC>>::Deserialize(serializableSC.Serialize());
@@ -295,22 +292,22 @@ int test_config_binary_deserialize() {
 			std::cerr << "Can't open file " << human_readable_file.string().c_str() << std::endl;
 			RETURN_TEST("test_config_binary_deserialize", 1);
 		}
-		Config cfg_human_readable;
-		file >> cfg_human_readable;
+		Config cfg_human_readable2;
+		file >> cfg_human_readable2;
 		file.close();
 
-		ASSERT_EQUAL("test_config_binary_deserialize", cfg_human_readable, cfg_human_readable);
+		ASSERT_EQUAL("test_config_binary_deserialize", cfg_human_readable, cfg_human_readable2);
 	}
 	catch(const StormByte::Config::Exception& e) {
 		std::cerr << e.what() << std::endl;
 		RETURN_TEST("test_config_binary_deserialize", 1);
 	}
 	
-	RETURN_TEST("test_config_serialize", 0);
+	RETURN_TEST("test_config_binary_deserialize", 0);
 }
 
 int main() {
-    int result = 0;
+	int result = 0;
 	result += test_serialize_value_string();
 	result += test_serialize_value_int();
 	result += test_serialize_value_double();
@@ -325,10 +322,10 @@ int main() {
 	result += test_comment_serialize();
 	result += test_config_binary_deserialize();
 
-    if (result == 0) {
-        std::cout << "All tests passed!" << std::endl;
-    } else {
-        std::cout << result << " tests failed." << std::endl;
-    }
-    return result;
+	if (result == 0) {
+		std::cout << "All tests passed!" << std::endl;
+	} else {
+		std::cout << result << " tests failed." << std::endl;
+	}
+	return result;
 }
