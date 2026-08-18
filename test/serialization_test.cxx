@@ -306,6 +306,254 @@ int test_config_binary_deserialize() {
 	RETURN_TEST("test_config_binary_deserialize", 0);
 }
 
+// ===================== Binary serialization tests =====================
+
+int test_serialize_value_binary() {
+	std::vector<std::byte> data = {
+		std::byte{0x48}, std::byte{0x65}, std::byte{0x6C},
+		std::byte{0x6C}, std::byte{0x6F} // "Hello"
+	};
+	Item::Value<std::vector<std::byte>> value("test", data);
+
+	StormByte::Serializable<Item::Value<std::vector<std::byte>>> serializable(value);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Value<std::vector<std::byte>>>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << "Expecting value! " << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_binary", 1);
+	}
+	ASSERT_TRUE("test_serialize_value_binary", value == expected.value());
+	RETURN_TEST("test_serialize_value_binary", 0);
+}
+
+int test_serialize_value_binary_empty() {
+	Item::Value<std::vector<std::byte>> value("empty", std::vector<std::byte>{});
+
+	StormByte::Serializable<Item::Value<std::vector<std::byte>>> serializable(value);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Value<std::vector<std::byte>>>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << "Expecting value! " << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_binary_empty", 1);
+	}
+	ASSERT_TRUE("test_serialize_value_binary_empty", value == expected.value());
+	ASSERT_EQUAL("test_serialize_value_binary_empty", 0u, (*expected.value()).size());
+	RETURN_TEST("test_serialize_value_binary_empty", 0);
+}
+
+int test_serialize_value_binary_all_bytes() {
+	// All possible byte values 0x00 - 0xFF
+	std::vector<std::byte> data(256);
+	for (std::size_t i = 0; i < 256; ++i)
+		data[i] = static_cast<std::byte>(i);
+
+	Item::Value<std::vector<std::byte>> value("all_bytes", data);
+
+	StormByte::Serializable<Item::Value<std::vector<std::byte>>> serializable(value);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Value<std::vector<std::byte>>>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << "Expecting value! " << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_binary_all_bytes", 1);
+	}
+	ASSERT_TRUE("test_serialize_value_binary_all_bytes", value == expected.value());
+	RETURN_TEST("test_serialize_value_binary_all_bytes", 0);
+}
+
+int test_serialize_value_binary_large() {
+	// 10 KB of data
+	std::vector<std::byte> data(10 * 1024);
+	for (std::size_t i = 0; i < data.size(); ++i)
+		data[i] = static_cast<std::byte>(i % 256);
+
+	Item::Value<std::vector<std::byte>> value("large", std::move(data));
+
+	StormByte::Serializable<Item::Value<std::vector<std::byte>>> serializable(value);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Value<std::vector<std::byte>>>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << "Expecting value! " << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_binary_large", 1);
+	}
+	ASSERT_TRUE("test_serialize_value_binary_large", value == expected.value());
+	RETURN_TEST("test_serialize_value_binary_large", 0);
+}
+
+int test_serialize_group_with_binary() {
+	Item::Group group("test");
+	group.Add(Item::Value<std::string>("string", "Hello"));
+	group.Add(Item::Value<int>("int", 42));
+
+	std::vector<std::byte> bin = {std::byte{0x01}, std::byte{0x02}, std::byte{0x03}};
+	group.Add(Item::Value<std::vector<std::byte>>("binary", bin));
+
+	group.Add(Item::Value<bool>("flag", true));
+
+	StormByte::Serializable<Item::Group> serializable(group);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Group>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << "Expecting value! " << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_group_with_binary", 1);
+	}
+	ASSERT_TRUE("test_serialize_group_with_binary", group == expected.value());
+	RETURN_TEST("test_serialize_group_with_binary", 0);
+}
+
+int test_serialize_list_with_binary() {
+	Item::List list("test");
+	list.Add(Item::Value<std::string>("text"));
+	list.Add(Item::Value<int>(99));
+
+	std::vector<std::byte> bin = {std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}};
+	list.Add(Item::Value<std::vector<std::byte>>(bin));
+
+	list.Add(Item::Value<bool>(false));
+
+	StormByte::Serializable<Item::List> serializable(list);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::List>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_list_with_binary", 1);
+	}
+	ASSERT_TRUE("test_serialize_list_with_binary", list == expected.value());
+	RETURN_TEST("test_serialize_list_with_binary", 0);
+}
+
+int test_serialize_nested_with_binary() {
+	Item::Group root("root");
+	Item::Group nested("nested");
+
+	std::vector<std::byte> secret = {
+		std::byte{0x53}, std::byte{0x65}, std::byte{0x63},
+		std::byte{0x72}, std::byte{0x65}, std::byte{0x74}
+	};
+	nested.Add(Item::Value<std::vector<std::byte>>("secret", secret));
+	nested.Add(Item::Value<std::string>("name", "hidden"));
+
+	root.Add(std::move(nested));
+	root.Add(Item::Value<int>("version", 1));
+
+	StormByte::Serializable<Item::Group> serializable(root);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Group>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_nested_with_binary", 1);
+	}
+	ASSERT_TRUE("test_serialize_nested_with_binary", root == expected.value());
+	RETURN_TEST("test_serialize_nested_with_binary", 0);
+}
+
+int test_shared_ptr_binary_serialize() {
+	std::vector<std::byte> data = {std::byte{0xCA}, std::byte{0xFE}};
+	std::shared_ptr<Item::Base> value = std::make_shared<Item::Value<std::vector<std::byte>>>("bin", data);
+
+	StormByte::Serializable<std::shared_ptr<Item::Base>> serializable(value);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<std::shared_ptr<Item::Base>>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << "Expecting value! " << expected.error()->what() << std::endl;
+		RETURN_TEST("test_shared_ptr_binary_serialize", 1);
+	}
+	ASSERT_TRUE("test_shared_ptr_binary_serialize", *value == *expected.value());
+	RETURN_TEST("test_shared_ptr_binary_serialize", 0);
+}
+
+int test_serialize_binary_roundtrip_text_and_binary() {
+	// Create via text form, then serialize to binary and back
+	Config cfg;
+	cfg << R"(
+		data = b"SGVsbG8gV29ybGQ="
+		empty = b""
+		mixed = {
+			bin = b"AQIDBA=="
+			num = 42
+		}
+	)";
+
+	StormByte::Serializable<Config> serializable(cfg);
+	std::vector<std::byte> buffer = serializable.Serialize();
+
+	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_binary_roundtrip_text_and_binary", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_binary_roundtrip_text_and_binary", cfg == expected.value());
+	RETURN_TEST("test_serialize_binary_roundtrip_text_and_binary", 0);
+}
+
+int test_text_to_binary_to_text_roundtrip() {
+	int result = 0;
+
+	// 1. Original configuration in text form (with Base64 binary data)
+	// Note: we use a double that serializes cleanly
+	const std::string original_text =
+		"name = \"StormByte\"\n"
+		"version = 2\n"
+		"enabled = true\n"
+		"payload = b\"SGVsbG8gV29ybGQ=\"\n"
+		"settings = {\n"
+		"\ttimeout = 30\n"
+		"\tsecret = b\"U2VjcmV0RGF0YQ==\"\n"
+		"}\n"
+		"items = [\n"
+		"\t\"first\"\n"
+		"\tb\"c2Vjb25k\"\n"
+		"\t42\n"
+		"]\n";
+
+	try {
+		// 2. Load from text
+		Config cfg1;
+		cfg1 << original_text;
+
+		// 3. Serialize to binary
+		StormByte::Serializable<Config> serializable(cfg1);
+		std::vector<std::byte> binary_buffer = serializable.Serialize();
+
+		// 4. Deserialize from binary
+		auto expected = StormByte::Serializable<Config>::Deserialize(binary_buffer);
+		if (!expected) {
+			std::cerr << "Failed to deserialize binary: " << expected.error()->what() << std::endl;
+			RETURN_TEST("test_text_to_binary_to_text_roundtrip", 1);
+		}
+		Config cfg2 = std::move(expected.value());
+
+		// 5. Convert back to text
+		std::string regenerated_text = static_cast<std::string>(cfg2);
+
+		// 6. Compare both text representations
+		ASSERT_EQUAL("test_text_to_binary_to_text_roundtrip", original_text, regenerated_text);
+
+		// Extra: also verify that binary data was correctly recovered
+		const auto& payload = cfg2["payload"].Value<std::vector<std::byte>>();
+		std::string recovered(reinterpret_cast<const char*>(payload.data()), payload.size());
+		ASSERT_EQUAL("test_text_to_binary_to_text_roundtrip", "Hello World", recovered);
+
+		const auto& secret = cfg2["settings/secret"].Value<std::vector<std::byte>>();
+		std::string recovered_secret(reinterpret_cast<const char*>(secret.data()), secret.size());
+		ASSERT_EQUAL("test_text_to_binary_to_text_roundtrip", "SecretData", recovered_secret);
+
+	} catch (const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		result = 1;
+	}
+
+	RETURN_TEST("test_text_to_binary_to_text_roundtrip", result);
+}
+
 int main() {
 	int result = 0;
 	result += test_serialize_value_string();
@@ -321,6 +569,17 @@ int main() {
 	result += test_shared_ptr_string_serialize();
 	result += test_comment_serialize();
 	result += test_config_binary_deserialize();
+
+	result += test_serialize_value_binary();
+	result += test_serialize_value_binary_empty();
+	result += test_serialize_value_binary_all_bytes();
+	result += test_serialize_value_binary_large();
+	result += test_serialize_group_with_binary();
+	result += test_serialize_list_with_binary();
+	result += test_serialize_nested_with_binary();
+	result += test_shared_ptr_binary_serialize();
+	result += test_serialize_binary_roundtrip_text_and_binary();
+	result += test_text_to_binary_to_text_roundtrip();
 
 	if (result == 0) {
 		std::cout << "All tests passed!" << std::endl;

@@ -2,6 +2,9 @@
 
 #include <StormByte/config/item/base.hxx>
 
+#include <vector>
+#include <cstddef>
+
 /**
  * @namespace Item
  * @brief All the configuration item classes namespace
@@ -10,7 +13,7 @@ namespace StormByte::Config::Item {
 	/**
 	 * @class Value
 	 * @brief Represents a configuration item with a value.
-	 * @tparam T The type of the value (only std::string, int, double, or bool allowed).
+	 * @tparam T The type of the value (only std::string, int, double, bool or std::vector<std::byte> allowed).
 	 */
 	template<AllowedValueType T>
 	class STORMBYTE_CONFIG_PUBLIC Value: public Base {
@@ -21,12 +24,10 @@ namespace StormByte::Config::Item {
 			 */
 			Value(const T& value):Base(), m_value(value) {}
 
-
 			template <typename U = T>
 			Value(const char* value) requires std::is_same_v<U, std::string>
 				: Base(), m_value(std::string(value)) {}
 
-			
 			template <typename U = T>
 			Value(const char* name, const char* value) requires std::is_same_v<U, std::string>
 				: Base(std::string(name)), m_value(std::string(value)) {}
@@ -57,15 +58,15 @@ namespace StormByte::Config::Item {
 			 * @param value item value
 			 */
 			Value(const std::string& name, const char* value) requires std::is_same_v<T, std::string>
-			: Base(name), m_value(std::string(value)) {}
-	
+				: Base(name), m_value(std::string(value)) {}
+
 			/**
 			 * Move Constructor overload (for std::string only)
 			 * @param name item name
 			 * @param value item value
 			 */
 			Value(std::string&& name, const char* value) requires std::is_same_v<T, std::string>
-			: Base(std::move(name)), m_value(std::string(value)) {}
+				: Base(std::move(name)), m_value(std::string(value)) {}
 
 			/**
 			 * Copy constructor
@@ -100,15 +101,18 @@ namespace StormByte::Config::Item {
 			 * @brief Gets the type of the item.
 			 * @return Item::Type The type of the item.
 			 */
-			constexpr virtual Item::Type 					Type() const noexcept override {
+			constexpr virtual Item::Type Type() const noexcept override {
 				if constexpr (std::is_same_v<T, std::string>) {
 					return Item::Type::String;
 				} else if constexpr (std::is_same_v<T, int>) {
 					return Item::Type::Integer;
 				} else if constexpr (std::is_same_v<T, double>) {
 					return Item::Type::Double;
-				} else if constexpr (std::is_same_v<T, bool>)
+				} else if constexpr (std::is_same_v<T, bool>) {
 					return Item::Type::Bool;
+				} else if constexpr (std::is_same_v<T, std::vector<std::byte>>) {
+					return Item::Type::Binary;
+				}
 			}
 
 			/**
@@ -116,16 +120,8 @@ namespace StormByte::Config::Item {
 			 * @param single The Value object to compare.
 			 * @return True if equal, false otherwise.
 			 */
-			bool											operator==(const Value<T>& single) const noexcept {
-				// Compare the Base class
+			bool operator==(const Value<T>& single) const noexcept {
 				if (Base::operator!=(single)) return false;
-			
-				// Compare the Type
-				if constexpr (!std::is_same_v<T, decltype(m_value)>) {
-					return false;
-				}
-			
-				// Compare the m_value
 				return m_value == single.m_value;
 			}
 
@@ -134,7 +130,7 @@ namespace StormByte::Config::Item {
 			 * @param single item to compare
 			 * @return is not equal?
 			 */
-			bool 											operator!=(const Value<T>& single) const noexcept {
+			bool operator!=(const Value<T>& single) const noexcept {
 				return !operator==(single);
 			}
 
@@ -142,7 +138,7 @@ namespace StormByte::Config::Item {
 			 * Gets the item value
 			 * @return item value
 			 */
-			T& 												operator*() noexcept {
+			T& operator*() noexcept {
 				return m_value;
 			}
 
@@ -150,7 +146,7 @@ namespace StormByte::Config::Item {
 			 * Gets the item value
 			 * @return item value
 			 */
-			const T& 										operator*() const noexcept {
+			const T& operator*() const noexcept {
 				return m_value;
 			}
 
@@ -159,13 +155,13 @@ namespace StormByte::Config::Item {
 			 * @param indent_level The indentation level for serialization.
 			 * @return The serialized string.
 			 */
-			std::string 									Serialize(const int& indent_level) const noexcept override;
+			std::string Serialize(const int& indent_level) const noexcept override;
 
 			/**
 			 * Clones the item
 			 * @return cloned item
 			 */
-			virtual PointerType 							Clone() const override {
+			virtual PointerType Clone() const override {
 				return MakePointer<Value<T>>(*this);
 			}
 
@@ -173,7 +169,7 @@ namespace StormByte::Config::Item {
 			 * Moves the item
 			 * @return moved item
 			 */
-			virtual PointerType 							Move() override {
+			virtual PointerType Move() override {
 				return MakePointer<Value<T>>(std::move(*this));
 			}
 

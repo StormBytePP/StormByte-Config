@@ -7,6 +7,7 @@
 #include <concepts>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 /**
  * @namespace Item
@@ -23,7 +24,8 @@ namespace StormByte::Config::Item {
 		Container,  ///< Container item.
 		Double,     ///< Double-precision floating-point item.
 		Integer,    ///< Integer item.
-		String      ///< String item.
+		String,     ///< String item.
+		Binary      ///< Binary data (stored as std::vector<std::byte>, text form is Base64 with b"..." prefix)
 	};
 
 	/**
@@ -39,18 +41,19 @@ namespace StormByte::Config::Item {
 			case Type::Comment:		return "Comment";
 			case Type::Bool:		return "Bool";
 			case Type::Container:	return "Container";
+			case Type::Binary:		return "Binary";
 			default:				return "Unknown";
 		}
 	}
 
 	/**
-	 * @enum Type
+	 * @enum CommentType
 	 * @brief Comment type
 	 */
 	enum class STORMBYTE_CONFIG_PUBLIC CommentType: char {
 		SingleLineBash = 2, 	///< Single line comment starting with # (bash style)
-		SingleLineC=5,		///< Single line comment starting with // (C++ style)
-		MultiLineC=8			///< Multi line comment starting with /* and ending with */ (C/C++ style)
+		SingleLineC = 5,		///< Single line comment starting with // (C++ style)
+		MultiLineC = 8			///< Multi line comment starting with /* and ending with */ (C/C++ style)
 	};
 
 	/**
@@ -68,7 +71,7 @@ namespace StormByte::Config::Item {
 	}
 
 	/**
-	 * @enum Type
+	 * @enum ContainerType
 	 * @brief Container type
 	 */
 	enum class STORMBYTE_CONFIG_PUBLIC ContainerType: char {
@@ -94,7 +97,7 @@ namespace StormByte::Config::Item {
 	 * @param start start character
 	 * @return Type Container type
 	 */
-	constexpr STORMBYTE_CONFIG_PUBLIC ContainerType TypeFromStartCharacter(const char& start) noexcept {
+	constexpr STORMBYTE_CONFIG_PUBLIC ContainerType TypeFromStartCharacter(const char& start) {
 		switch(start) {
 			case '{': 			return ContainerType::Group;
 			case '[': 			return ContainerType::List;
@@ -103,8 +106,11 @@ namespace StormByte::Config::Item {
 	}
 
 	template<typename T>
-    concept AllowedValueType = std::is_same_v<T, int> || 
-                          std::is_same_v<T, double> || 
-                          std::is_same_v<T, bool> || 
-                          std::is_same_v<T, std::string>;
+	concept AllowedValueType =
+		std::is_same_v<T, int> ||
+		std::is_same_v<T, double> ||
+		std::is_same_v<T, bool> ||
+		std::is_same_v<T, std::string> ||
+		std::is_same_v<T, std::vector<std::byte>>;
+
 }

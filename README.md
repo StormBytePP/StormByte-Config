@@ -12,7 +12,8 @@ StormByte is a comprehensive, cross-platform C++ library aimed at easing system 
 ## Features
 
 - **Configuration Management**: Provides an intuitive API for reading and writing configuration files.
-- **Serialization**: Specializations of `StormByte::Util::Serializable` for all items to enable serialization to raw buffers for network sending or binary writing.
+- **Serialization**: Specializations of `StormByte::Serializable` for all items to enable serialization to raw buffers for network sending or binary writing.
+- **Binary Data Support**: Native support for binary payloads using Base64 encoding in text form and raw bytes in binary serialization.
 
 ## Table of Contents
 
@@ -81,21 +82,21 @@ You can initialize the configuration from any `std::istream`, including `std::fs
 using namespace StormByte::Config;
 
 int main() {
-    // Initialize from std::fstream
-    Config config;
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
+	// Initialize from std::fstream
+	Config config;
+	std::ifstream file("config.cfg");
+	file >> config;
+	file.close();
 
-    // Initialize from std::cin
-    Config config2;
-    std::cin >> config2;
+	// Initialize from std::cin
+	Config config2;
+	std::cin >> config2;
 
-    // Initialize from another Config object
-    Config config3;
-    config2 >> config3;
+	// Initialize from another Config object
+	Config config3;
+	config2 >> config3;
 
-    return 0;
+	return 0;
 }
 ```
 
@@ -112,24 +113,24 @@ You can set pre and post read hooks using `std::function`. These hooks allow you
 using namespace StormByte::Config;
 
 void pre_read_hook(Item::Group& root) {
-    std::cout << "Pre-read hook executed. Current config has " << root.Size() << " items." << std::endl;
+	std::cout << "Pre-read hook executed. Current config has " << root.Size() << " items." << std::endl;
 }
 
 void post_read_hook(Item::Group& root) {
-    std::cout << "Post-read hook executed. Current config has " << root.Size() << " items." << std::endl;
+	std::cout << "Post-read hook executed. Current config has " << root.Size() << " items." << std::endl;
 }
 
 int main() {
-    Config config;
-    config.AddHookBeforeRead(pre_read_hook);
-    config.AddHookAfterRead(post_read_hook);
+	Config config;
+	config.AddHookBeforeRead(pre_read_hook);
+	config.AddHookAfterRead(post_read_hook);
 
-    // Read configuration (hooks will be called accordingly)
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
+	// Read configuration (hooks will be called accordingly)
+	std::ifstream file("config.cfg");
+	file >> config;
+	file.close();
 
-    return 0;
+	return 0;
 }
 ```
 
@@ -146,49 +147,28 @@ You can set the operation mode when an item already exists before adding a new o
 using namespace StormByte::Config;
 
 int main() {
-    Config config;
+	Config config;
 
-    // Set operation mode to replace existing items
-    config.OnExistingAction(OnExistingAction::Overwrite);
+	// Set operation mode to replace existing items
+	config.OnExistingAction(OnExistingAction::Overwrite);
 
-    // Read configuration
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
+	// Read configuration
+	std::ifstream file("config.cfg");
+	file >> config;
+	file.close();
 
-    return 0;
+	return 0;
 }
 ```
 
 #### Data Types
 
-The configuration supports various data types, including [string](#string), [integer](#integer), [double](#double), comments ([singleline](#singleline) and [multiline](#multiline)), and containers ([list](#list) and [group](#group)).
+The configuration supports various data types, including [string](#string), [integer](#integer), [double](#double), [boolean](#boolean), [binary](#binary), comments ([singleline](#singleline) and [multiline](#multiline)), and containers ([list](#list) and [group](#group)).
 
 ##### String
 
 ```plaintext
 username = "example_user"
-```
-
-##### Example
-
-```cpp
-#include <StormByte/config/config.hxx>
-#include <iostream>
-
-using namespace StormByte::Config;
-
-int main() {
-    Config config;
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
-
-    const Item::Base& username = config["username"];
-    std::cout << "Username: " << username.Value<std::string>() << std::endl;
-
-    return 0;
-}
 ```
 
 ##### Integer
@@ -197,53 +177,55 @@ int main() {
 timeout = 30
 ```
 
-##### Example
-
-```cpp
-#include <StormByte/config/config.hxx>
-#include <iostream>
-
-using namespace StormByte::Config;
-
-int main() {
-    Config config;
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
-
-    const Item::Base& timeout = config["timeout"];
-    std::cout << "Timeout: " << timeout.Value<int>() << std::endl;
-
-    return 0;
-}
-```
-
 ##### Double
 
 ```plaintext
 feature_timeout = 60.5
 ```
 
-##### Example
+##### Boolean
+
+```plaintext
+enabled = true
+debug = false
+```
+
+##### Binary
+
+Binary data is stored internally as `std::vector<std::byte>`.  
+In text form it is represented using Base64 encoding with the `b"..."` prefix.
+
+```plaintext
+payload = b"SGVsbG8gV29ybGQ="
+secret  = b"U2VjcmV0RGF0YQ=="
+```
+
+###### Example
 
 ```cpp
 #include <StormByte/config/config.hxx>
 #include <iostream>
+#include <vector>
 
 using namespace StormByte::Config;
 
 int main() {
-    Config config;
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
+	Config config;
+	std::ifstream file("config.cfg");
+	file >> config;
+	file.close();
 
-    const Item::Base& feature_timeout = config["feature_timeout"];
-    std::cout << "Feature Timeout: " << feature_timeout.Value<double>() << std::endl;
+	const auto& payload = config["payload"].Value<std::vector<std::byte>>();
 
-    return 0;
+	std::cout << "Payload size: " << payload.size() << " bytes" << std::endl;
+	// payload contains the raw binary data
+
+	return 0;
 }
 ```
+
+When serializing to **binary** format, the raw `std::vector<std::byte>` is stored (no Base64 overhead).  
+When serializing to **text**, it is automatically converted to Base64 with the `b"..."` prefix.
 
 ##### Comments
 
@@ -265,8 +247,8 @@ Multiline comments are enclosed between `/*` and `*/` (like C/C++ style comments
 ```plaintext
 # This is a single-line comment
 /**
- * This is a multiline comment
- */
+* This is a multiline comment
+*/
 // int = 66; # Which is disabled
 ```
 
@@ -282,104 +264,60 @@ Lists are sequences of values enclosed in square brackets `[]` separated by spac
 favorite_numbers = [3 14 42 "pi constant"]
 ```
 
-####### Example
-
-```cpp
-#include <StormByte/config/config.hxx>
-#include <iostream>
-
-using namespace StormByte::Config;
-
-int main() {
-    Config config;
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
-
-    const Item::List& favorite_numbers = config["favorite_numbers"].Value<List>();
-    std::cout << "Favorite Numbers: ";
-    for (const auto& number : favorite_numbers)
-		std::cout << (std::string)number << " ";
-    std::cout << std::endl;
-
-    return 0;
-}
-```
-
 ###### Group
 
 Groups are nested configurations that can contain other key-value pairs, groups, or lists.
 
 ```plaintext
 settings = {
-    username = "example_user"
-    timeout = 30
-}
-```
-
-####### Example
-
-```cpp
-#include <StormByte/config/config.hxx>
-#include <iostream>
-
-using namespace StormByte::Config;
-
-int main() {
-    Config config;
-    std::ifstream file("config.cfg");
-    file >> config;
-    file.close();
-
-    const Item::Base& username = config["settings/username"];
-    const Item::Base& timeout = config["settings/timeout"];
-    
-    std::cout << "Username: " << username.Value<std::string>() << std::endl;
-    std::cout << "Timeout: " << timeout.Value<int>() << std::endl;
-
-    return 0;
+	username = "example_user"
+	timeout = 30
 }
 ```
 
 #### Serialization
 
-The `Config` module supports serialization of configuration items to raw buffers, which can be useful for network transmission or binary storage. This is achieved through specializations of `StormByte::Util::Serializable`.
+The `Config` module supports serialization of configuration items to raw buffers, which can be useful for network transmission or binary storage. This is achieved through specializations of `StormByte::Serializable`.
 
 ##### Example: Serialize and Deserialize a Configuration
 
 ```cpp
 #include <StormByte/config/config.hxx>
-#include <StormByte/util/serializable.hxx>
+#include <StormByte/serializable.hxx>
 #include <fstream>
 #include <iostream>
 
 using namespace StormByte::Config;
 
 int main() {
-    // Create a configuration
-    Config config;
-    config["username"] = Item::Value<std::string>("username", "example_user");
-    config["timeout"] = Item::Value<int>("timeout", 30);
+	// Create a configuration
+	Config config;
+	config.Add(Item::Value<std::string>("username", "example_user"));
+	config.Add(Item::Value<int>("timeout", 30));
 
-    // Serialize the configuration to a buffer
-    StormByte::Util::Serializable<Config> serializable(config);
-    StormByte::Util::Buffer buffer = serializable.Serialize();
+	// Binary data example
+	std::vector<std::byte> secret = {std::byte{0x01}, std::byte{0x02}, std::byte{0x03}};
+	config.Add(Item::Value<std::vector<std::byte>>("secret", secret));
 
-    // Deserialize the configuration from the buffer
-    auto deserialized_config = StormByte::Util::Serializable<Config>::Deserialize(buffer);
-    if (!deserialized_config) {
-        std::cerr << "Failed to deserialize configuration: " << deserialized_config.error()->what() << std::endl;
-        return 1;
-    }
+	// Serialize the configuration to a buffer
+	StormByte::Serializable<Config> serializable(config);
+	std::vector<std::byte> buffer = serializable.Serialize();
 
-    // Access deserialized configuration items
-    const Item::Base& username = deserialized_config.value()["username"];
-    const Item::Base& timeout = deserialized_config.value()["timeout"];
-    
-    std::cout << "Username: " << username.Value<std::string>() << std::endl;
-    std::cout << "Timeout: " << timeout.Value<int>() << std::endl;
+	// Deserialize the configuration from the buffer
+	auto deserialized_config = StormByte::Serializable<Config>::Deserialize(buffer);
+	if (!deserialized_config) {
+		std::cerr << "Failed to deserialize configuration: " << deserialized_config.error()->what() << std::endl;
+		return 1;
+	}
 
-    return 0;
+	// Access deserialized configuration items
+	const Item::Base& username = deserialized_config.value()["username"];
+	const Item::Base& timeout = deserialized_config.value()["timeout"];
+	
+	std::cout << "Username: " << username.Value<std::string>() << std::endl;
+	std::cout << "Timeout: " << timeout.Value<int>() << std::endl;
+
+	return 0;
 }
 ```
 
@@ -387,8 +325,8 @@ int main() {
 
 There are two options for sharing the configuration:
 
-1. **Human-readable**: Share the configuration as a human-readable text file.
-2. **Binary serialized**: Serialize the configuration to a binary format for network transmission or binary storage.
+1. **Human-readable**: Share the configuration as a human-readable text file (binary data appears as Base64 with `b"..."`).
+2. **Binary serialized**: Serialize the configuration to a binary format for network transmission or binary storage (binary data is stored as raw bytes).
 
 ## Contributing
 

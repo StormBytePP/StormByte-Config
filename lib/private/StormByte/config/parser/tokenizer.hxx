@@ -13,6 +13,7 @@
  * @brief Configuration file parser internals.
  */
 namespace StormByte::Config::Parser {
+
 	/**
 	 * @enum TokenType
 	 * @brief Types of tokens produced by the Tokenizer.
@@ -20,6 +21,7 @@ namespace StormByte::Config::Parser {
 	enum class TokenType {
 		Identifier,     ///< Item name (left side of '=')
 		String,         ///< Quoted string value
+		Binary,         ///< Binary data represented as Base64 with b"..." prefix
 		Integer,        ///< Integer number
 		Double,         ///< Floating-point number
 		Bool,           ///< true / false
@@ -38,10 +40,10 @@ namespace StormByte::Config::Parser {
 	 * @brief A single lexical token.
 	 */
 	struct Token {
-		TokenType       type        = TokenType::Unknown;   ///< Token type
+		TokenType       type         = TokenType::Unknown;  ///< Token type
 		std::string     value;                              ///< Lexeme / content
 		CommentType     comment_type = CommentType::None;   ///< Only valid when type == Comment
-		unsigned int    line        = 1;                    ///< Line number where the token starts
+		unsigned int    line         = 1;                   ///< Line number where the token starts
 	};
 
 	/**
@@ -92,6 +94,7 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Returns the current line number (1-based).
+			 * @return Current line number.
 			 */
 			unsigned int CurrentLine() const noexcept { return m_line; }
 
@@ -106,9 +109,19 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Reads a quoted string (handles escapes).
-			 * @return Token of type String or error via Unexpected.
+			 * @return Token of type String or an error.
 			 */
 			Expected<Token, ParseError> ReadString();
+
+			/**
+			 * @brief Reads a binary literal (b"...").
+			 *
+			 * The content inside the quotes is expected to be Base64.
+			 * The actual Base64 decoding is performed later by the Parser.
+			 *
+			 * @return Token of type Binary or an error.
+			 */
+			Expected<Token, ParseError> ReadBinary();
 
 			/**
 			 * @brief Reads a number (integer or double).
@@ -131,7 +144,7 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Reads a multi-line comment (/* ... *​/).
-			 * @return Token of type Comment or ParseError if unclosed.
+			 * @return Token of type Comment or a ParseError if unclosed.
 			 */
 			Expected<Token, ParseError> ReadMultiLineComment();
 	};

@@ -1,30 +1,54 @@
-#include <StormByte/config/item/serialize/base.hxx>
 #include <StormByte/config/item/value.hxx>
+#include <StormByte/base64.hxx>
+#include <StormByte/string.hxx>
 
 #include <string_view>
 
 namespace StormByte::Config::Item {
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::string Value<std::string>::Serialize(const int& indent_level) const noexcept {
+	// ---------------------------------------------------------------------
+	// std::string
+	// ---------------------------------------------------------------------
+	template<>
+	std::string STORMBYTE_CONFIG_PUBLIC Value<std::string>::Serialize(const int& indent_level) const noexcept {
 		return Base::Serialize(indent_level) + "\"" + m_value + "\"";
 	}
 	template class Value<std::string>;
 
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::string Value<int>::Serialize(const int& indent_level) const noexcept {
+	// ---------------------------------------------------------------------
+	// int
+	// ---------------------------------------------------------------------
+	template<>
+	std::string STORMBYTE_CONFIG_PUBLIC Value<int>::Serialize(const int& indent_level) const noexcept {
 		return Base::Serialize(indent_level) + std::to_string(m_value);
 	}
 	template class Value<int>;
 
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::string Value<double>::Serialize(const int& indent_level) const noexcept {
+	// ---------------------------------------------------------------------
+	// double
+	// ---------------------------------------------------------------------
+	template<>
+	std::string STORMBYTE_CONFIG_PUBLIC Value<double>::Serialize(const int& indent_level) const noexcept {
 		return Base::Serialize(indent_level) + std::to_string(m_value);
 	}
 	template class Value<double>;
 
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::string Value<bool>::Serialize(const int& indent_level) const noexcept {
+	// ---------------------------------------------------------------------
+	// bool
+	// ---------------------------------------------------------------------
+	template<>
+	std::string STORMBYTE_CONFIG_PUBLIC Value<bool>::Serialize(const int& indent_level) const noexcept {
 		return Base::Serialize(indent_level) + (m_value ? "true" : "false");
 	}
 	template class Value<bool>;
+
+	// ---------------------------------------------------------------------
+	// Binary (std::vector<std::byte>)
+	// ---------------------------------------------------------------------
+	template<>
+	std::string STORMBYTE_CONFIG_PUBLIC Value<std::vector<std::byte>>::Serialize(const int& indent_level) const noexcept {
+		// Convert binary data to Base64 and wrap it with b"..."
+		std::string base64 = StormByte::Base64Encode(m_value);
+		return Base::Serialize(indent_level) + "b\"" + base64 + "\"";
+	}
+	template class Value<std::vector<std::byte>>;
 }

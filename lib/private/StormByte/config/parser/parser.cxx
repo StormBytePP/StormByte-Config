@@ -1,4 +1,5 @@
 #include <StormByte/config/parser/parser.hxx>
+#include <StormByte/base64.hxx>
 #include <sstream>
 
 using namespace StormByte::Config;
@@ -105,6 +106,16 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 			case TokenType::String:
 				item_res = Item::Base::MakePointer<Item::Value<std::string>>(std::move(token.value));
 				break;
+
+			case TokenType::Binary: {
+				try {
+					auto bytes = StormByte::Base64Decode(token.value);
+					item_res = Item::Base::MakePointer<Item::Value<std::vector<std::byte>>>(std::move(bytes));
+				} catch (const StormByte::Base64Error& ex) {
+					return Unexpected<ParseError>("Invalid Base64 data on line {}: {}", token.line, ex.what());
+				}
+				break;
+			}
 
 			case TokenType::Integer: {
 				try {

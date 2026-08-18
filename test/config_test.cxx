@@ -31,12 +31,12 @@ int test_comment_types() {
 
 int test_add_and_lookup() {
 	int result = 0;
-    Config config;
+	Config config;
 
-    // Add Integer and String items
+	// Add Integer and String items
 	// Template automatic deduction
-    config.Add(Item::Value("TestInt", 42));
-    config.Add(Item::Value("TestStr", "Hello, World!"));
+	config.Add(Item::Value("TestInt", 42));
+	config.Add(Item::Value("TestStr", "Hello, World!"));
 
 	try {
 		// Lookup and validate items
@@ -51,17 +51,17 @@ int test_add_and_lookup() {
 		result = 1;
 	}
 
-    RETURN_TEST("test_add_and_lookup", result);
+	RETURN_TEST("test_add_and_lookup", result);
 }
 
 int test_write_and_read() {
 	int result = 0;
-    const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
-    std::string config_content = 
-        "TestInt = 42\n"
-        "TestStr = \"Hello, World!\"\n";
+	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	std::string config_content = 
+		"TestInt = 42\n"
+		"TestStr = \"Hello, World!\"\n";
 
-    Config config;
+	Config config;
 
 	try {
 		// Read from string
@@ -97,13 +97,13 @@ int test_write_and_read() {
 		result = 1;
 	}
 
-    std::remove(temp_file.string().c_str());
-    RETURN_TEST("test_write_and_read", result);
+	std::remove(temp_file.string().c_str());
+	RETURN_TEST("test_write_and_read", result);
 }
 
 int test_nested_groups() {
 	int result = 0;
-    Config config;
+	Config config;
 
 	try {
 		// Create nested groups
@@ -126,12 +126,12 @@ int test_nested_groups() {
 		result = 1;
 	}
 
-    RETURN_TEST("test_nested_groups", result);
+	RETURN_TEST("test_nested_groups", result);
 }
 
 int test_add_remove_group() {
 	int result = 0;
-    Config config;
+	Config config;
 
 	try {
 		// Add group and items
@@ -152,21 +152,21 @@ int test_add_remove_group() {
 		result = 0;
 	}
 
-    RETURN_TEST("test_add_remove_group", result);
+	RETURN_TEST("test_add_remove_group", result);
 }
 
 int test_write_nested_groups() {
 	int result = 0;
-    const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
-    std::string config_content = 
-        "Group1 = {\n"
-        "    Group2 = {\n"
-        "        SubTestInt = 99\n"
-        "        SubTestStr = \"Sub Hello\"\n"
-        "    }\n"
-        "}\n";
+	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	std::string config_content = 
+		"Group1 = {\n"
+		"    Group2 = {\n"
+		"        SubTestInt = 99\n"
+		"        SubTestStr = \"Sub Hello\"\n"
+		"    }\n"
+		"}\n";
 
-    Config config;
+	Config config;
 
 	try {
 		// Read from string
@@ -202,14 +202,14 @@ int test_write_nested_groups() {
 		result = 1;
 	}
 
-    std::remove(temp_file.string().c_str());
-    RETURN_TEST("test_write_nested_groups", result);
+	std::remove(temp_file.string().c_str());
+	RETURN_TEST("test_write_nested_groups", result);
 }
 
 int test_complex_config_creation() {
 	int result = 0;
-    const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
-    Config config;
+	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	Config config;
 
 	try {
 		// Create a complex configuration
@@ -251,8 +251,8 @@ int test_complex_config_creation() {
 		result = 1;
 	}
 
-    std::remove(temp_file.string().c_str());
-    RETURN_TEST("test_write_nested_groups", result);
+	std::remove(temp_file.string().c_str());
+	RETURN_TEST("test_write_nested_groups", result);
 }
 
 int bad_config1() {
@@ -394,7 +394,7 @@ int commented_config() {
 	// 	result = 1;
 	// }
 
-    std::remove(temp_file.string().c_str());
+	std::remove(temp_file.string().c_str());
 
 	RETURN_TEST("commented_config", result);
 }
@@ -426,29 +426,29 @@ int good_string_conf() {
 
 int test_empty_string() {
 	int result = 0;
-    Config config;
+	Config config;
 
-    config.Add(Item::Value("EmptyString", ""));
+	config.Add(Item::Value("EmptyString", ""));
 
 	try {
-    	const Item::Base& lookup_str = config["EmptyString"];
-    	ASSERT_EQUAL("test_empty_string", "", lookup_str.Value<std::string>());
+		const Item::Base& lookup_str = config["EmptyString"];
+		ASSERT_EQUAL("test_empty_string", "", lookup_str.Value<std::string>());
 	}
 	catch(const StormByte::Config::Exception& e) {
 		std::cerr << e.what() << std::endl;
 		result = 1;
 	}
 
-    RETURN_TEST("test_empty_string", result);
+	RETURN_TEST("test_empty_string", result);
 }
 
 int test_integer_boundaries() {
 	int result = 0;
-    Config config;
+	Config config;
 
-    config.Add(Item::Value("MaxInt", INT_MAX));
+	config.Add(Item::Value("MaxInt", INT_MAX));
 
-    config.Add(Item::Value("MinInt", INT_MIN));
+	config.Add(Item::Value("MinInt", INT_MIN));
 
 	try {
 		const Item::Base& lookup_max_int = config["MaxInt"];
@@ -462,30 +462,30 @@ int test_integer_boundaries() {
 		result = 1;
 	}
 
-    RETURN_TEST("test_integer_boundaries", result);
+	RETURN_TEST("test_integer_boundaries", result);
 }
 
 int test_special_characters_in_string() {
 	int result = 0;
-    Config config;
+	Config config;
 
-    config.Add(Item::Value("SpecialChars", "Line1\nLine2\tTabbed"));
+	config.Add(Item::Value("SpecialChars", "Line1\nLine2\tTabbed"));
 
 	try {
-    	const Item::Base& lookup_str = config["SpecialChars"];
-    	ASSERT_EQUAL("test_special_characters_in_string", "Line1\nLine2\tTabbed", lookup_str.Value<std::string>());
+		const Item::Base& lookup_str = config["SpecialChars"];
+		ASSERT_EQUAL("test_special_characters_in_string", "Line1\nLine2\tTabbed", lookup_str.Value<std::string>());
 	}
 	catch(const StormByte::Config::Exception& e) {
 		std::cerr << e.what() << std::endl;
 		result = 1;
 	}
 
-    RETURN_TEST("test_special_characters_in_string", result);
+	RETURN_TEST("test_special_characters_in_string", result);
 }
 
 int test_deeply_nested_groups() {
 	int result = 0;
-    Config config;
+	Config config;
 
 	try {
 		Item::Group& group1 = config.Add(Item::Group("Group1")).Value<Item::Group>();
@@ -503,73 +503,73 @@ int test_deeply_nested_groups() {
 		result = 1;
 	}
 
-    RETURN_TEST("test_deeply_nested_groups", result);
+	RETURN_TEST("test_deeply_nested_groups", result);
 }
 
 int test_invalid_syntax() {
 	int result = 0;
-    Config config;
-    std::string invalid_config = "Invalid = { Unclosed }";
+	Config config;
+	std::string invalid_config = "Invalid = { Unclosed }";
 
-    try {
-        config << invalid_config;
-        result = 1;
-    } catch (const StormByte::Config::ParseError&) {
-        // Expected exception
-    }
+	try {
+		config << invalid_config;
+		result = 1;
+	} catch (const StormByte::Config::ParseError&) {
+		// Expected exception
+	}
 
-    RETURN_TEST("test_invalid_syntax", result);
+	RETURN_TEST("test_invalid_syntax", result);
 }
 
 int test_special_characters_string() {
 	int result = 0;
-    Config cfg;
-    try {
-        std::fstream file;
+	Config cfg;
+	try {
+		std::fstream file;
 		file.open(CurrentFileDirectory / "files" / "special_characters_conf.conf", std::ios::in);
 		cfg << file;
 		file.close();
-        const Item::Base& lookup_special = cfg["special_string"];
-        ASSERT_EQUAL("test_special_characters_string", "This is a test string with special characters: \n, \t, \\", lookup_special.Value<std::string>());
-    } catch (const StormByte::Config::Exception& ex) {
+		const Item::Base& lookup_special = cfg["special_string"];
+		ASSERT_EQUAL("test_special_characters_string", "This is a test string with special characters: \n, \t, \\", lookup_special.Value<std::string>());
+	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
-        result = 1;
-    }
+		result = 1;
+	}
 
 	RETURN_TEST("test_special_characters_string", result);
 }
 
 int test_long_string() {
 	int result = 0;
-    Config cfg;
-    try {
-        std::fstream file;
+	Config cfg;
+	try {
+		std::fstream file;
 		file.open(CurrentFileDirectory / "files" / "long_string_conf.conf", std::ios::in);
 		cfg << file;
 		file.close();
-        const Item::Base& lookup_long = cfg["long_string"];
-        ASSERT_EQUAL("test_long_string", std::string(1000, 'a'), lookup_long.Value<std::string>());
-    } catch (const StormByte::Config::Exception& ex) {
+		const Item::Base& lookup_long = cfg["long_string"];
+		ASSERT_EQUAL("test_long_string", std::string(1000, 'a'), lookup_long.Value<std::string>());
+	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
-        result = 1;
-    }
+		result = 1;
+	}
 
 	RETURN_TEST("test_long_string", result);
 }
 
 int test_unmatched_braces() {
 	int result = 0;
-    Config cfg;
-    try {
-        std::fstream file;
+	Config cfg;
+	try {
+		std::fstream file;
 		file.open(CurrentFileDirectory / "files" / "unmatched_braces.conf", std::ios::in);
 		cfg << file;
 		file.close();
-        result = 1;
-    } catch (const StormByte::Config::Exception&) {
-        // Expected
-    }
-    
+		result = 1;
+	} catch (const StormByte::Config::Exception&) {
+		// Expected
+	}
+	
 	RETURN_TEST("test_unmatched_braces", result);
 }
 
@@ -582,10 +582,10 @@ int good_boolean_config1() {
 		cfg << file;
 		file.close();
 		const Item::Base& lookup_enable_feature = cfg["settings/enable_feature"];
-        ASSERT_EQUAL("good_boolean_config1", true, lookup_enable_feature.Value<bool>());
+		ASSERT_EQUAL("good_boolean_config1", true, lookup_enable_feature.Value<bool>());
 
 		const Item::Base& lookup_enable_extra = cfg["settings/enable_extra"];
-        ASSERT_EQUAL("good_boolean_config1", false, lookup_enable_extra.Value<bool>());
+		ASSERT_EQUAL("good_boolean_config1", false, lookup_enable_extra.Value<bool>());
 	}
 	catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
@@ -630,7 +630,7 @@ int copy_configuration() {
 		// Both should be found
 		const Item::Base& lookup_enable_feature_1 = cfg1["settings/enable_feature"];
 		const Item::Base& lookup_enable_feature_2 = cfg2["settings/enable_feature"];
-        ASSERT_EQUAL("good_boolean_config1", lookup_enable_feature_1.Value<bool>(), lookup_enable_feature_2.Value<bool>());
+		ASSERT_EQUAL("good_boolean_config1", lookup_enable_feature_1.Value<bool>(), lookup_enable_feature_2.Value<bool>());
 	}
 	catch(const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
@@ -665,7 +665,7 @@ int move_configuration() {
 	}
 	try {
 		const Item::Base& lookup_enable_feature = cfg2["settings/enable_feature"];
-        ASSERT_EQUAL("move_configuration", true, lookup_enable_feature.Value<bool>());
+		ASSERT_EQUAL("move_configuration", true, lookup_enable_feature.Value<bool>());
 	}
 	catch(const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
@@ -829,17 +829,17 @@ int config_list_test() {
 	list2.Add(Item::Value(11));
 
 	const std::string expected = "testList = [\n"
-    "\t#List comment\n"
-    "\t66\n"
-    "\t\"Test string\"\n"
+	"\t#List comment\n"
+	"\t66\n"
+	"\t\"Test string\"\n"
 	"]\n"
 	"testGroup = {\n"
-    "\ttestInt = 99\n"
-    "\ttestString2 = \"Group String\"\n"
-    "\ttestList2 = [\n"
-    "\t\t#List comment 2\n"
-    "\t\t11\n"
-    "\t]\n"
+	"\ttestInt = 99\n"
+	"\ttestString2 = \"Group String\"\n"
+	"\ttestList2 = [\n"
+	"\t\t#List comment 2\n"
+	"\t\t11\n"
+	"\t]\n"
 	"}\n";
 
 	Config cfg2;
@@ -950,7 +950,7 @@ int good_comment_multi_conf1() {
 		"# This is a comment\n"
 		"testInteger = 6\n"
 		"/*\n"
- 		" * This is a block comment\n"
+		" * This is a block comment\n"
 		" */\n"
 		"testString = \"test\"\n"
 		"/* This is a comment */\n"
@@ -1052,9 +1052,191 @@ int test_on_failure_hook() {
 	RETURN_TEST("test_on_failure_hook", result);
 }
 
+// ===================== Binary tests =====================
+
+int good_binary_simple() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "good_binary_simple.conf", std::ios::in);
+		cfg << file;
+		file.close();
+
+		const auto& data = cfg["data"].Value<std::vector<std::byte>>();
+		std::string recovered(reinterpret_cast<const char*>(data.data()), data.size());
+		ASSERT_EQUAL("good_binary_simple", "Hello", recovered);
+	}
+	catch (const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		result = 1;
+	}
+	RETURN_TEST("good_binary_simple", result);
+}
+
+int good_binary_mixed() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "good_binary_mixed.conf", std::ios::in);
+		cfg << file;
+		file.close();
+
+		ASSERT_EQUAL("good_binary_mixed", "StormByte", cfg["name"].Value<std::string>());
+		ASSERT_EQUAL("good_binary_mixed", 1.2, cfg["version"].Value<double>());
+		ASSERT_EQUAL("good_binary_mixed", true, cfg["enabled"].Value<bool>());
+
+		const auto& payload = cfg["payload"].Value<std::vector<std::byte>>();
+		std::string recovered(reinterpret_cast<const char*>(payload.data()), payload.size());
+		ASSERT_EQUAL("good_binary_mixed", "Hello World", recovered);
+
+		const auto& binary_key = cfg["settings/binary_key"].Value<std::vector<std::byte>>();
+		std::string recovered2(reinterpret_cast<const char*>(binary_key.data()), binary_key.size());
+		ASSERT_EQUAL("good_binary_mixed", "This is a test", recovered2);
+
+		const auto& list = cfg["list_of_things"].Value<Item::List>();
+		ASSERT_EQUAL("good_binary_mixed", "first", list[0].Value<std::string>());
+
+		const auto& second = list[1].Value<std::vector<std::byte>>();
+		std::string recovered3(reinterpret_cast<const char*>(second.data()), second.size());
+		ASSERT_EQUAL("good_binary_mixed", "second", recovered3);
+
+		ASSERT_EQUAL("good_binary_mixed", 42, list[2].Value<int>());
+	}
+	catch (const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		result = 1;
+	}
+	RETURN_TEST("good_binary_mixed", result);
+}
+
+int good_binary_empty() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "good_binary_empty.conf", std::ios::in);
+		cfg << file;
+		file.close();
+
+		const auto& data = cfg["empty_data"].Value<std::vector<std::byte>>();
+		ASSERT_EQUAL("good_binary_empty", 0u, data.size());
+	}
+	catch (const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		result = 1;
+	}
+	RETURN_TEST("good_binary_empty", result);
+}
+
+int good_binary_nested() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "good_binary_nested.conf", std::ios::in);
+		cfg << file;
+		file.close();
+
+		const auto& secret = cfg["root/level1/level2/secret"].Value<std::vector<std::byte>>();
+		std::string recovered(reinterpret_cast<const char*>(secret.data()), secret.size());
+		ASSERT_EQUAL("good_binary_nested", "SecretData", recovered);
+	}
+	catch (const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		result = 1;
+	}
+	RETURN_TEST("good_binary_nested", result);
+}
+
+int bad_binary_invalid_base64() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "bad_binary_invalid_base64.conf", std::ios::in);
+		cfg << file;
+		file.close();
+		result = 1; // Should have thrown
+	}
+	catch (const StormByte::Config::Exception&) {
+		// Expected
+	}
+	RETURN_TEST("bad_binary_invalid_base64", result);
+}
+
+int bad_binary_unclosed() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "bad_binary_unclosed.conf", std::ios::in);
+		cfg << file;
+		file.close();
+		result = 1;
+	}
+	catch (const StormByte::Config::Exception&) {
+		// Expected
+	}
+	RETURN_TEST("bad_binary_unclosed", result);
+}
+
+int bad_binary_missing_quote() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "bad_binary_missing_quote.conf", std::ios::in);
+		cfg << file;
+		file.close();
+		result = 1;
+	}
+	catch (const StormByte::Config::Exception&) {
+		// Expected
+	}
+	RETURN_TEST("bad_binary_missing_quote", result);
+}
+
+int bad_binary_wrong_prefix() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "bad_binary_wrong_prefix.conf", std::ios::in);
+		cfg << file;
+		file.close();
+
+		// This one is actually valid as a normal string
+		const auto& data = cfg["data"].Value<std::string>();
+		ASSERT_EQUAL("bad_binary_wrong_prefix", "SGVsbG8=", data);
+	}
+	catch (const StormByte::Config::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		result = 1;
+	}
+	RETURN_TEST("bad_binary_wrong_prefix", result);
+}
+
+int bad_binary_in_list_unclosed() {
+	int result = 0;
+	Config cfg;
+	try {
+		std::fstream file;
+		file.open(CurrentFileDirectory / "files" / "bad_binary_in_list_unclosed.conf", std::ios::in);
+		cfg << file;
+		file.close();
+		result = 1;
+	}
+	catch (const StormByte::Config::Exception&) {
+		// Expected
+	}
+	RETURN_TEST("bad_binary_in_list_unclosed", result);
+}
+
 int main() {
-    int result = 0;
-    try {
+	int result = 0;
+	try {
 		result += test_comment_types();
 		result += test_add_and_lookup();
 		result += test_write_and_read();
@@ -1098,14 +1280,24 @@ int main() {
 		result += size_and_count();
 		result += all_comment_types_test();
 		result += test_on_failure_hook();
-    } catch (const StormByte::Config::Exception& ex) {
-        std::cerr << ex.what() << std::endl;
-        result++;
-    }
-    if (result == 0) {
-        std::cout << "All tests passed!" << std::endl;
-    } else {
-        std::cout << result << " tests failed." << std::endl;
-    }
-    return result;
+
+		result += good_binary_simple();
+		result += good_binary_mixed();
+		result += good_binary_empty();
+		result += good_binary_nested();
+		result += bad_binary_invalid_base64();
+		result += bad_binary_unclosed();
+		result += bad_binary_missing_quote();
+		result += bad_binary_wrong_prefix();
+		result += bad_binary_in_list_unclosed();
+	} catch (const StormByte::Config::Exception& ex) {
+		std::cerr << ex.what() << std::endl;
+		result++;
+	}
+	if (result == 0) {
+		std::cout << "All tests passed!" << std::endl;
+	} else {
+		std::cout << result << " tests failed." << std::endl;
+	}
+	return result;
 }
