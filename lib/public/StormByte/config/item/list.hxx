@@ -96,6 +96,6 @@ namespace StormByte::Config::Item {
 			 * @param onexisting action to take if item name already exists
 			 * @throw ItemNameAlreadyExists if item name already exists
 			 */
-			Base::PointerType									BeforeAdditionActions(Base::PointerType item, const OnExistingAction onexisting) override;
+			Base::PointerType 									BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) override;
 	};
 }

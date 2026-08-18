@@ -1,3 +1,7 @@
+//==============================================================================
+// FILE: test/config_test.cxx
+//==============================================================================
+
 #include <StormByte/config/config.hxx>
 #include <StormByte/system.hxx>
 #include <StormByte/test_handlers.h>
@@ -20,7 +24,6 @@ int test_comment_types() {
 		"and ends here */"
 	);
 
-	// Validate comments
 	ASSERT_EQUAL("test_comment_types", Item::TypeToString(Item::Type::Comment), singleline.TypeToString());
 	ASSERT_EQUAL("test_comment_types", Item::TypeToString(Item::CommentType::SingleLineBash), singleline.CommentTypeToString());
 	ASSERT_EQUAL("test_comment_types", Item::TypeToString(Item::Type::Comment), multiline.TypeToString());
@@ -33,13 +36,10 @@ int test_add_and_lookup() {
 	int result = 0;
 	Config config;
 
-	// Add Integer and String items
-	// Template automatic deduction
 	config.Add(Item::Value("TestInt", 42));
 	config.Add(Item::Value("TestStr", "Hello, World!"));
 
 	try {
-		// Lookup and validate items
 		const Item::Base& lookup_int = config["TestInt"];
 		ASSERT_EQUAL("test_add_and_lookup", 42, lookup_int.Value<int>());
 
@@ -64,23 +64,19 @@ int test_write_and_read() {
 	Config config;
 
 	try {
-		// Read from string
 		config << config_content;
 
-		// Validate items
 		const Item::Base& int_item = config["TestInt"];
 		ASSERT_EQUAL("test_write_and_read", 42, int_item.Value<int>());
 
 		const Item::Base& str_item = config["TestStr"];
 		ASSERT_EQUAL("test_write_and_read", "Hello, World!", str_item.Value<std::string>());
 
-		// Write to file
 		std::fstream file;
 		file.open(temp_file, std::ios::out);
 		file << config;
 		file.close();
 
-		// Read again from file to ensure correctness
 		file.open(temp_file, std::ios::in);
 		Config config2;
 		file >> config2;
@@ -106,15 +102,12 @@ int test_nested_groups() {
 	Config config;
 
 	try {
-		// Create nested groups
 		Item::Base& group1 = config.Add(Item::Group("Group1"));
 		Item::Base& group2 = group1.Value<Item::Container>().Add(Item::Group("Group2"));
 
-		// Add items to sub-group
 		group2.Value<Item::Container>().Add(Item::Value("SubTestInt", 99));
 		group2.Value<Item::Container>().Add(Item::Value("SubTestStr", "Sub Hello"));
 
-		// Lookup and validate items
 		const Item::Base& lookup_int = config["Group1/Group2/SubTestInt"];
 		ASSERT_EQUAL("test_nested_groups", 99, lookup_int.Value<int>());
 
@@ -134,21 +127,16 @@ int test_add_remove_group() {
 	Config config;
 
 	try {
-		// Add group and items
 		Item::Group group("TestGroup");
 		group.Add(Item::Value("GroupInt", 55));
 		Item::Base& group_item = config.Add(group);
 
-		// Remove the item from the group
 		group_item.Value<Item::Container>().Remove("GroupInt");
 
-		// Validate removal
 		config["TestGroup/GroupInt"];
-		// Item not removed properly
 		result = 1;
 	}
 	catch(const StormByte::Config::Exception&) {
-		// Expected exception
 		result = 0;
 	}
 
@@ -169,23 +157,19 @@ int test_write_nested_groups() {
 	Config config;
 
 	try {
-		// Read from string
 		config_content >> config;
 
-		// Validate items
 		const Item::Base& lookup_int = config["Group1/Group2/SubTestInt"];
 		ASSERT_EQUAL("test_write_nested_groups", 99, lookup_int.Value<int>());
 
 		const Item::Base& lookup_str = config["Group1/Group2/SubTestStr"];
 		ASSERT_EQUAL("test_write_nested_groups", "Sub Hello", lookup_str.Value<std::string>());
 
-		// Write to file
 		std::fstream file;
 		file.open(temp_file, std::ios::out);
 		file << config;
 		file.close();
 
-		// Read again from file to ensure correctness
 		file.open(temp_file, std::ios::in);
 		Config config2;
 		config2 << file;
@@ -212,7 +196,6 @@ int test_complex_config_creation() {
 	Config config;
 
 	try {
-		// Create a complex configuration
 		Item::Group& group1 = config.Add(Item::Group("Group1")).Value<Item::Group>();
 		Item::Group& group2 = group1.Add(Item::Group("Group2")).Value<Item::Group>();
 
@@ -222,13 +205,11 @@ int test_complex_config_creation() {
 		Item::Group& group3 = config.Add(Item::Group("Group3")).Value<Item::Group>();
 		group3.Add(Item::Value("IntItem2", 456));
 
-		// Write to a temporary file
 		std::fstream file;
 		file.open(temp_file, std::ios::out);
 		file << config;
 		file.close();
 
-		// Validate the written content
 		std::ifstream temp_file_stream(temp_file);
 		std::stringstream buffer;
 		buffer << temp_file_stream.rdbuf();
@@ -252,7 +233,7 @@ int test_complex_config_creation() {
 	}
 
 	std::remove(temp_file.string().c_str());
-	RETURN_TEST("test_write_nested_groups", result);
+	RETURN_TEST("test_complex_config_creation", result);
 }
 
 int bad_config1() {
@@ -264,10 +245,8 @@ int bad_config1() {
 		cfg << file;
 		file.close();
 		result = 1;
-		std::cout << "No exception here" << std::endl;
 	}
 	catch(const StormByte::Config::Exception&) {
-		//Expected
 		result = 0;
 	}
 	
@@ -285,7 +264,7 @@ int bad_config2() {
 		result = 1;
 	}
 	catch(const StormByte::Config::Exception&) {
-		//Expected
+		// Expected
 	}
 	
 	RETURN_TEST("bad_config2", result);
@@ -302,7 +281,6 @@ int bad_config3() {
 		result = 1;
 	}
 	catch(const StormByte::Config::Exception&) {
-		//Expected
 		result = 0;
 	}
 	
@@ -372,30 +350,22 @@ int commented_config() {
 		"}\n"
 		"# Ending comment\n";
 
-	//try {
-		config << config_str;
-		std::fstream file;
-		file.open(temp_file, std::ios::out);
-		config >> file;
-		file.close();
+	config << config_str;
+	std::fstream file;
+	file.open(temp_file, std::ios::out);
+	config >> file;
+	file.close();
 
-		const Item::Base& test_string = config["test_group/test_string"];
-		ASSERT_EQUAL("commented_config", "# But this is not a comment", test_string.Value<std::string>());
+	const Item::Base& test_string = config["test_group/test_string"];
+	ASSERT_EQUAL("commented_config", "# But this is not a comment", test_string.Value<std::string>());
 
-		// Validate the written content
-		std::ifstream temp_file_stream(temp_file);
-		std::stringstream buffer;
-		buffer << temp_file_stream.rdbuf();
+	std::ifstream temp_file_stream(temp_file);
+	std::stringstream buffer;
+	buffer << temp_file_stream.rdbuf();
 
-		ASSERT_EQUAL("commented_config", expected_str, buffer.str());
-	// }
-	// catch(const StormByte::Config::Exception& e) {
-	// 	std::cerr << e.what() << std::endl;
-	// 	result = 1;
-	// }
+	ASSERT_EQUAL("commented_config", expected_str, buffer.str());
 
 	std::remove(temp_file.string().c_str());
-
 	RETURN_TEST("commented_config", result);
 }
 
@@ -447,7 +417,6 @@ int test_integer_boundaries() {
 	Config config;
 
 	config.Add(Item::Value("MaxInt", INT_MAX));
-
 	config.Add(Item::Value("MinInt", INT_MIN));
 
 	try {
@@ -515,7 +484,7 @@ int test_invalid_syntax() {
 		config << invalid_config;
 		result = 1;
 	} catch (const StormByte::Config::ParseError&) {
-		// Expected exception
+		// Expected
 	}
 
 	RETURN_TEST("test_invalid_syntax", result);
@@ -606,7 +575,7 @@ int bad_boolean_config1() {
 		result = 1;
 	}
 	catch (const StormByte::Config::Exception&) {
-		// Expected exception
+		// Expected
 	}
 	
 	RETURN_TEST("bad_boolean_config1", result);
@@ -627,10 +596,9 @@ int copy_configuration() {
 	}
 
 	try {
-		// Both should be found
 		const Item::Base& lookup_enable_feature_1 = cfg1["settings/enable_feature"];
 		const Item::Base& lookup_enable_feature_2 = cfg2["settings/enable_feature"];
-		ASSERT_EQUAL("good_boolean_config1", lookup_enable_feature_1.Value<bool>(), lookup_enable_feature_2.Value<bool>());
+		ASSERT_EQUAL("copy_configuration", lookup_enable_feature_1.Value<bool>(), lookup_enable_feature_2.Value<bool>());
 	}
 	catch(const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
@@ -655,7 +623,6 @@ int move_configuration() {
 		RETURN_TEST("move_configuration", 1);
 	}
 
-	// First should fail, second should be found
 	try {
 		cfg1["settings/enable_feature"];
 		RETURN_TEST("move_configuration", 1);
@@ -697,7 +664,6 @@ int on_name_clash_keep_existing() {
 	cfg.Add(Item::Value("testItem", true));
 	try {
 		cfg.Add(Item::Value("testItem", 666));
-		// Should not throw because action was set to keep existing
 		const Item::Base& item = cfg["testItem"];
 		ASSERT_EQUAL("on_name_clash_keep_existing", true, item.Value<bool>());
 	}
@@ -717,7 +683,7 @@ int on_name_clash_replace() {
 	try {
 		cfg.Add(Item::Value("testItem", 66));
 		const Item::Base& item = cfg["testItem"];
-		ASSERT_EQUAL("on_name_clash_ignore", 66, item.Value<int>());
+		ASSERT_EQUAL("on_name_clash_replace", 66, item.Value<int>());
 	}
 	catch(const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
@@ -782,11 +748,8 @@ int config_remove_full_path() {
 		result = 1;
 	}
 
-	// Now testGroup/testInt should not exist
 	try {
 		cfg["testGroup/testInt"];
-		// This should not be executed
-		std::cout << cfg << std::endl;
 		result = 1;
 	}
 	catch(const StormByte::Config::Exception&) {
@@ -796,13 +759,11 @@ int config_remove_full_path() {
 	return result;
 }
 
-// Empty names are only allowed for comments (internally)
 int config_test_add_empty_name() {
 	int result = 0;
 	Config cfg;
 	try {
 		cfg.Add(Item::Value("", 66));
-		std::cerr << "config_test_add_empty_name: Empty name was added when it should not be alloed" << std::endl;
 		result = 1;
 	}
 	catch(const StormByte::Config::Exception&) {
@@ -811,7 +772,6 @@ int config_test_add_empty_name() {
 	return result;
 }
 
-// List test
 int config_list_test() {
 	Config cfg;
 	cfg.Add(Item::List("testList"));
@@ -855,7 +815,6 @@ int config_list_test() {
 	RETURN_TEST("config_list_test", 0);
 }
 
-// Test list access
 int config_list_access_by_index() {
 	Config cfg1;
 	try {
@@ -962,13 +921,13 @@ int good_comment_multi_conf1() {
 		"\ttestString = \"test2\"\n"
 		"}\n";
 		const std::string actual = (std::string)cfg;
-		ASSERT_EQUAL("good_comment_conf1", expected, actual);
+		ASSERT_EQUAL("good_comment_multi_conf1", expected, actual);
 	}
 	catch(const StormByte::Config::Exception&) {
 		result = 1;
 	}
 	
-	RETURN_TEST("good_double_conf2", result);
+	RETURN_TEST("good_comment_multi_conf1", result);
 }
 
 int test_config_hooks() {
@@ -1009,7 +968,7 @@ int size_and_count() {
 		result = 1;
 	}
 	
-	RETURN_TEST("complex_conf1", result);
+	RETURN_TEST("size_and_count", result);
 }
 
 int all_comment_types_test() {
@@ -1031,7 +990,7 @@ int all_comment_types_test() {
 		result = 1;
 	}
 	
-	RETURN_TEST("good_double_conf1", result);
+	RETURN_TEST("all_comment_types_test", result);
 }
 
 int test_on_failure_hook() {
@@ -1045,7 +1004,6 @@ int test_on_failure_hook() {
 		file.close();
 	}
 	catch(const StormByte::Config::Exception&) {
-		//NOT Expected exception
 		result = 1;
 	}
 	
@@ -1158,7 +1116,7 @@ int bad_binary_invalid_base64() {
 		file.open(CurrentFileDirectory / "files" / "bad_binary_invalid_base64.conf", std::ios::in);
 		cfg << file;
 		file.close();
-		result = 1; // Should have thrown
+		result = 1;
 	}
 	catch (const StormByte::Config::Exception&) {
 		// Expected
@@ -1207,7 +1165,6 @@ int bad_binary_wrong_prefix() {
 		cfg << file;
 		file.close();
 
-		// This one is actually valid as a normal string
 		const auto& data = cfg["data"].Value<std::string>();
 		ASSERT_EQUAL("bad_binary_wrong_prefix", "SGVsbG8=", data);
 	}
@@ -1232,6 +1189,144 @@ int bad_binary_in_list_unclosed() {
 		// Expected
 	}
 	RETURN_TEST("bad_binary_in_list_unclosed", result);
+}
+
+// ===================== New corner-case tests =====================
+
+int test_list_duplicate_detection() {
+	Config cfg;
+	Item::List& list = cfg.Add(Item::List("mylist")).Value<Item::List>();
+
+	list.Add(Item::Value(42));
+
+	bool caught = false;
+	try {
+		list.Add(Item::Value(42));
+	}
+	catch (const StormByte::Config::ItemAlreadyExists&) {
+		caught = true;
+	}
+
+	if (!caught) {
+		std::cerr << "test_list_duplicate_detection: expected ItemAlreadyExists\n";
+		return 1;
+	}
+
+	if (list.Size() != 1) {
+		std::cerr << "test_list_duplicate_detection: size after throw is " << list.Size() << "\n";
+		return 1;
+	}
+
+	list.Add(Item::Value(43));
+	if (list.Size() != 2) {
+		std::cerr << "test_list_duplicate_detection: final size is " << list.Size() << "\n";
+		return 1;
+	}
+
+	RETURN_TEST("test_list_duplicate_detection", 0);
+}
+
+int test_list_duplicate_keep() {
+	int result = 0;
+	Config cfg;
+	Item::List& list = cfg.Add(Item::List("mylist")).Value<Item::List>();
+
+	list.Add(Item::Value(10), OnExistingAction::Keep);
+	list.Add(Item::Value(10), OnExistingAction::Keep);
+
+	ASSERT_EQUAL("test_list_duplicate_keep", 1u, list.Size());
+	ASSERT_EQUAL("test_list_duplicate_keep", 10, list[0].Value<int>());
+	RETURN_TEST("test_list_duplicate_keep", result);
+}
+
+int test_list_duplicate_overwrite() {
+	int result = 0;
+	Config cfg;
+	Item::List& list = cfg.Add(Item::List("mylist")).Value<Item::List>();
+
+	list.Add(Item::Value(10), OnExistingAction::Overwrite);
+	list.Add(Item::Value(20), OnExistingAction::Overwrite); // different value → both stay
+
+	ASSERT_EQUAL("test_list_duplicate_overwrite", 2u, list.Size());
+	RETURN_TEST("test_list_duplicate_overwrite", result);
+}
+
+int test_different_types_not_equal_in_list() {
+	int result = 0;
+	Config cfg;
+	Item::List& list = cfg.Add(Item::List("mylist")).Value<Item::List>();
+
+	list.Add(Item::Value(42));
+	list.Add(Item::Value("42")); // different type → allowed
+
+	ASSERT_EQUAL("test_different_types_not_equal_in_list", 2u, list.Size());
+	RETURN_TEST("test_different_types_not_equal_in_list", result);
+}
+
+int test_comment_types_not_equal() {
+	int result = 0;
+
+	Item::Comment<Item::CommentType::SingleLineBash> bash("same text");
+	Item::Comment<Item::CommentType::SingleLineC>    cxx("same text");
+	Item::Comment<Item::CommentType::MultiLineC>     multi("same text");
+
+	ASSERT_TRUE("test_comment_types_not_equal", !(bash == cxx));
+	ASSERT_TRUE("test_comment_types_not_equal", !(bash == multi));
+	ASSERT_TRUE("test_comment_types_not_equal", !(cxx == multi));
+
+	RETURN_TEST("test_comment_types_not_equal", result);
+}
+
+int test_on_existing_action_propagation() {
+	Config cfg;
+	cfg.OnExistingAction(OnExistingAction::Keep);
+
+	Item::Group& g = cfg.Add(Item::Group("g")).Value<Item::Group>();
+	Item::List&  l = g.Add(Item::List("l")).Value<Item::List>();
+
+	ASSERT_EQUAL("test_on_existing_action_propagation",
+		static_cast<int>(OnExistingAction::Keep),
+		static_cast<int>(l.GetOnExistingAction()));
+
+	l.Add(Item::Value(42));
+	l.Add(Item::Value(42)); // should keep, not throw
+
+	ASSERT_EQUAL("test_on_existing_action_propagation", 1u, l.Size());
+	RETURN_TEST("test_on_existing_action_propagation", 0);
+}
+
+int test_comments_never_duplicate() {
+	Config cfg;
+	Item::List& list = cfg.Add(Item::List("l")).Value<Item::List>();
+
+	list.Add(Item::Comment<Item::CommentType::SingleLineBash>("same"));
+	list.Add(Item::Comment<Item::CommentType::SingleLineBash>("same"));
+
+	ASSERT_EQUAL("test_comments_never_duplicate", 2u, list.Size());
+	RETURN_TEST("test_comments_never_duplicate", 0);
+}
+
+int test_empty_containers_equality() {
+	Item::Group g1("a"), g2("a");
+	Item::List  l1("b"), l2("b");
+
+	ASSERT_TRUE("test_empty_containers_equality", g1 == g2);
+	ASSERT_TRUE("test_empty_containers_equality", l1 == l2);
+	ASSERT_TRUE("test_empty_containers_equality", !(g1 == l1));
+	RETURN_TEST("test_empty_containers_equality", 0);
+}
+
+int test_invalid_name_in_group() {
+	Config cfg;
+	Item::Group& g = cfg.Add(Item::Group("g")).Value<Item::Group>();
+
+	try {
+		g.Add(Item::Value("1invalid", 10));
+		return 1;
+	} catch (const InvalidName&) {
+		// Expected
+	}
+	RETURN_TEST("test_invalid_name_in_group", 0);
 }
 
 int main() {
@@ -1290,6 +1385,17 @@ int main() {
 		result += bad_binary_missing_quote();
 		result += bad_binary_wrong_prefix();
 		result += bad_binary_in_list_unclosed();
+
+		// New corner-case tests
+		result += test_list_duplicate_detection();
+		result += test_list_duplicate_keep();
+		result += test_list_duplicate_overwrite();
+		result += test_different_types_not_equal_in_list();
+		result += test_comment_types_not_equal();
+		result += test_on_existing_action_propagation();
+		result += test_comments_never_duplicate();
+		result += test_empty_containers_equality();
+		result += test_invalid_name_in_group();
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result++;

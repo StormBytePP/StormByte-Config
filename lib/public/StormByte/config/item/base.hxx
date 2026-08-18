@@ -71,21 +71,28 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * Equality operator
-			 * @param base item to compare
-			 * @return is equal?
+			 * @param other item to compare
+			 * @return true if both items are equal
 			 */
-			inline bool 									operator==(const Base& base) const noexcept {
-				return m_name == base.m_name;
+			bool operator==(const Base& other) const noexcept {
+				return this->Equals(other);
 			}
 
 			/**
 			 * Inequality operator
-			 * @param base item to compare
-			 * @return is not equal?
+			 * @param other item to compare
+			 * @return true if items are not equal
 			 */
-			inline bool 									operator!=(const Base& base) const noexcept {
-				return !operator==(base);
+			bool operator!=(const Base& other) const noexcept {
+				return !(*this == other);
 			}
+
+			/**
+			 * @brief Polymorphic equality comparison.
+			 * @param other The other item to compare against.
+			 * @return true if both items are semantically equal.
+			 */
+			virtual bool Equals(const Base& other) const noexcept = 0;
 
 			/**
 			 * @brief Gets the name of the item.
@@ -185,7 +192,5 @@ namespace StormByte::Config::Item {
 
 		protected:
 			std::optional<std::string> m_name;				///< Item name
-
-
 	};
 }

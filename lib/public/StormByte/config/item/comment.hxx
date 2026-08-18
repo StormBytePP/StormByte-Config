@@ -59,6 +59,25 @@ namespace StormByte::Config::Item {
 			~Comment() noexcept override							= default;
 
 			/**
+			 * @brief Polymorphic equality comparison.
+			 * @param other The other item to compare against.
+			 * @return true if both are comments of the same type and content.
+			 */
+			bool Equals(const Base& other) const noexcept override {
+				if (this->Type() != other.Type())
+					return false;
+				if (this->Name() != other.Name())
+					return false;
+
+				auto other_comment_type = other.GetCommentType();
+				if (!other_comment_type || *other_comment_type != T)
+					return false;
+
+				const Comment<T>& other_comment = static_cast<const Comment<T>&>(other);
+				return **this == *other_comment;
+			}
+
+			/**
 			 * Serializes the comment item
 			 * @param indent_level intentation level
 			 * @return serialized string

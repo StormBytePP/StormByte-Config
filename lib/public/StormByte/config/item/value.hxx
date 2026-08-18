@@ -98,6 +98,20 @@ namespace StormByte::Config::Item {
 			virtual ~Value() noexcept override				= default;
 
 			/**
+			 * @brief Polymorphic equality comparison.
+			 * @param other The other item to compare against.
+			 * @return true if both items are of the same type and hold the same value.
+			 */
+			bool Equals(const Base& other) const noexcept override {
+				if (this->Type() != other.Type())
+					return false;
+				if (this->Name() != other.Name())
+					return false;
+				const Value<T>& other_value = static_cast<const Value<T>&>(other);
+				return m_value == other_value.m_value;
+			}
+
+			/**
 			 * @brief Gets the type of the item.
 			 * @return Item::Type The type of the item.
 			 */
@@ -121,8 +135,7 @@ namespace StormByte::Config::Item {
 			 * @return True if equal, false otherwise.
 			 */
 			bool operator==(const Value<T>& single) const noexcept {
-				if (Base::operator!=(single)) return false;
-				return m_value == single.m_value;
+				return Equals(single);
 			}
 
 			/**

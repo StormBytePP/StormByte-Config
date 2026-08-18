@@ -131,7 +131,7 @@ namespace StormByte::Config::Item::Serialize {
 							auto expected_item = Serializable<Comment<StormByte::Config::Item::CommentType::SingleLineBash>>::Deserialize(data.subspan(offset));
 							if (!expected_item) return Unexpected(expected_item.error());
 							offset += Serializable<Comment<StormByte::Config::Item::CommentType::SingleLineBash>>::Size(expected_item.value());
-							container->Add(expected_item.value());
+							container->Add(std::move(expected_item.value()));
 							break;
 						}
 						case StormByte::Config::Item::CommentType::SingleLineC: {
@@ -148,9 +148,6 @@ namespace StormByte::Config::Item::Serialize {
 							container->Add(std::move(expected_item.value()));
 							break;
 						}
-					}
-					if (offset <= prev_offset) {
-						return Unexpected<DeserializeError>("Invalid serialization: offset did not advance while deserializing item");
 					}
 					break;
 				}
@@ -181,6 +178,10 @@ namespace StormByte::Config::Item::Serialize {
 				}
 				default:
 					return Unexpected<DeserializeError>("Unhandled item type");
+			}
+
+			if (offset <= prev_offset) {
+				return Unexpected<DeserializeError>("Invalid serialization: offset did not advance while deserializing item");
 			}
 		}
 		return container;

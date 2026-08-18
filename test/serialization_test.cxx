@@ -554,6 +554,46 @@ int test_text_to_binary_to_text_roundtrip() {
 	RETURN_TEST("test_text_to_binary_to_text_roundtrip", result);
 }
 
+int test_comment_name_roundtrip() {
+	// Comments can carry a name (even if unusual). It must survive binary round-trip.
+	Item::Comment<Item::CommentType::SingleLineBash> original("important note");
+	original.Name("mycomment");
+
+	StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineBash>> ser(original);
+	auto buffer = ser.Serialize();
+
+	auto expected = StormByte::Serializable<Item::Comment<Item::CommentType::SingleLineBash>>::Deserialize(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_comment_name_roundtrip", 1);
+	}
+
+	ASSERT_TRUE("test_comment_name_roundtrip", original == expected.value());
+	ASSERT_TRUE("test_comment_name_roundtrip", expected.value().Name().has_value());
+	ASSERT_EQUAL("test_comment_name_roundtrip", "mycomment", expected.value().Name().value());
+
+	RETURN_TEST("test_comment_name_roundtrip", 0);
+}
+
+int test_list_equality_after_serialization() {
+	Item::List original("test");
+	original.Add(Item::Value(1));
+	original.Add(Item::Value("two"));
+	original.Add(Item::Comment<Item::CommentType::SingleLineBash>("note"));
+
+	StormByte::Serializable<Item::List> ser(original);
+	auto buffer = ser.Serialize();
+	auto expected = StormByte::Serializable<Item::List>::Deserialize(buffer);
+
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_list_equality_after_serialization", 1);
+	}
+
+	ASSERT_TRUE("test_list_equality_after_serialization", original == expected.value());
+	RETURN_TEST("test_list_equality_after_serialization", 0);
+}
+
 int main() {
 	int result = 0;
 	result += test_serialize_value_string();
@@ -580,6 +620,9 @@ int main() {
 	result += test_shared_ptr_binary_serialize();
 	result += test_serialize_binary_roundtrip_text_and_binary();
 	result += test_text_to_binary_to_text_roundtrip();
+
+	result += test_comment_name_roundtrip();
+	result += test_list_equality_after_serialization();
 
 	if (result == 0) {
 		std::cout << "All tests passed!" << std::endl;

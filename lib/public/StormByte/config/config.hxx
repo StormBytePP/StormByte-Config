@@ -247,12 +247,13 @@ namespace StormByte::Config {
 			}
 
 			/**
-			 * Sets a function to execute on name collission when inserting
-			 * @param on_existing function to select element on collission
-			 * @see Container::OnExistingAction
+			 * @brief Sets the action to take when an item name/identity collision occurs.
+			 * The policy is applied to the root container and will be inherited by all nested containers.
+			 * @param on_existing The policy to use.
 			 */
-			constexpr void											OnExistingAction(const OnExistingAction& on_existing) {
+			void 													OnExistingAction(const OnExistingAction& on_existing) {
 				m_on_existing_action = on_existing;
+				m_root.SetOnExistingAction(on_existing);
 			}
 
 			/**

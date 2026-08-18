@@ -16,296 +16,335 @@ namespace StormByte::Config::Item {
 	/**
 	 * @class Container
 	 * @brief Represents a container that can hold multiple configuration items.
-	 * @tparam T container type
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Container: public Base {
 		public:
 			/**
 			 * @brief Constructs an empty Container.
 			 */
-			Container()											= default;
+			Container() = default;
 
 			/**
-			 * Constructor
-			 * @param name container name
+			 * @brief Constructs a Container with the given name.
+			 * @param name The name of the container.
 			 */
 			Container(const std::string& name);
 
 			/**
-			 * Constructor
-			 * @param name container name
+			 * @brief Constructs a Container with the given name.
+			 * @param name The name of the container.
 			 */
 			Container(std::string&& name);
 
 			/**
-			 * Copy constructor
-			 * @param base container to copy
+			 * @brief Copy constructor.
+			 * @param base Container to copy.
 			 */
-			Container(const Container& base)					= default;
+			Container(const Container& base) = default;
 
 			/**
-			 * Move constructor
-			 * @param base container to move
+			 * @brief Move constructor.
+			 * @param base Container to move.
 			 */
-			Container(Container&& base) noexcept				= default;
+			Container(Container&& base) noexcept = default;
 
 			/**
-			 * Assignment operator
-			 * @param base container to copy
+			 * @brief Copy assignment operator.
+			 * @param base Container to copy.
 			 */
-			Container& operator=(const Container& base)			= default;
+			Container& operator=(const Container& base) = default;
 
 			/**
-			 * Move assignment operator
-			 * @param base container to move
+			 * @brief Move assignment operator.
+			 * @param base Container to move.
 			 */
-			Container& operator=(Container&& base) noexcept		= default;
+			Container& operator=(Container&& base) noexcept = default;
 
 			/**
-			 * Destructor
+			 * @brief Destructor.
 			 */
-			virtual ~Container() noexcept override				= default;
+			virtual ~Container() noexcept override = default;
 
 			/**
-			 * Gets a reference to Item by index
-			 * @throw OutOfBounds if index is out of bounds
-			 * @return size_t number of items
+			 * @brief Polymorphic equality comparison.
+			 * @param other The other item to compare against.
+			 * @return true if both containers have the same type, name and contents.
 			 */
-			Base& 												operator[](const size_t& index);
+			bool Equals(const Base& other) const noexcept override;
 
 			/**
-			 * Gets a const reference to Item by index
-			 * @throw OutOfBounds if index is out of bounds
-			 * @return size_t number of items
+			 * @brief Gets a reference to an item by index.
+			 * @param index Index of the item.
+			 * @throw OutOfBounds if index is out of bounds.
+			 * @return Reference to the item.
 			 */
-			const Base& 										operator[](const size_t& index) const;
+			Base& operator[](const size_t& index);
 
 			/**
-			 * Gets a reference to Item by path
-			 * @param path path to item
-			 * @throw InvalidPath if path is invalid
-			 * @throw ItemNotFound if item is not found
-			 * @return Item& item
+			 * @brief Gets a const reference to an item by index.
+			 * @param index Index of the item.
+			 * @throw OutOfBounds if index is out of bounds.
+			 * @return Const reference to the item.
 			 */
-			Base& 												operator[](const std::string& path);
+			const Base& operator[](const size_t& index) const;
 
 			/**
-			 * Gets a const reference to Item by path
-			 * @param path path to item
-			 * @throw InvalidPath if path is invalid
-			 * @throw ItemNotFound if item is not found
-			 * @return Item& item
+			 * @brief Gets a reference to an item by path.
+			 * @param path Path to the item.
+			 * @throw InvalidPath if path is invalid.
+			 * @throw ItemNotFound if item is not found.
+			 * @return Reference to the item.
 			 */
-			inline const Base& 									operator[](const std::string& path) const {
+			Base& operator[](const std::string& path);
+
+			/**
+			 * @brief Gets a const reference to an item by path.
+			 * @param path Path to the item.
+			 * @throw InvalidPath if path is invalid.
+			 * @throw ItemNotFound if item is not found.
+			 * @return Const reference to the item.
+			 */
+			inline const Base& operator[](const std::string& path) const {
 				return LookUp(path);
 			}
 
 			/**
-			 * Equality operator
-			 * @param container container to compare
-			 * @return is equal?
+			 * @brief Equality operator.
+			 * @param container Container to compare.
+			 * @return true if equal.
 			 */
-			bool 												operator==(const Container& container) const noexcept;
+			bool operator==(const Container& container) const noexcept;
 
 			/**
-			 * Inequality operator
-			 * @param container container to compare
-			 * @return is not equal?
+			 * @brief Inequality operator.
+			 * @param container Container to compare.
+			 * @return true if not equal.
 			 */
-			inline bool 										operator!=(const Container& container) const noexcept {
+			inline bool operator!=(const Container& container) const noexcept {
 				return !operator==(container);
 			}
 
 			/**
-			 * Adds an item to the container (const reference)
-			 * @param item item to add
-			 * @param on_existing action to take if item name already exists
-			 * @throw InvalidName if item name is not allowed
-			 * @throw ItemNameAlreadyExists if item name already exists
-			 * @return reference to added item
+			 * @brief Sets the action to take when an item with the same identity already exists.
+			 * @param action The policy to apply on name/identity collision.
 			 */
-			inline Base& 										Add(const Base& item, const OnExistingAction& on_existing = OnExistingAction::ThrowException) {
+			void SetOnExistingAction(StormByte::Config::OnExistingAction action) noexcept {
+				m_on_existing_action = action;
+			}
+
+			/**
+			 * @brief Gets the current OnExistingAction policy.
+			 * @return The current policy.
+			 */
+			StormByte::Config::OnExistingAction GetOnExistingAction() const noexcept {
+				return m_on_existing_action;
+			}
+
+			/**
+			 * @brief Adds an item to the container (const reference) using an explicit policy.
+			 * @param item Item to add.
+			 * @param on_existing Action to take if the item already exists.
+			 * @return Reference to the added item.
+			 */
+			inline Base& Add(const Base& item, const StormByte::Config::OnExistingAction& on_existing) {
 				return Add(std::move(*item.Clone()), on_existing);
 			}
 
 			/**
-			 * Adds an item to the container (rvalue reference)
-			 * @param item item to add
-			 * @param on_existing action to take if item name already exists
-			 * @throw ItemNameAlreadyExists if item name already exists
-			 * @return reference to added item
+			 * @brief Adds an item to the container (rvalue) using an explicit policy.
+			 * @param item Item to add.
+			 * @param on_existing Action to take if the item already exists.
+			 * @return Reference to the added item.
 			 */
-			inline Base& 										Add(Base&& item, const OnExistingAction& on_existing = OnExistingAction::ThrowException) {
+			inline Base& Add(Base&& item, const StormByte::Config::OnExistingAction& on_existing) {
 				return Add(item.Move(), on_existing);
+			}
+
+			/**
+			 * @brief Adds an item to the container using the container's current OnExistingAction policy.
+			 * @param item Item to add.
+			 * @return Reference to the added item.
+			 */
+			inline Base& Add(const Base& item) {
+				return Add(std::move(*item.Clone()), m_on_existing_action);
+			}
+
+			/**
+			 * @brief Adds an item to the container using the container's current OnExistingAction policy.
+			 * @param item Item to add.
+			 * @return Reference to the added item.
+			 */
+			inline Base& Add(Base&& item) {
+				return Add(item.Move(), m_on_existing_action);
 			}
 
 			/**
 			 * @brief Adds an item to the container.
 			 * @param item The item to add.
-			 * @param on_existing The action to take if the item name already exists.
+			 * @param on_existing The action to take if the item already exists.
 			 * @return A reference to the added item.
 			 */
-			Base& Add(Base::PointerType item, const OnExistingAction& on_existing);
+			Base& Add(Base::PointerType item, const StormByte::Config::OnExistingAction& on_existing);
 
 			/**
-			 * Clears all items
+			 * @brief Clears all items from the container.
 			 */
-			inline void 										Clear() noexcept {
+			inline void Clear() noexcept {
 				m_items.clear();
 			}
 
 			/**
-			 * Checks if item exists by path
-			 * @param path path to item
-			 * @return bool exists?
+			 * @brief Checks if an item exists by path.
+			 * @param path Path to the item.
+			 * @return true if the item exists.
 			 */
-			bool 												Exists(const std::string& path) const;
+			bool Exists(const std::string& path) const;
 
 			/**
-			 * Removes an item by index
-			 * @param index index to item
-			 * @throw OutOfBounds if index is out of bounds
+			 * @brief Removes an item by index.
+			 * @param index Index of the item to remove.
+			 * @throw OutOfBounds if index is out of bounds.
 			 */
-			void 												Remove(const size_t& index);
+			void Remove(const size_t& index);
 
 			/**
-			 * Removes an item by path
-			 * @param path path to item
-			 * @throw InvalidPath if path is invalid
-			 * @throw ItemNotFound if item is not found
+			 * @brief Removes an item by path.
+			 * @param path Path to the item to remove.
+			 * @throw InvalidPath if path is invalid.
+			 * @throw ItemNotFound if item is not found.
 			 */
-			void												Remove(const std::string& path);
+			void Remove(const std::string& path);
 
 			/**
-			 * Returns a string representation of the container
-			 * @return string representation
+			 * @brief Serializes the container to a string.
+			 * @param indent_level Indentation level.
+			 * @return Serialized string representation.
 			 */
-			std::string 										Serialize(const int& indent_level) const noexcept override;
+			std::string Serialize(const int& indent_level) const noexcept override;
 
 			/**
-			 * Gets the start character for the container type
-			 * @param type container type
-			 * @return start character
+			 * @brief Returns the enclosure characters for a given container type.
+			 * @param type Container type.
+			 * @return Pair of opening and closing characters.
 			 */
-			static constexpr std::pair<const char, const char>	EnclosureCharacters(const ContainerType& type) noexcept {
-				switch(type) {
-					case ContainerType::Group:	return std::make_pair<const char, const char>('{', '}');
-					case ContainerType::List:	return std::make_pair<const char, const char>('[', ']');
-					default:					return std::make_pair<const char, const char>('\0', '\0');
+			static constexpr std::pair<const char, const char> EnclosureCharacters(const ContainerType& type) noexcept {
+				switch (type) {
+					case ContainerType::Group: return {'{', '}'};
+					case ContainerType::List:  return {'[', ']'};
+					default:                   return {'\0', '\0'};
 				}
 			}
 
 			/**
-			 * Gets the end character for the container type
-			 * @param type container type
-			 * @return start character
+			 * @brief Returns the closing character for a given container type.
+			 * @param type Container type.
+			 * @return Closing character.
 			 */
-			static constexpr const char							EndCharacter(const ContainerType& type) noexcept {
-				switch(type) {
-					case ContainerType::Group:	return '}';
-					case ContainerType::List:	return ']';
-					default:					return '\0';
+			static constexpr const char EndCharacter(const ContainerType& type) noexcept {
+				switch (type) {
+					case ContainerType::Group: return '}';
+					case ContainerType::List:  return ']';
+					default:                   return '\0';
 				}
 			}
 
 			/**
-			 * Get all items in the container
-			 * @return std::span of items
+			 * @brief Returns a span of all items in the container.
+			 * @return Span of items.
 			 */
-			constexpr std::span<Base::PointerType> 				Items() noexcept {
+			constexpr std::span<Base::PointerType> Items() noexcept {
 				return std::span(m_items);
 			}
 
 			/**
-			 * Get all items in the container
-			 * @return std::span of items
+			 * @brief Returns a const span of all items in the container.
+			 * @return Const span of items.
 			 */
-			constexpr std::span<const Base::PointerType> 		Items() const noexcept {
+			constexpr std::span<const Base::PointerType> Items() const noexcept {
 				return std::span(m_items);
 			}
 
 			/**
-			 * Gets the container type
-			 * @return Container type
+			 * @brief Gets the container type.
+			 * @return Container type.
 			 */
-			constexpr virtual Item::ContainerType 				ContainerType() const noexcept = 0;
+			constexpr virtual Item::ContainerType ContainerType() const noexcept = 0;
 
 			/**
-			 * Gets the container type as string
-			 * @return Container type as string
+			 * @brief Gets the container type as string.
+			 * @return Container type as string.
 			 */
-			constexpr std::string 								ContainerTypeToString() const noexcept {
+			constexpr std::string ContainerTypeToString() const noexcept {
 				return Item::TypeToString(this->ContainerType());
 			}
 
 			/**
-			 * Gets the item type
-			 * @return item Type
+			 * @brief Gets the item type.
+			 * @return Item type.
 			 */
-			constexpr Item::Type 								Type() const noexcept override {
+			constexpr Item::Type Type() const noexcept override {
 				return Item::Type::Container;
 			}
 
 			/**
-			 * Gets the number of items in the current level
-			 * @return size_t number of items
+			 * @brief Gets the number of items in the current level.
+			 * @return Number of items.
 			 */
-			constexpr size_t 									Size() const noexcept {
+			constexpr size_t Size() const noexcept {
 				return m_items.size();
 			}
 
 			/**
-			 * Gets the full number of items
-			 * @return size_t number of items
+			 * @brief Gets the total number of items including nested ones.
+			 * @return Total number of items.
 			 */
-			size_t 												Count() const noexcept;
+			size_t Count() const noexcept;
 
 		protected:
-			std::vector<Base::PointerType> 						m_items;	///< Items in container
+			std::vector<Base::PointerType> m_items; ///< Items stored in the container
+			StormByte::Config::OnExistingAction m_on_existing_action = StormByte::Config::OnExistingAction::ThrowException; ///< Policy for handling identity collisions
 
 			/**
-			 * Actions to be done before adding an item
-			 * @param item item to check
-			 * @param onexisting action to take if item name already exists
-			 * @throw ItemNameAlreadyExists if item name already exists
+			 * @brief Actions performed before adding an item.
+			 * @param item Item to check.
+			 * @param onexisting Action to take if the item already exists.
+			 * @return Pointer to the existing item if kept, otherwise nullptr.
 			 */
-			virtual Base::PointerType							BeforeAdditionActions(Base::PointerType item, const OnExistingAction onexisting) = 0;
+			virtual Base::PointerType BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) = 0;
 
 		private:
 			/**
-			 * Internal function to get item contents as string
-			 * @return item contents as std::string
+			 * @brief Internal helper that serializes the contents of the container.
+			 * @param level Indentation level.
+			 * @return Serialized contents.
 			 */
-			virtual std::string 								ContentsToString(const int& level) const noexcept;
+			virtual std::string ContentsToString(const int& level) const noexcept;
 
 			/**
-			 * Internal function for checking if path name is valid
-			 * @param name item path
-			 * @return bool valid?
+			 * @brief Checks whether a path is syntactically valid.
+			 * @param name Path to validate.
+			 * @return true if the path is valid.
 			 */
-			static bool 										IsPathValid(const std::string& name) noexcept;
+			static bool IsPathValid(const std::string& name) noexcept;
 
 			/**
-			 * Looks up a child by path
-			 * @param path path to child
-			 * @throw ItemNotFound if not found
-			 * @return const reference to found Item
+			 * @brief Looks up a child item by path.
+			 * @param path Path to the child.
+			 * @return Const reference to the found item.
 			 */
-			const Base& 										LookUp(const std::string& path) const;
+			const Base& LookUp(const std::string& path) const;
 
 			/**
-			 * Looks up a child by path
-			 * @param path path to child
-			 * @throw ItemNotFound if not found
-			 * @return const reference to found Item
+			 * @brief Looks up a child item by path (queue version).
+			 * @param path Path components.
+			 * @return Const reference to the found item.
 			 */
-			const Base& 										LookUp(std::queue<std::string>& path) const;
+			const Base& LookUp(std::queue<std::string>& path) const;
 
 			/**
-			 * Removes an item by path
-			 * @param path path to item
-			 * @throw ItemNotFound if item is not found
+			 * @brief Removes an item by path (queue version).
+			 * @param path Path components.
 			 */
-			void 												Remove(std::queue<std::string>& path);
+			void Remove(std::queue<std::string>& path);
 	};
 }
