@@ -1,6 +1,6 @@
 #pragma once
 
-#include <StormByte/expected.hxx>
+#include <StormByte/config/parser/tokenizer.hxx>
 #include <StormByte/config/alias.hxx>
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/comment.hxx>
@@ -9,180 +9,101 @@
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/config/parser/type.hxx>
 #include <StormByte/config/type.hxx>
+#include <StormByte/expected.hxx>
 
 #include <istream>
-#include <regex>
 #include <string>
 
 /**
  * @namespace Parser
- * @brief Parser namespace
+ * @brief Configuration file parser internals.
  */
 namespace StormByte::Config::Parser {
+	/**
+	 * @class Parser
+	 * @brief Recursive descent parser that consumes tokens from a Tokenizer
+	 *        and builds the configuration item tree.
+	 */
 	class STORMBYTE_CONFIG_PRIVATE Parser {
 		public:
-			/**
-			 * Copy constructor
-			 * @param p parser to copy
-			 */
-			Parser(const Parser& p) 								= delete;
+			Parser(const Parser&) = delete;
+			Parser(Parser&&) = default;
+			Parser& operator=(const Parser&) = delete;
+			Parser& operator=(Parser&&) = default;
+			~Parser() = default;
 
 			/**
-			 * Move constructor
-			 * @param p parser to move
+			 * @brief Parse a configuration from an input stream.
 			 */
-			Parser(Parser&& p) 										= default;
+			static Expected<void, ParseError> Parse(
+				std::istream& stream,
+				Item::Group& root,
+				const OnExistingAction& action,
+				const HookFunctions& before,
+				const HookFunctions& after,
+				const OptionalFailureHook& on_failure);
 
 			/**
-			 * Assignment operator
-			 * @param p parser to copy
+			 * @brief Parse a configuration from a string.
 			 */
-			Parser& operator=(const Parser& p) 						= delete;
-
-			/**
-			 * Move assignment operator
-			 * @param p parser to move
-			 */
-			Parser& operator=(Parser&& p) 							= default;
-
-			/**
-			 * Destructor
-			 */
-			~Parser() 												= default;
-
-			/**
-			 * Parse a configuration file
-			 * @param stream input stream
-			 * @param root root group to start
-			 * @param action action to take when a name is already in use
-			 * @param before hooks to call before parsing
-			 * @param after hooks to call after parsing
-			 */
-			static Expected<void, ParseError>						Parse(std::istream& stream, Item::Group& root, const OnExistingAction& action, const HookFunctions& before, const HookFunctions& after, const OptionalFailureHook& on_failure);
-
-			/**
-			 * Parse a configuration file
-			 * @param string input string
-			 * @param root root group to start
-			 * @param action action to take when a name is already in use
-			 * @return Group with parsed information
-			 */
-			static Expected<void, ParseError>						Parse(const std::string& string, Item::Group& root, const OnExistingAction& action, const HookFunctions& before, const HookFunctions& after, const OptionalFailureHook& on_failure);
+			static Expected<void, ParseError> Parse(
+				const std::string& string,
+				Item::Group& root,
+				const OnExistingAction& action,
+				const HookFunctions& before,
+				const HookFunctions& after,
+				const OptionalFailureHook& on_failure);
 
 		private:
-			unsigned int 											m_container_level;					///< Container level
-			unsigned int 											m_current_line;						///< Current line (for parser)
-			const OnExistingAction 									c_on_existing_action;				///< Action to take when item name already exists
-			static const std::regex 								c_double_regex;						///< Double detection regex
-			static const std::regex 								c_int_regex;						///< Integer detection regex
+			Tokenizer&              m_tokenizer;
+			const OnExistingAction  c_on_existing_action;
+			unsigned int            m_container_level = 0;
+
+			explicit Parser(Tokenizer& tokenizer, const OnExistingAction& action);
 
 			/**
-			 * Constructor
-			 * @param action action to take when a name is already in use
+			 * @brief Main recursive parsing function.
+			 * @param container Destination container.
+			 * @param mode Named (Group) or Unnamed (List).
 			 */
-			Parser(const OnExistingAction& action);
+			Expected<void, ParseError> Parse(Item::Container& container, Mode mode);
 
 			/**
-			 * Starts parsing
-			 * @param istream input stream
+			 * @brief Parses a single value/item and returns it as a Base pointer.
 			 */
-			void 													StartParse(std::istream& istream);
+			Expected<Item::Base::PointerType, ParseError> ParseValue();
 
 			/**
-			 * Parses a value
-			 * @param istream input stream
-			 * @return parsed value
+			 * @brief Expects the next token to be of the given type.
+			 * @return The token or a ParseError.
 			 */
-			template<typename T> Expected<T, ParseError>			ParseValue(std::istream& istream);
+			Expected<Token, ParseError> Expect(TokenType expected);
 
 			/**
-			 * Finds a comment and returns its type
-			 * @param istream input stream
-			 * @return comment type
+			 * @brief Converts a Comment token into the corresponding Comment item.
 			 */
-			CommentType												FindComment(std::istream& istream);
-
-			/**
-			 * Finds and parses comments
-			 * @param istream input stream
-			 * @param container container to put comments to
-			 */
-			Expected<void, ParseError>								FindAndParseComments(std::istream& istream, Item::Container& container);
-
-			/**
-			 * Parses an item
-			 * @param istream input stream
-			 * @param type item type
-			 * @return parsed item
-			 */
-			Expected<Item::Base::PointerType, ParseError>			ParseItem(std::istream& istream, const Item::Type& type);
-
-			/**
-			 * Parses a group
-			 * @param istream input stream
-			 * @param container Container to put data to
-			 */
-			Expected<void, ParseError>								Parse(std::istream& istream, Item::Container& container, const Mode& mode);
-
-			/**
-			 * Parses an item name
-			 * @param istream input stream
-			 * @return item name
-			 */
-			Expected<std::string, ParseError>						ParseItemName(std::istream& istream);
-
-			/**
-			 * Parses an item type
-			 * @param istream input stream
-			 * @return item type
-			 */
-			Expected<Item::Type, ParseError>						ParseType(std::istream& istream);
-
-			/**
-			 * Parses a container type
-			 * @param istream input stream
-			 * @return container type
-			 */
-			Expected<Item::ContainerType, ParseError>				ParseContainerType(std::istream& istream);
-
-			/**
-			 * Finds the container end symbol
-			 * @param istream input stream
-			 * @param container_type container type to know the end symbol
-			 * @return bool
-			 */
-			bool 													FindContainerEnd(std::istream& istream, const Item::ContainerType& container_type);
-
-			/**
-			 * Consumes whitespace (and tabs, newline, etc) updating line number
-			 * @param istream stream to consume whitespace from
-			 */
-			void 													ConsumeWS(std::istream& istream);
-
-			/**
-			 * Gets a string ignoring leading whitespace updating line number
-			 * @param istream input stream
-			 * @return string value
-			 */
-			std::string 											GetStringIgnoringWS(std::istream& istream);
+			Item::Base::PointerType MakeComment(const Token& token);
 	};
-	/**
-	 * Shortcut for Parser static Parse method
-	 * @param stream input stream
-	 * @param root root group to start
-	 * @param action action to take when a name is already in use
-	 * @throws ParserError If parse errors are found
-	 * @return Group with parsed information
-	 */
-	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE 			Parse(std::istream& stream, Item::Group& root, const OnExistingAction& action, const HookFunctions& before, const HookFunctions& after, const OptionalFailureHook& on_failure);
 
 	/**
-	 * Shortcut for Parser static Parse method
-	 * @param string input string
-	 * @param root root group to start
-	 * @param action action to take when a name is already in use
-	 * @throws ParserError If parse errors are found
-	 * @return Group with parsed information
+	 * @brief Free function entry point (stream version).
 	 */
-	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE 			Parse(const std::string& string, Item::Group& root, const OnExistingAction& action, const HookFunctions& before, const HookFunctions& after, const OptionalFailureHook& on_failure);
+	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
+		std::istream& stream,
+		Item::Group& root,
+		const OnExistingAction& action,
+		const HookFunctions& before,
+		const HookFunctions& after,
+		const OptionalFailureHook& on_failure);
+
+	/**
+	 * @brief Free function entry point (string version).
+	 */
+	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
+		const std::string& string,
+		Item::Group& root,
+		const OnExistingAction& action,
+		const HookFunctions& before,
+		const HookFunctions& after,
+		const OptionalFailureHook& on_failure);
 }
