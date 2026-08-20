@@ -10,7 +10,19 @@ namespace StormByte::Config::Item {
 	// ---------------------------------------------------------------------
 	template<>
 	std::string STORMBYTE_CONFIG_PUBLIC Value<std::string>::Serialize(const int& indent_level) const noexcept {
-		return Base::Serialize(indent_level) + "\"" + m_value + "\"";
+		std::string escaped;
+		escaped.reserve(m_value.size() + 8);
+		for (char c : m_value) {
+			switch (c) {
+				case '"':  escaped += "\\\""; break;
+				case '\\': escaped += "\\\\"; break;
+				case '\n': escaped += "\\n";  break;
+				case '\r': escaped += "\\r";  break;
+				case '\t': escaped += "\\t";  break;
+				default:   escaped += c;      break;
+			}
+		}
+		return Base::Serialize(indent_level) + "\"" + escaped + "\"";
 	}
 	template class Value<std::string>;
 
