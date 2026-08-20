@@ -31,7 +31,7 @@ namespace StormByte::Config::Item {
 			Container(const std::string& name);
 
 			/**
-			 * @brief Constructs a Container with the given name.
+			 * @brief Constructs a Container with the given name (move).
 			 * @param name The name of the container.
 			 */
 			Container(std::string&& name);
@@ -51,12 +51,14 @@ namespace StormByte::Config::Item {
 			/**
 			 * @brief Copy assignment operator.
 			 * @param base Container to copy.
+			 * @return Reference to this Container.
 			 */
 			Container& operator=(const Container& base) = default;
 
 			/**
 			 * @brief Move assignment operator.
 			 * @param base Container to move.
+			 * @return Reference to this Container.
 			 */
 			Container& operator=(Container&& base) noexcept = default;
 
@@ -141,7 +143,7 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Adds an item to the container (const reference) using an explicit policy.
+			 * @brief Adds an item (const reference) using an explicit policy.
 			 * @param item Item to add.
 			 * @param on_existing Action to take if the item already exists.
 			 * @return Reference to the added item.
@@ -151,7 +153,7 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Adds an item to the container (rvalue) using an explicit policy.
+			 * @brief Adds an item (rvalue) using an explicit policy.
 			 * @param item Item to add.
 			 * @param on_existing Action to take if the item already exists.
 			 * @return Reference to the added item.
@@ -161,7 +163,7 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Adds an item to the container using the container's current OnExistingAction policy.
+			 * @brief Adds an item using the container's current OnExistingAction policy.
 			 * @param item Item to add.
 			 * @return Reference to the added item.
 			 */
@@ -170,7 +172,7 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Adds an item to the container using the container's current OnExistingAction policy.
+			 * @brief Adds an item using the container's current OnExistingAction policy (move).
 			 * @param item Item to add.
 			 * @return Reference to the added item.
 			 */
@@ -302,7 +304,7 @@ namespace StormByte::Config::Item {
 
 		protected:
 			std::vector<Base::PointerType> m_items; ///< Items stored in the container
-			StormByte::Config::OnExistingAction m_on_existing_action = StormByte::Config::OnExistingAction::ThrowException; ///< Policy for handling identity collisions
+			StormByte::Config::OnExistingAction m_on_existing_action = StormByte::Config::OnExistingAction::ThrowException; ///< Collision policy
 
 			/**
 			 * @brief Actions performed before adding an item.

@@ -16,7 +16,7 @@ namespace StormByte::Config {
 	/**
 	 * @class Config
 	 * @brief Abstract class representing a configuration file.
-	 * 
+	 *
 	 * A configuration file can contain various elements, including:
 	 * - Boolean values
 	 * - Double-precision floating-point values
@@ -30,167 +30,178 @@ namespace StormByte::Config {
 		friend class StormByte::Serializable<Config>;
 		public:
 			/**
-			 * Constructor
+			 * @brief Default constructor.
 			 */
 			Config();
 
 			/**
-			 * Copy constructor
-			 * @param config configuration to copy
+			 * @brief Copy constructor.
+			 * @param config Configuration to copy.
 			 */
-			Config(const Config& config)							= default;
+			Config(const Config& config) = default;
 
 			/**
-			 * Move constructor
-			 * @param config configuration to move
+			 * @brief Move constructor.
+			 * @param config Configuration to move.
 			 */
-			Config(Config&& config) noexcept						= default;
+			Config(Config&& config) noexcept = default;
 
 			/**
-			 * Assignment operator
-			 * @param config configuration to assign
+			 * @brief Copy assignment operator.
+			 * @param config Configuration to assign.
+			 * @return Reference to this Config.
 			 */
-			Config& operator=(const Config& config)					= default;
+			Config& operator=(const Config& config) = default;
 
 			/**
-			 * Move assignment operator
-			 * @param config configuration to move
+			 * @brief Move assignment operator.
+			 * @param config Configuration to move.
+			 * @return Reference to this Config.
 			 */
-			Config& operator=(Config&& config) noexcept				= default;
+			Config& operator=(Config&& config) noexcept = default;
 
 			/**
-			 * Destructor
+			 * @brief Destructor.
 			 */
-			virtual ~Config()										= default;
+			virtual ~Config() = default;
 
 			/**
-			 * Gets a reference to item by path
-			 * @param path path to item
-			 * @return item reference
+			 * @brief Gets a reference to an item by path.
+			 * @param path Path to the item.
+			 * @return Item reference.
 			 */
-			inline Item::Base&										operator[](const std::string& path) {
+			inline Item::Base& operator[](const std::string& path) {
 				return m_root.operator[](path);
 			}
 
 			/**
-			 * Gets a const reference to item by path
-			 * @param path path to item
-			 * @return item const reference
+			 * @brief Gets a const reference to an item by path.
+			 * @param path Path to the item.
+			 * @return Item const reference.
 			 */
-			inline const Item::Base&								operator[](const std::string& path) const {
+			inline const Item::Base& operator[](const std::string& path) const {
 				return m_root.operator[](path);
 			}
 
 			/**
-			 * Gets a reference to item by index
-			 * @param index index of item
-			 * @throw OutOfBounds if index is out of bounds
-			 * @return item reference
+			 * @brief Gets a reference to an item by index.
+			 * @param index Index of the item.
+			 * @throw OutOfBounds if index is out of bounds.
+			 * @return Item reference.
 			 */
-			Item::Base& 											operator[](const size_t& index) {
+			Item::Base& operator[](const size_t& index) {
 				return m_root[index];
 			}
 
 			/**
-			 * Gets a const reference to item by index
-			 * @param index index of item
-			 * @throw OutOfBounds if index is out of bounds
-			 * @return item const reference
+			 * @brief Gets a const reference to an item by index.
+			 * @param index Index of the item.
+			 * @throw OutOfBounds if index is out of bounds.
+			 * @return Item const reference.
 			 */
-			const Item::Base& 										operator[](const size_t& index) const {
+			const Item::Base& operator[](const size_t& index) const {
 				return m_root[index];
 			}
 
 			/**
-			 * Equality operator
-			 * @param config configuration to compare
-			 * @return is equal?
+			 * @brief Equality operator.
+			 * @param config Configuration to compare.
+			 * @return true if equal.
 			 */
-			inline bool												operator==(const Config& config) const noexcept {
+			inline bool operator==(const Config& config) const noexcept {
 				return m_root == config.m_root;
 			}
 
 			/**
-			 * Inequality operator
-			 * @param config configuration to compare
-			 * @return is not equal?
+			 * @brief Inequality operator.
+			 * @param config Configuration to compare.
+			 * @return true if not equal.
 			 */
-			inline bool												operator!=(const Config& config) const noexcept {
+			inline bool operator!=(const Config& config) const noexcept {
 				return !operator==(config);
 			}
 
 			/* INPUT */
-			/**
-			 * Take data from another configuration
-			 * @param source source configuration to import
-			 * @return Reference to configuration
-			 */
-			Config& 												operator<<(const Config& source);
 
 			/**
-			 * Initialize configuration with an input stream
-			 * @param istream input stream
+			 * @brief Import data from another configuration.
+			 * @param source Source configuration to import.
+			 * @return Reference to this configuration.
 			 */
-			void 													operator<<(std::istream& istream); // 1
+			Config& operator<<(const Config& source);
 
 			/**
-			 * Initialize configuration with a string
-			 * @param str input string
+			 * @brief Initialize configuration from an input stream.
+			 * @param istream Input stream.
 			 */
-			void 													operator<<(const std::string& str); // 2
+			void operator<<(std::istream& istream);
 
 			/**
-			 * Initializes configuration with istream (when istream is in the left part)
-			 * @param istream input stream
-			 * @param file Config to put data to
+			 * @brief Initialize configuration from a string.
+			 * @param str Input string.
 			 */
-			friend STORMBYTE_CONFIG_PUBLIC Config&					operator>>(std::istream& istream, Config& file); // 3
+			void operator<<(const std::string& str);
 
 			/**
-			 * Initializes configuration with string (when string is in the left part)
-			 * @param str input string
-			 * @param file Config to put data to
+			 * @brief Initializes configuration when istream is on the left-hand side.
+			 * @param istream Input stream.
+			 * @param file Config to put data into.
+			 * @return Reference to the Config.
 			 */
-			friend STORMBYTE_CONFIG_PUBLIC Config&					operator>>(const std::string& str, Config& file); // 4
-			
+			friend STORMBYTE_CONFIG_PUBLIC Config& operator>>(std::istream& istream, Config& file);
+
+			/**
+			 * @brief Initializes configuration when string is on the left-hand side.
+			 * @param str Input string.
+			 * @param file Config to put data into.
+			 * @return Reference to the Config.
+			 */
+			friend STORMBYTE_CONFIG_PUBLIC Config& operator>>(const std::string& str, Config& file);
+
 			/* OUTPUT */
-			/**
-			 * Outut current configuration to another configuration
-			 * @param dest configuration destination
-			 * @return a reference to destination conf
-			 */
-			Config& 												operator>>(Config& dest) const;
 
 			/**
-			 * Output configuration serialized to output stream
-			 * @param ostream output stream
+			 * @brief Output current configuration into another configuration.
+			 * @param dest Destination configuration.
+			 * @return Reference to the destination configuration.
 			 */
-			std::ostream&											operator>>(std::ostream& ostream) const; // 5
+			Config& operator>>(Config& dest) const;
 
 			/**
-			 * Output configuration serialized to string
-			 * @param str output string
+			 * @brief Output configuration serialized to an output stream.
+			 * @param ostream Output stream.
+			 * @return Reference to the output stream.
 			 */
-			std::string&											operator>>(std::string& str) const; // 6
+			std::ostream& operator>>(std::ostream& ostream) const;
 
 			/**
-			 * Output configuration serialized to output stream (when output stream is in the left part)
-			 * @param ostream output stream
-			 * @param file Config to get data from
+			 * @brief Output configuration serialized to a string.
+			 * @param str Output string.
+			 * @return Reference to the string.
 			 */
-			friend STORMBYTE_CONFIG_PUBLIC std::ostream&			operator<<(std::ostream& ostream, const Config& file); // 7
+			std::string& operator>>(std::string& str) const;
 
 			/**
-			 * Output configuration serialized to string (when string is in the left part)
-			 * @param str output string
-			 * @param file Config to get data from
+			 * @brief Output configuration when ostream is on the left-hand side.
+			 * @param ostream Output stream.
+			 * @param file Config to get data from.
+			 * @return Reference to the output stream.
 			 */
-			friend STORMBYTE_CONFIG_PUBLIC std::string& 			operator<<(std::string&, const Config&); // 8
+			friend STORMBYTE_CONFIG_PUBLIC std::ostream& operator<<(std::ostream& ostream, const Config& file);
 
 			/**
-			 * Converts current configuration to string
+			 * @brief Output configuration when string is on the left-hand side.
+			 * @param str Output string.
+			 * @param file Config to get data from.
+			 * @return Reference to the string.
 			 */
-																	operator std::string() const;
+			friend STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string&, const Config&);
+
+			/**
+			 * @brief Converts the current configuration to a string.
+			 * @return Serialized configuration text.
+			 */
+			operator std::string() const;
 
 			/**
 			 * @brief Adds an item to the configuration.
@@ -198,51 +209,51 @@ namespace StormByte::Config {
 			 * @throw ItemNameAlreadyExists if the item's name already exists.
 			 * @return A reference to the added item.
 			 */
-			inline Item::Base&										Add(const Item::Base& item) {
+			inline Item::Base& Add(const Item::Base& item) {
 				return m_root.Add(item.Clone(), m_on_existing_action);
 			}
 
 			/**
-			 * Adds an item to the container
-			 * @param item item to add
-			 * @throw ItemNameAlreadyExists if item name already exists
-			 * @return reference to added item
+			 * @brief Adds an item to the configuration (move).
+			 * @param item Item to add.
+			 * @throw ItemNameAlreadyExists if item name already exists.
+			 * @return Reference to the added item.
 			 */
-			Item::Base&												Add(Item::Base&& item) {
+			Item::Base& Add(Item::Base&& item) {
 				return m_root.Add(std::move(item.Move()), m_on_existing_action);
 			}
 
 			/**
-			 * Clears all configuration items
+			 * @brief Clears all configuration items.
 			 */
-			inline void												Clear() noexcept {
+			inline void Clear() noexcept {
 				m_root.Clear();
 			}
 
 			/**
-			 * Checks if item exists by path
-			 * @param path path to item
-			 * @return bool exists?
+			 * @brief Checks if an item exists by path.
+			 * @param path Path to the item.
+			 * @return true if the item exists.
 			 */
-			inline bool 											Exists(const std::string& path) const {
+			inline bool Exists(const std::string& path) const {
 				return m_root.Exists(path);
 			}
 
 			/**
-			 * Removes an item by path
-			 * @param path item path
-			 * @throw ItemNotFound if item is not found
+			 * @brief Removes an item by path.
+			 * @param path Item path.
+			 * @throw ItemNotFound if item is not found.
 			 */
-			inline void												Remove(const std::string& path) {
+			inline void Remove(const std::string& path) {
 				m_root.Remove(path);
 			}
 
 			/**
-			 * Removes an item by position
-			 * @param path item path
-			 * @throw OutOfBounds if index is out of bounds
+			 * @brief Removes an item by position.
+			 * @param path Index of the item.
+			 * @throw OutOfBounds if index is out of bounds.
 			 */
-			inline void												Remove(const size_t& path) {
+			inline void Remove(const size_t& path) {
 				m_root.Remove(path);
 			}
 
@@ -251,110 +262,114 @@ namespace StormByte::Config {
 			 * The policy is applied to the root container and will be inherited by all nested containers.
 			 * @param on_existing The policy to use.
 			 */
-			void 													OnExistingAction(const OnExistingAction& on_existing) {
+			void OnExistingAction(const OnExistingAction& on_existing) {
 				m_on_existing_action = on_existing;
 				m_root.SetOnExistingAction(on_existing);
 			}
 
 			/**
-			 * Sets a function to execute on failure
-			 * @param hook function to execute
+			 * @brief Sets a function to execute on parse failure.
+			 * @param hook Function to execute.
 			 */
-			constexpr void											OnParseFailure(OnFailureHook hook) {
+			constexpr void OnParseFailure(OnFailureHook hook) {
 				m_on_parse_failure_hook = hook;
 			}
 
 			/**
-			 * Adds a hook which will take Config as parameter and will be executed before read start
-			 * Hooks will be executed *in order*
+			 * @brief Adds a hook executed before reading starts.
+			 * Hooks run in order.
+			 * @param hook Hook function.
 			 */
-			constexpr void 											AddHookBeforeRead(HookFunction hook) {
+			constexpr void AddHookBeforeRead(HookFunction hook) {
 				m_before_read_hooks.push_back(hook);
 			}
-			
+
 			/**
-			 * Adds a hook which will take Config as parameter and will be executed on successful read
-			 * Hooks will be executed *in order*
+			 * @brief Adds a hook executed after a successful read.
+			 * Hooks run in order.
+			 * @param hook Hook function.
 			 */
-			constexpr void 											AddHookAfterRead(HookFunction hook) {
+			constexpr void AddHookAfterRead(HookFunction hook) {
 				m_after_read_hooks.push_back(hook);
 			}
 
 			/**
-			 * Gets the number of items in the current level
-			 * @return size_t number of items
+			 * @brief Gets the number of items in the current level.
+			 * @return Number of items.
 			 */
-			constexpr virtual size_t								Size() const noexcept {
+			constexpr virtual size_t Size() const noexcept {
 				return m_root.Size();
 			}
 
 			/**
-			 * Gets the full number of items
-			 * @return size_t number of items
+			 * @brief Gets the full number of items (including nested).
+			 * @return Total number of items.
 			 */
-			inline virtual size_t									Count() const noexcept {
+			inline virtual size_t Count() const noexcept {
 				return m_root.Count();
 			}
 
 			/**
-			 * Gets the items in the current level
-			 * @return span of items
+			 * @brief Gets the items in the current level.
+			 * @return Span of items.
 			 */
-			constexpr std::span<Item::Base::PointerType>			Items() noexcept {
+			constexpr std::span<Item::Base::PointerType> Items() noexcept {
 				return m_root.Items();
 			}
 
 			/**
-			 * Gets the items in the current level
-			 * @return span of items
+			 * @brief Gets the items in the current level (const).
+			 * @return Const span of items.
 			 */
-			constexpr std::span<const Item::Base::PointerType> 		Items() const noexcept {
+			constexpr std::span<const Item::Base::PointerType> Items() const noexcept {
 				return m_root.Items();
 			}
 
 		protected:
-			Item::Group 											m_root;								///< Root group
+			Item::Group m_root; ///< Root group
 
 			/**
-			 * Ordered hook list which will be executed sequentially
-			 * in their corresponding event
+			 * Ordered hook lists executed sequentially on their corresponding events.
 			 */
-			HookFunctions 											m_before_read_hooks;				///< Hooks executed before reading
-			HookFunctions											m_after_read_hooks;					///< Hooks executed after successful reading
-			OptionalFailureHook										m_on_parse_failure_hook;			///< Hook executed on failure
+			HookFunctions m_before_read_hooks;				///< Hooks executed before reading
+			HookFunctions m_after_read_hooks;				///< Hooks executed after successful reading
+			OptionalFailureHook m_on_parse_failure_hook;	///< Hook executed on failure
 
 			/**
-			 * Function to override the default action when duplicate name is found when inserting
-			 * Takes 3 parameters: current configuration, existing item and new item and will return
-			 * the item to be inserted (or might throw to cancel the insert)
+			 * Action taken when a duplicate name is found while inserting.
 			 */
-			StormByte::Config::OnExistingAction 					m_on_existing_action;				///< Action to take when item name already exists
+			StormByte::Config::OnExistingAction m_on_existing_action; ///< Collision policy
 	};
-	/**
-	 * Initializes configuration with istream (when istream is in the left part)
-	 * @param istream input stream
-	 * @param file Config to put data to
-	 */
-	STORMBYTE_CONFIG_PUBLIC Config&									operator>>(std::istream& istream, Config& file);
 
 	/**
-	 * Initializes configuration with string (when string is in the left part)
-	 * @param str input string
-	 * @param file Config to put data to
+	 * @brief Initializes configuration when istream is on the left-hand side.
+	 * @param istream Input stream.
+	 * @param file Config to put data into.
+	 * @return Reference to the Config.
 	 */
-	STORMBYTE_CONFIG_PUBLIC Config&									operator>>(const std::string& str, Config& file);
+	STORMBYTE_CONFIG_PUBLIC Config& operator>>(std::istream& istream, Config& file);
 
 	/**
-	 * Output configuration serialized to output stream (when output stream is in the left part)
-	 * @param ostream output stream
-	 * @param file Config to get data from
+	 * @brief Initializes configuration when string is on the left-hand side.
+	 * @param str Input string.
+	 * @param file Config to put data into.
+	 * @return Reference to the Config.
 	 */
-	STORMBYTE_CONFIG_PUBLIC std::ostream&							operator<<(std::ostream& ostream, const Config& file);
+	STORMBYTE_CONFIG_PUBLIC Config& operator>>(const std::string& str, Config& file);
 
 	/**
-	 * Output configuration serialized to string (when string is in the left part)
-	 * @param str output string
-	 * @param file Config to get data from
+	 * @brief Output configuration when ostream is on the left-hand side.
+	 * @param ostream Output stream.
+	 * @param file Config to get data from.
+	 * @return Reference to the output stream.
 	 */
-	STORMBYTE_CONFIG_PUBLIC std::string& 							operator<<(std::string& str, const Config& file);
+	STORMBYTE_CONFIG_PUBLIC std::ostream& operator<<(std::ostream& ostream, const Config& file);
+
+	/**
+	 * @brief Output configuration when string is on the left-hand side.
+	 * @param str Output string.
+	 * @param file Config to get data from.
+	 * @return Reference to the string.
+	 */
+	STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string& str, const Config& file);
 }

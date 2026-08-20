@@ -17,7 +17,7 @@ namespace StormByte::Config {
 			/**
 			 * @brief Inherits constructors from StormByte::Exception.
 			 */
-			using StormByte::Exception::Exception;	
+			using StormByte::Exception::Exception;
 	};
 
 	/**

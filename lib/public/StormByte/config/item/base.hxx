@@ -16,12 +16,12 @@ namespace StormByte::Config::Item {
 	template<AllowedValueType T> class Value;
 
 	/**
-	 * Checks if a name is valid
-	 * @param name name to check
-	 * @return is name valid?
+	 * @brief Checks if a name is valid.
+	 * @param name Name to check.
+	 * @return true if the name is valid.
 	 */
 	bool STORMBYTE_CONFIG_PUBLIC IsNameValid(const std::string&) noexcept;
-	
+
 	/**
 	 * @class Base
 	 * @brief The base class for all configuration items.
@@ -29,59 +29,60 @@ namespace StormByte::Config::Item {
 	class STORMBYTE_CONFIG_PUBLIC Base: public Clonable<Base, std::shared_ptr<Base>> {
 		public:
 			/**
-			 * @brief Constructs a Base item with an optional name.
-			 * @param name The name of the item.
+			 * @brief Default constructor.
 			 */
-			Base() 											= default;
+			Base() = default;
 
 			/**
-			 * @brief Constructs a Base item with an optional name.
+			 * @brief Constructs a Base item with a name.
 			 * @param name The name of the item.
 			 */
 			Base(const std::string& name);
 
 			/**
-			 * Copy constructor
-			 * @param base item to copy
+			 * @brief Copy constructor.
+			 * @param base Item to copy.
 			 */
-			Base(const Base& base) 							= default;
-			
-			/**
-			 * Move constructor
-			 * @param base item to move
-			 */
-			Base(Base&& base) noexcept						= default;
+			Base(const Base& base) = default;
 
 			/**
-			 * Assignment operator
-			 * @param base item to copy
+			 * @brief Move constructor.
+			 * @param base Item to move.
 			 */
-			Base& operator=(const Base& base) 				= default;
+			Base(Base&& base) noexcept = default;
 
 			/**
-			 * Move assignment operator
-			 * @param base item to move
+			 * @brief Copy assignment operator.
+			 * @param base Item to copy.
+			 * @return Reference to this Base.
 			 */
-			Base& operator=(Base&& base) noexcept 			= default;
+			Base& operator=(const Base& base) = default;
 
 			/**
-			 * Destructor
+			 * @brief Move assignment operator.
+			 * @param base Item to move.
+			 * @return Reference to this Base.
 			 */
-			virtual ~Base() noexcept 						= default;
+			Base& operator=(Base&& base) noexcept = default;
 
 			/**
-			 * Equality operator
-			 * @param other item to compare
-			 * @return true if both items are equal
+			 * @brief Destructor.
+			 */
+			virtual ~Base() noexcept = default;
+
+			/**
+			 * @brief Equality operator.
+			 * @param other Item to compare.
+			 * @return true if both items are equal.
 			 */
 			bool operator==(const Base& other) const noexcept {
 				return this->Equals(other);
 			}
 
 			/**
-			 * Inequality operator
-			 * @param other item to compare
-			 * @return true if items are not equal
+			 * @brief Inequality operator.
+			 * @param other Item to compare.
+			 * @return true if items are not equal.
 			 */
 			bool operator!=(const Base& other) const noexcept {
 				return !(*this == other);
@@ -98,39 +99,37 @@ namespace StormByte::Config::Item {
 			 * @brief Gets the name of the item.
 			 * @return The name of the item.
 			 */
-			constexpr const std::optional<std::string>& 	Name() const noexcept {
+			constexpr const std::optional<std::string>& Name() const noexcept {
 				return m_name;
 			}
 
 			/**
-			 * Sets the item name
-			 * @return item name
+			 * @brief Sets the item name.
+			 * @param name New name.
 			 */
-			constexpr void 									Name(const std::string& name) noexcept {
+			constexpr void Name(const std::string& name) noexcept {
 				m_name = name;
 			}
 
 			/**
-			 * Checks if current name is valid
-			 * @return is name valid?
+			 * @brief Checks if the current name is valid.
+			 * @return true if the name is valid.
 			 */
-			inline bool 									IsNameValid() const noexcept {
+			inline bool IsNameValid() const noexcept {
 				return m_name.has_value() && Item::IsNameValid(m_name.value());
 			}
 
 			/**
-			 * Gets the item name
-			 * @return item name
+			 * @brief Gets the item type.
+			 * @return Item type.
 			 */
-			constexpr virtual Type 							Type() const noexcept = 0;
+			constexpr virtual Type Type() const noexcept = 0;
 
 			/**
 			 * @brief Returns the comment type if this item is a Comment, otherwise std::nullopt.
 			 *
-			 * This method is used by the serialization layer to determine the concrete
-			 * Comment specialization (SingleLineBash, SingleLineC or MultiLineC)
-			 * without relying on RTTI / dynamic_cast, which can fail under certain
-			 * compilers and standard libraries (especially Clang + libc++).
+			 * Used by the serialization layer to determine the concrete Comment specialization
+			 * without relying on RTTI / dynamic_cast.
 			 *
 			 * @return The CommentType if this is a comment, std::nullopt otherwise.
 			 */
@@ -139,58 +138,57 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Gets the item type as string
-			 * @return item type as string
+			 * @brief Gets the item type as a string.
+			 * @return Item type as string.
 			 */
-			constexpr std::string							TypeToString() const noexcept {
+			constexpr std::string TypeToString() const noexcept {
 				return Item::TypeToString(this->Type());
 			}
 
 			/**
-			 * Gets the item name
-			 * @return item name
+			 * @brief Serializes the item.
+			 * @param indent_level Indentation level.
+			 * @return Serialized string.
 			 */
-			virtual std::string								Serialize(const int& indent_level) const noexcept;
+			virtual std::string Serialize(const int& indent_level) const noexcept;
 
 			/**
-			 * Converts current configuration to string
-			 * @return configuration as string
+			 * @brief Converts the item to a string.
+			 * @return Serialized representation.
 			 */
-			operator 										std::string() const {
+			operator std::string() const {
 				return this->Serialize(0);
 			}
 
 			/**
-			 * Gets the item value
-			 * @tparam T item value type
-			 * @return item value
+			 * @brief Gets the item value (const).
+			 * @tparam T Target value type.
+			 * @return Const reference to the value.
+			 * @throw WrongValueTypeConversion on type mismatch.
 			 */
 			template<typename T>
 			const T& Value() const {
 				if constexpr (std::is_base_of_v<std::remove_reference_t<decltype(*this)>, T>) {
-					// Direct match: T (e.g., Container, Group, etc.) matches this object type
 					return static_cast<const T&>(*this);
 				} else if constexpr (std::is_base_of_v<std::remove_reference_t<decltype(*this)>, Item::Value<T>>) {
-					// Indirect match: T is wrapped inside Item::Value<T>
 					return *static_cast<const Item::Value<T>&>(*this);
 				} else {
-					// No valid match: Throw an exception for incorrect conversion
 					throw WrongValueTypeConversion("Wrong value type {} while expecting {}", this->TypeToString(), typeid(T).name());
 				}
 			}
-			
+
 			/**
-			 * Gets the item value
-			 * @tparam T item value type
-			 * @return item value
+			 * @brief Gets the item value (mutable).
+			 * @tparam T Target value type.
+			 * @return Reference to the value.
+			 * @throw WrongValueTypeConversion on type mismatch.
 			 */
 			template<typename T>
 			T& Value() {
 				return const_cast<T&>(static_cast<const Base&>(*this).Value<T>());
 			}
-				
 
 		protected:
-			std::optional<std::string> m_name;				///< Item name
+			std::optional<std::string> m_name; ///< Item name
 	};
 }

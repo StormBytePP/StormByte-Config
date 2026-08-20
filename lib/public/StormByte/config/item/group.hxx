@@ -31,71 +31,74 @@ namespace StormByte::Config::Item {
 			Group(const std::string& name);
 
 			/**
-			 * @brief Constructs a Group with the given name.
+			 * @brief Constructs a Group with the given name (move).
 			 * @param name The name of the group.
 			 */
 			Group(std::string&& name);
 
 			/**
-			 * Copy constructor
-			 * @param group group to copy
+			 * @brief Copy constructor.
+			 * @param group Group to copy.
 			 */
-			Group(const Group& group)							= default;
+			Group(const Group& group) = default;
 
 			/**
-			 * Move constructor
-			 * @param group group to move
+			 * @brief Move constructor.
+			 * @param group Group to move.
 			 */
-			Group(Group&& group) noexcept						= default;
+			Group(Group&& group) noexcept = default;
 
 			/**
-			 * Assignment operator
-			 * @param group group to copy
+			 * @brief Copy assignment operator.
+			 * @param group Group to copy.
+			 * @return Reference to this Group.
 			 */
-			Group& operator=(const Group& group)				= default;
+			Group& operator=(const Group& group) = default;
 
 			/**
-			 * Move assignment operator
-			 * @param group group to move
+			 * @brief Move assignment operator.
+			 * @param group Group to move.
+			 * @return Reference to this Group.
 			 */
-			Group& operator=(Group&& group) noexcept			= default;
+			Group& operator=(Group&& group) noexcept = default;
 
 			/**
-			 * Destructor
+			 * @brief Destructor.
 			 */
-			~Group() noexcept override							= default;
+			~Group() noexcept override = default;
 
 			/**
-			 * Clones the container
-			 * @return cloned container
+			 * @brief Clones the group.
+			 * @return Cloned group.
 			 */
-			inline PointerType									Clone() const override {
+			inline PointerType Clone() const override {
 				return MakePointer<Group>(*this);
 			}
 
 			/**
-			 * Moves the container
-			 * @return moved container
+			 * @brief Moves the group.
+			 * @return Moved group.
 			 */
-			inline PointerType									Move() override {
+			inline PointerType Move() override {
 				return MakePointer<Group>(std::move(*this));
 			}
 
 			/**
-			 * Gets the container type
-			 * @return Container type
+			 * @brief Gets the container type.
+			 * @return Container type.
 			 */
-			constexpr Item::ContainerType						ContainerType() const noexcept override {
+			constexpr Item::ContainerType ContainerType() const noexcept override {
 				return ContainerType::Group;
 			}
 
 		private:
 			/**
-			 * Actions to be done before adding an item
-			 * @param item item to check
-			 * @param onexisting action to take if item name already exists
-			 * @throw ItemNameAlreadyExists if item name already exists
+			 * @brief Actions performed before adding an item.
+			 * @param item Item to check.
+			 * @param onexisting Action to take if item name already exists.
+			 * @throw ItemNameAlreadyExists if item name already exists.
+			 * @return Pointer to the kept/added item.
 			 */
-			Base::PointerType 									BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) override;
+			Base::PointerType BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) override;
 	};
 }

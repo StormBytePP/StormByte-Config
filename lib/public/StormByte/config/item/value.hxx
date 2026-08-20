@@ -22,80 +22,91 @@ namespace StormByte::Config::Item {
 			 * @brief Constructs a Value with the given value.
 			 * @param value The value of the item.
 			 */
-			Value(const T& value):Base(), m_value(value) {}
+			Value(const T& value): Base(), m_value(value) {}
 
+			/**
+			 * @brief Constructs a string Value from a C string.
+			 * @param value Source C string.
+			 */
 			template <typename U = T>
 			Value(const char* value) requires std::is_same_v<U, std::string>
 				: Base(), m_value(std::string(value)) {}
 
+			/**
+			 * @brief Constructs a named string Value from C strings.
+			 * @param name Item name.
+			 * @param value Source C string.
+			 */
 			template <typename U = T>
 			Value(const char* name, const char* value) requires std::is_same_v<U, std::string>
 				: Base(std::string(name)), m_value(std::string(value)) {}
 
 			/**
-			 * Move Constructor
-			 * @param value item value
+			 * @brief Move constructor from value.
+			 * @param value Item value.
 			 */
-			Value(T&& value):Base(), m_value(std::move(value)) {}
+			Value(T&& value): Base(), m_value(std::move(value)) {}
 
 			/**
-			 * Constructor
-			 * @param name item name
-			 * @param value item value
+			 * @brief Constructs a named Value.
+			 * @param name Item name.
+			 * @param value Item value.
 			 */
-			Value(const std::string& name, const T& value):Base(name), m_value(value) {}
+			Value(const std::string& name, const T& value): Base(name), m_value(value) {}
 
 			/**
-			 * Move Constructor
-			 * @param name item name
-			 * @param value item value
+			 * @brief Constructs a named Value (move).
+			 * @param name Item name.
+			 * @param value Item value.
 			 */
-			Value(std::string&& name, T&& value):Base(std::move(name)), m_value(std::move(value)) {}
+			Value(std::string&& name, T&& value): Base(std::move(name)), m_value(std::move(value)) {}
 
 			/**
-			 * Constructor overload (for std::string only)
-			 * @param name item name
-			 * @param value item value
+			 * @brief Named string constructor from C string value.
+			 * @param name Item name.
+			 * @param value C string value.
 			 */
 			Value(const std::string& name, const char* value) requires std::is_same_v<T, std::string>
 				: Base(name), m_value(std::string(value)) {}
 
 			/**
-			 * Move Constructor overload (for std::string only)
-			 * @param name item name
-			 * @param value item value
+			 * @brief Named string constructor (move name) from C string value.
+			 * @param name Item name.
+			 * @param value C string value.
 			 */
 			Value(std::string&& name, const char* value) requires std::is_same_v<T, std::string>
 				: Base(std::move(name)), m_value(std::string(value)) {}
 
 			/**
-			 * Copy constructor
-			 * @param single item to copy
+			 * @brief Copy constructor.
+			 * @param single Item to copy.
 			 */
-			Value(const Value& single)						= default;
+			Value(const Value& single) = default;
 
 			/**
-			 * Move constructor
-			 * @param single item to move
+			 * @brief Move constructor.
+			 * @param single Item to move.
 			 */
-			Value(Value&& single) noexcept					= default;
+			Value(Value&& single) noexcept = default;
 
 			/**
-			 * Assignment operator
-			 * @param single item to copy
+			 * @brief Copy assignment operator.
+			 * @param single Item to copy.
+			 * @return Reference to this Value.
 			 */
-			Value& operator=(const Value& single)			= default;
+			Value& operator=(const Value& single) = default;
 
 			/**
-			 * Move assignment operator
-			 * @param single item to move
+			 * @brief Move assignment operator.
+			 * @param single Item to move.
+			 * @return Reference to this Value.
 			 */
-			Value& operator=(Value&& single) noexcept		= default;
+			Value& operator=(Value&& single) noexcept = default;
 
 			/**
-			 * Destructor
+			 * @brief Destructor.
 			 */
-			virtual ~Value() noexcept override				= default;
+			virtual ~Value() noexcept override = default;
 
 			/**
 			 * @brief Polymorphic equality comparison.
@@ -132,32 +143,32 @@ namespace StormByte::Config::Item {
 			/**
 			 * @brief Checks if two Value objects are equal.
 			 * @param single The Value object to compare.
-			 * @return True if equal, false otherwise.
+			 * @return true if equal.
 			 */
 			bool operator==(const Value<T>& single) const noexcept {
 				return Equals(single);
 			}
 
 			/**
-			 * Inequality operator
-			 * @param single item to compare
-			 * @return is not equal?
+			 * @brief Inequality operator.
+			 * @param single Item to compare.
+			 * @return true if not equal.
 			 */
 			bool operator!=(const Value<T>& single) const noexcept {
 				return !operator==(single);
 			}
 
 			/**
-			 * Gets the item value
-			 * @return item value
+			 * @brief Gets the item value (mutable).
+			 * @return Item value.
 			 */
 			T& operator*() noexcept {
 				return m_value;
 			}
 
 			/**
-			 * Gets the item value
-			 * @return item value
+			 * @brief Gets the item value (const).
+			 * @return Item value.
 			 */
 			const T& operator*() const noexcept {
 				return m_value;
@@ -171,26 +182,26 @@ namespace StormByte::Config::Item {
 			std::string Serialize(const int& indent_level) const noexcept override;
 
 			/**
-			 * Clones the item
-			 * @return cloned item
+			 * @brief Clones the item.
+			 * @return Cloned item.
 			 */
 			virtual PointerType Clone() const override {
 				return MakePointer<Value<T>>(*this);
 			}
 
 			/**
-			 * Moves the item
-			 * @return moved item
+			 * @brief Moves the item.
+			 * @return Moved item.
 			 */
 			virtual PointerType Move() override {
 				return MakePointer<Value<T>>(std::move(*this));
 			}
 
 		protected:
-			T m_value;										///< The value of the item.
+			T m_value; ///< The value of the item.
 	};
 
 	// Deduction guides
-	Value(const char*) 				-> Value<std::string>;
+	Value(const char*) -> Value<std::string>;
 	Value(const char*, const char*) -> Value<std::string>;
 }

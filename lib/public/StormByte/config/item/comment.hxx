@@ -21,42 +21,44 @@ namespace StormByte::Config::Item {
 			 * @brief Constructs a Comment with the given string.
 			 * @param comment The comment string.
 			 */
-			Comment(const std::string& comment):Value<std::string>(comment) {}
+			Comment(const std::string& comment): Value<std::string>(comment) {}
 
 			/**
-			 * Move Constructor
-			 * @param comment comment string
+			 * @brief Move constructor from comment string.
+			 * @param comment Comment string.
 			 */
-			Comment(std::string&& comment):Value<std::string>(std::move(comment)) {}
+			Comment(std::string&& comment): Value<std::string>(std::move(comment)) {}
 
 			/**
-			 * Copy constructor
-			 * @param base comment to copy
+			 * @brief Copy constructor.
+			 * @param base Comment to copy.
 			 */
-			Comment(const Comment& base)							= default;
+			Comment(const Comment& base) = default;
 
 			/**
-			 * Move constructor
-			 * @param base comment to move
+			 * @brief Move constructor.
+			 * @param base Comment to move.
 			 */
-			Comment(Comment&& base)									= default;
+			Comment(Comment&& base) = default;
 
 			/**
-			 * Assignment operator
-			 * @param base comment to copy
+			 * @brief Copy assignment operator.
+			 * @param base Comment to copy.
+			 * @return Reference to this Comment.
 			 */
-			Comment& operator=(const Comment& base)					= default;
+			Comment& operator=(const Comment& base) = default;
 
 			/**
-			 * Move assignment operator
-			 * @param base comment to move
+			 * @brief Move assignment operator.
+			 * @param base Comment to move.
+			 * @return Reference to this Comment.
 			 */
-			Comment& operator=(Comment&& base)						= default;
+			Comment& operator=(Comment&& base) = default;
 
 			/**
-			 * Destructor
+			 * @brief Destructor.
 			 */
-			~Comment() noexcept override							= default;
+			~Comment() noexcept override = default;
 
 			/**
 			 * @brief Polymorphic equality comparison.
@@ -78,27 +80,22 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Serializes the comment item
-			 * @param indent_level intentation level
-			 * @return serialized string
+			 * @brief Serializes the comment item.
+			 * @param indent_level Indentation level.
+			 * @return Serialized string.
 			 */
-			std::string 											Serialize(const int& indent_level) const noexcept override;
+			std::string Serialize(const int& indent_level) const noexcept override;
 
 			/**
-			 * Gets the item type
-			 * @return item type
+			 * @brief Gets the item type.
+			 * @return Item type.
 			 */
-			constexpr Item::Type									Type() const noexcept override {
+			constexpr Item::Type Type() const noexcept override {
 				return Type::Comment;
 			}
 
 			/**
 			 * @brief Returns the concrete comment type of this Comment specialization.
-			 *
-			 * Overrides Base::GetCommentType() so that the serialization code can
-			 * correctly identify which Comment template instantiation this object is
-			 * without using dynamic_cast / RTTI.
-			 *
 			 * @return The CommentType corresponding to the template parameter T.
 			 */
 			std::optional<CommentType> GetCommentType() const noexcept override {
@@ -106,34 +103,34 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * Gets the comment string
-			 * @return comment string
+			 * @brief Gets the comment type.
+			 * @return Comment type.
 			 */
-			constexpr CommentType 									CommentType() const noexcept {
+			constexpr CommentType CommentType() const noexcept {
 				return T;
 			}
 
 			/**
-			 * Converts comment type to string
-			 * @return comment type string
+			 * @brief Converts comment type to string.
+			 * @return Comment type string.
 			 */
-			constexpr std::string									CommentTypeToString() const noexcept {
+			constexpr std::string CommentTypeToString() const noexcept {
 				return Item::TypeToString(T);
 			}
 
 			/**
-			 * Clones the comment
-			 * @return cloned comment
+			 * @brief Clones the comment.
+			 * @return Cloned comment.
 			 */
-			PointerType												Clone() const override {
+			PointerType Clone() const override {
 				return MakePointer<Comment<T>>(*this);
 			}
 
 			/**
-			 * Moves the comment
-			 * @return moved comment
+			 * @brief Moves the comment.
+			 * @return Moved comment.
 			 */
-			PointerType												Move() override {
+			PointerType Move() override {
 				return MakePointer<Comment<T>>(std::move(*this));
 			}
 	};

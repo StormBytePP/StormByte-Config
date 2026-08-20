@@ -22,7 +22,7 @@ namespace StormByte::Config::Item {
 			/**
 			 * @brief Constructs an empty List.
 			 */
-			List()												= default;
+			List() = default;
 
 			/**
 			 * @brief Constructs a List with the given name.
@@ -31,71 +31,74 @@ namespace StormByte::Config::Item {
 			List(const std::string& name);
 
 			/**
-			 * @brief Constructs a List with the given name.
+			 * @brief Constructs a List with the given name (move).
 			 * @param name The name of the list.
 			 */
 			List(std::string&& name);
 
 			/**
-			 * Copy constructor
-			 * @param list List to copy
+			 * @brief Copy constructor.
+			 * @param list List to copy.
 			 */
-			List(const List& list)								= default;
+			List(const List& list) = default;
 
 			/**
-			 * Move constructor
-			 * @param list List to move
+			 * @brief Move constructor.
+			 * @param list List to move.
 			 */
-			List(List&& list) noexcept							= default;
+			List(List&& list) noexcept = default;
 
 			/**
-			 * Assignment operator
-			 * @param list List to assign
+			 * @brief Copy assignment operator.
+			 * @param list List to assign.
+			 * @return Reference to this List.
 			 */
-			List& operator=(const List& list)					= default;
+			List& operator=(const List& list) = default;
 
 			/**
-			 * Move assignment operator
-			 * @param list List to move
+			 * @brief Move assignment operator.
+			 * @param list List to move.
+			 * @return Reference to this List.
 			 */
-			List& operator=(List&& list) noexcept				= default;
+			List& operator=(List&& list) noexcept = default;
 
 			/**
-			 * Destructor
+			 * @brief Destructor.
 			 */
-			~List() noexcept override							= default;
+			~List() noexcept override = default;
 
 			/**
-			 * Clones the list
-			 * @return cloned list
+			 * @brief Clones the list.
+			 * @return Cloned list.
 			 */
-			inline PointerType									Clone() const override {
+			inline PointerType Clone() const override {
 				return MakePointer<List>(*this);
 			}
 
 			/**
-			 * Moves the list
-			 * @return moved list
+			 * @brief Moves the list.
+			 * @return Moved list.
 			 */
-			inline PointerType									Move() override {
+			inline PointerType Move() override {
 				return MakePointer<List>(std::move(*this));
 			}
 
 			/**
-			 * Gets the container type
-			 * @return Container type
+			 * @brief Gets the container type.
+			 * @return Container type.
 			 */
-			constexpr Item::ContainerType						ContainerType() const noexcept override {
+			constexpr Item::ContainerType ContainerType() const noexcept override {
 				return ContainerType::List;
 			}
 
 		private:
 			/**
-			 * Actions to be done before adding an item
-			 * @param item item to check
-			 * @param onexisting action to take if item name already exists
-			 * @throw ItemNameAlreadyExists if item name already exists
+			 * @brief Actions performed before adding an item.
+			 * @param item Item to check.
+			 * @param onexisting Action to take if item already exists.
+			 * @throw ItemAlreadyExists if item already exists.
+			 * @return Pointer to the kept/added item.
 			 */
-			Base::PointerType 									BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) override;
+			Base::PointerType BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) override;
 	};
 }

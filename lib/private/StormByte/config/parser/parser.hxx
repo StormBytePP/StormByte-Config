@@ -56,7 +56,6 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Parse a configuration from an input stream.
-			 *
 			 * @param stream Input stream containing the configuration.
 			 * @param root Root group where the parsed items will be stored.
 			 * @param action Action to take when an item name already exists.
@@ -75,7 +74,6 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Parse a configuration from a string.
-			 *
 			 * @param string String containing the configuration.
 			 * @param root Root group where the parsed items will be stored.
 			 * @param action Action to take when an item name already exists.
@@ -93,9 +91,9 @@ namespace StormByte::Config::Parser {
 				const OptionalFailureHook& on_failure);
 
 		private:
-			Tokenizer&              m_tokenizer;            ///< Reference to the tokenizer
-			const OnExistingAction  c_on_existing_action;   ///< Action to take on name collision
-			unsigned int            m_container_level = 0;  ///< Current nesting level of containers
+			Tokenizer& m_tokenizer; ///< Reference to the tokenizer
+			const OnExistingAction c_on_existing_action; ///< Action to take on name collision
+			unsigned int m_container_level = 0; ///< Current nesting level of containers
 
 			/**
 			 * @brief Private constructor.
@@ -106,7 +104,6 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Main recursive parsing function.
-			 *
 			 * @param container Destination container that will receive the parsed items.
 			 * @param mode Parsing mode (Named for Groups, Unnamed for Lists).
 			 * @return Empty Expected on success, ParseError otherwise.
@@ -115,7 +112,6 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Expects the next token to be of the given type.
-			 *
 			 * @param expected The expected token type.
 			 * @return The token if it matches, or a ParseError.
 			 */
@@ -123,48 +119,31 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Converts a Comment token into the corresponding Comment item.
-			 *
 			 * @param token The comment token.
 			 * @return A shared pointer to the created Comment item.
 			 */
 			Item::Base::PointerType MakeComment(const Token& token);
-		};
+	};
 
-		/**
-		 * @brief Convenience free function that forwards to Parser::Parse (stream version).
-		 *
-		 * @param stream Input stream.
-		 * @param root Root group.
-		 * @param action Collision handling policy.
-		 * @param before Pre-parse hooks.
-		 * @param after Post-parse hooks.
-		 * @param on_failure Optional failure hook.
-		 * @return Empty Expected on success, ParseError otherwise.
-		 */
-		Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
-			std::istream& stream,
-			Item::Group& root,
-			const OnExistingAction& action,
-			const HookFunctions& before,
-			const HookFunctions& after,
-			const OptionalFailureHook& on_failure);
+	/**
+	 * @brief Convenience free function that forwards to Parser::Parse (stream version).
+	 */
+	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
+		std::istream& stream,
+		Item::Group& root,
+		const OnExistingAction& action,
+		const HookFunctions& before,
+		const HookFunctions& after,
+		const OptionalFailureHook& on_failure);
 
-		/**
-		 * @brief Convenience free function that forwards to Parser::Parse (string version).
-		 *
-		 * @param string Input string.
-		 * @param root Root group.
-		 * @param action Collision handling policy.
-		 * @param before Pre-parse hooks.
-		 * @param after Post-parse hooks.
-		 * @param on_failure Optional failure hook.
-		 * @return Empty Expected on success, ParseError otherwise.
-		 */
-		Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
-			const std::string& string,
-			Item::Group& root,
-			const OnExistingAction& action,
-			const HookFunctions& before,
-			const HookFunctions& after,
-			const OptionalFailureHook& on_failure);
+	/**
+	 * @brief Convenience free function that forwards to Parser::Parse (string version).
+	 */
+	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
+		const std::string& string,
+		Item::Group& root,
+		const OnExistingAction& action,
+		const HookFunctions& before,
+		const HookFunctions& after,
+		const OptionalFailureHook& on_failure);
 }
