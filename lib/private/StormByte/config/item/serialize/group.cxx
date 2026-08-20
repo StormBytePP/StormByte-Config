@@ -1,7 +1,7 @@
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/serialize/base.hxx>
 #include <StormByte/serializable.hxx>
-#include <iostream>
+
 namespace StormByte {
 	using namespace StormByte::Config::Item;
 
