@@ -2,7 +2,7 @@
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/base.hxx>
-#include <StormByte/config/type.hxx>
+#include <StormByte/config/typedefs.hxx>
 
 #include <queue>
 #include <span>

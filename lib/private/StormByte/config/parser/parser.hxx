@@ -8,7 +8,7 @@
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/config/parser/type.hxx>
-#include <StormByte/config/type.hxx>
+#include <StormByte/config/typedefs.hxx>
 #include <StormByte/expected.hxx>
 
 #include <istream>

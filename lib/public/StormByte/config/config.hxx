@@ -5,7 +5,7 @@
 #include <StormByte/config/item/comment.hxx>
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/list.hxx>
-#include <StormByte/config/type.hxx>
+#include <StormByte/config/typedefs.hxx>
 #include <StormByte/serializable.hxx>
 
 /**
