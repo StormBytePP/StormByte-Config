@@ -1,5 +1,4 @@
 #include <StormByte/config/config.hxx>
-#include <StormByte/serializable.hxx>
 #include <StormByte/system.hxx>
 #include <StormByte/test_handlers.h>
 
@@ -7,6 +6,7 @@
 #include <cstring>
 #include <fstream>
 #include <random>
+#include <sstream>
 
 using namespace StormByte::Config;
 
@@ -41,7 +41,18 @@ Config MakeListConfig() {
 }
 
 std::vector<std::byte> SerializeConfig(const Config& cfg) {
-	return StormByte::Serializable<Config>(cfg).Serialize();
+	std::ostringstream oss(std::ios::binary);
+	cfg.Save(oss, Mode::Binary);
+	const std::string& s = oss.str();
+	return std::vector<std::byte>(
+		reinterpret_cast<const std::byte*>(s.data()),
+		reinterpret_cast<const std::byte*>(s.data()) + s.size());
+}
+
+ExpectedConfig DeserializeConfig(const std::vector<std::byte>& buffer) {
+	std::string raw(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+	std::istringstream iss(std::move(raw), std::ios::binary);
+	return Config::Load(iss, Mode::Binary);
 }
 
 void FlipBit(std::vector<std::byte>& buf, std::size_t byte_index, unsigned bit) {
@@ -63,14 +74,14 @@ std::vector<std::byte> Truncate(const std::vector<std::byte>& buf, std::size_t n
 } // namespace
 
 // =============================================================================
-// Round-trip via Config (public API)
+// Round-trip via Config::Save / Config::Load (Mode::Binary)
 // =============================================================================
 
 int test_serialize_value_string() {
 	Config cfg;
 	cfg.Add(Item::Value<std::string>("test", "Hello, World!"));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_string", 1);
@@ -83,7 +94,7 @@ int test_serialize_value_int() {
 	Config cfg;
 	cfg.Add(Item::Value<int>("test", 62));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_int", 1);
@@ -96,7 +107,7 @@ int test_serialize_value_double() {
 	Config cfg;
 	cfg.Add(Item::Value<double>("test", 62.78));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_double", 1);
@@ -109,7 +120,7 @@ int test_serialize_value_bool() {
 	Config cfg;
 	cfg.Add(Item::Value<bool>("test", true));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_bool", 1);
@@ -122,7 +133,7 @@ int test_serialize_comment_single_bash() {
 	Config cfg;
 	cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("Single line comment in bash"));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_comment_single_bash", 1);
@@ -135,7 +146,7 @@ int test_serialize_comment_single_C() {
 	Config cfg;
 	cfg.Add(Item::Comment<Item::CommentType::SingleLineC>("Single line comment in C"));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_comment_single_C", 1);
@@ -149,7 +160,7 @@ int test_serialize_comment_multi_C() {
 	cfg.Add(Item::Comment<Item::CommentType::MultiLineC>(
 		"Multi line comment in C\nAnother line\nAnd another one"));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_comment_multi_C", 1);
@@ -169,7 +180,7 @@ int test_serialize_group() {
 	cfg.Add(Item::Comment<Item::CommentType::MultiLineC>(
 		"Multi line comment in C\nAnother line\nAnd another one"));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_group", 1);
@@ -191,7 +202,7 @@ int test_serialize_list() {
 		"Multi line comment in C\nAnother line\nAnd another one"));
 	cfg.Add(std::move(list));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_list", 1);
@@ -213,7 +224,7 @@ int test_serialize_nested_groups() {
 	nested.Add(Item::Value<bool>("bool", true));
 	cfg.Add(std::move(nested));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_nested_groups", 1);
@@ -227,23 +238,15 @@ int test_config_binary_deserialize() {
 		std::fstream file;
 		const std::filesystem::path binary_file = CurrentFileDirectory / "files" / "config_example.bin";
 		const std::filesystem::path human_readable_file = CurrentFileDirectory / "files" / "complex_conf1.conf";
-		file.open(binary_file, std::ios::binary | std::ios::ate | std::ios::in);
+		file.open(binary_file, std::ios::binary | std::ios::in);
 
 		if (!file.is_open()) {
 			std::cerr << "Can't open file " << binary_file.string() << std::endl;
 			RETURN_TEST("test_config_binary_deserialize", 1);
 		}
-		std::streamsize file_size = file.tellg();
-		file.seekg(0, std::ios::beg);
 
-		std::vector<std::byte> buff(static_cast<std::size_t>(file_size));
-		if (!file.read(reinterpret_cast<char*>(buff.data()), file_size)) {
-			std::cerr << "Failed to read file" << std::endl;
-			RETURN_TEST("test_config_binary_deserialize", 1);
-		}
+		auto expected_cfg = Config::Load(file, Mode::Binary);
 		file.close();
-
-		auto expected_cfg = StormByte::Serializable<Config>::Deserialize(buff);
 		if (!expected_cfg) {
 			std::cerr << expected_cfg.error()->what() << std::endl;
 			RETURN_TEST("test_config_binary_deserialize", 1);
@@ -276,7 +279,7 @@ int test_serialize_value_binary() {
 	};
 	cfg.Add(Item::Value<std::vector<std::byte>>("test", data));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_binary", 1);
@@ -289,7 +292,7 @@ int test_serialize_value_binary_empty() {
 	Config cfg;
 	cfg.Add(Item::Value<std::vector<std::byte>>("empty", std::vector<std::byte>{}));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_binary_empty", 1);
@@ -307,7 +310,7 @@ int test_serialize_value_binary_all_bytes() {
 	Config cfg;
 	cfg.Add(Item::Value<std::vector<std::byte>>("all_bytes", data));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_binary_all_bytes", 1);
@@ -323,7 +326,7 @@ int test_serialize_value_binary_large() {
 	Config cfg;
 	cfg.Add(Item::Value<std::vector<std::byte>>("large", std::move(data)));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_value_binary_large", 1);
@@ -340,7 +343,7 @@ int test_serialize_group_with_binary() {
 		{std::byte{0x01}, std::byte{0x02}, std::byte{0x03}}));
 	cfg.Add(Item::Value<bool>("flag", true));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_group_with_binary", 1);
@@ -359,7 +362,7 @@ int test_serialize_list_with_binary() {
 	list.Add(Item::Value<bool>(false));
 	cfg.Add(std::move(list));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_list_with_binary", 1);
@@ -378,7 +381,7 @@ int test_serialize_nested_with_binary() {
 	cfg.Add(std::move(nested));
 	cfg.Add(Item::Value<int>("version", 1));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_nested_with_binary", 1);
@@ -398,7 +401,7 @@ int test_serialize_binary_roundtrip_text_and_binary() {
 		}
 	)";
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_binary_roundtrip_text_and_binary", 1);
@@ -428,7 +431,7 @@ int test_text_to_binary_to_text_roundtrip() {
 		cfg1 << original_text;
 
 		auto binary_buffer = SerializeConfig(cfg1);
-		auto expected = StormByte::Serializable<Config>::Deserialize(binary_buffer);
+		auto expected = DeserializeConfig(binary_buffer);
 		if (!expected) {
 			std::cerr << expected.error()->what() << std::endl;
 			RETURN_TEST("test_text_to_binary_to_text_roundtrip", 1);
@@ -454,12 +457,12 @@ int test_text_to_binary_to_text_roundtrip() {
 }
 
 // =============================================================================
-// Corruption / robustness (all via Config)
+// Corruption / robustness (Mode::Binary)
 // =============================================================================
 
 int test_corruption_empty_buffer() {
 	std::vector<std::byte> empty;
-	auto r = StormByte::Serializable<Config>::Deserialize(empty);
+	auto r = DeserializeConfig(empty);
 	if (r) {
 		std::cerr << "empty buffer was accepted\n";
 		RETURN_TEST("test_corruption_empty_buffer", 1);
@@ -472,7 +475,7 @@ int test_corruption_truncated_all_lengths() {
 	int failures = 0;
 	for (std::size_t len = 0; len < clean.size(); ++len) {
 		auto truncated = Truncate(clean, len);
-		auto result = StormByte::Serializable<Config>::Deserialize(truncated);
+		auto result = DeserializeConfig(truncated);
 		if (result) {
 			std::cerr << "truncated size " << len << " accepted\n";
 			++failures;
@@ -491,7 +494,7 @@ int test_corruption_header_bytes() {
 		for (int v = 0; v < 256; v += 17) {
 			auto buf = clean;
 			CorruptByte(buf, i, static_cast<std::byte>(v));
-			if (StormByte::Serializable<Config>::Deserialize(buf))
+			if (DeserializeConfig(buf))
 				++accepted;
 		}
 	}
@@ -508,7 +511,7 @@ int test_corruption_no_crash_single_bit_flip() {
 		for (unsigned bit = 0; bit < 8; ++bit) {
 			auto buf = clean;
 			FlipBit(buf, i, bit);
-			(void)StormByte::Serializable<Config>::Deserialize(buf);
+			(void)DeserializeConfig(buf);
 		}
 	}
 	RETURN_TEST("test_corruption_no_crash_single_bit_flip", 0);
@@ -520,7 +523,7 @@ int test_corruption_no_crash_single_byte_overwrite() {
 		for (int v = 0; v < 256; v += 23) {
 			auto buf = clean;
 			CorruptByte(buf, i, static_cast<std::byte>(v));
-			(void)StormByte::Serializable<Config>::Deserialize(buf);
+			(void)DeserializeConfig(buf);
 		}
 	}
 	RETURN_TEST("test_corruption_no_crash_single_byte_overwrite", 0);
@@ -534,7 +537,7 @@ int test_corruption_payload_still_safe() {
 	for (std::size_t i = start; i < clean.size(); ++i) {
 		auto buf = clean;
 		FlipBit(buf, i, 0);
-		(void)StormByte::Serializable<Config>::Deserialize(buf);
+		(void)DeserializeConfig(buf);
 	}
 	RETURN_TEST("test_corruption_payload_still_safe", 0);
 }
@@ -550,7 +553,7 @@ int test_corruption_payload_binary_still_safe() {
 	for (std::size_t i = start; i < clean.size(); ++i) {
 		auto buf = clean;
 		CorruptByte(buf, i, std::byte{0xAA});
-		(void)StormByte::Serializable<Config>::Deserialize(buf);
+		(void)DeserializeConfig(buf);
 	}
 	RETURN_TEST("test_corruption_payload_binary_still_safe", 0);
 }
@@ -562,14 +565,14 @@ int test_corruption_huge_claimed_size() {
 		auto buf = clean;
 		std::uint64_t huge = 0xFFFFFFFFFFFFFFFFULL;
 		std::memcpy(buf.data(), &huge, sizeof(huge));
-		if (StormByte::Serializable<Config>::Deserialize(buf))
+		if (DeserializeConfig(buf))
 			++accepted;
 	}
 	for (std::size_t i = 0; i + sizeof(std::uint64_t) <= std::min<std::size_t>(24, clean.size()); i += sizeof(std::uint64_t)) {
 		auto buf = clean;
 		std::uint64_t huge = 0xFFFFFFFFFFFFFFFFULL;
 		std::memcpy(buf.data() + i, &huge, sizeof(huge));
-		if (StormByte::Serializable<Config>::Deserialize(buf))
+		if (DeserializeConfig(buf))
 			++accepted;
 	}
 	if (accepted > 0) {
@@ -585,7 +588,7 @@ int test_corruption_deep_nested() {
 	for (std::size_t i = start; i < clean.size(); ++i) {
 		auto buf = clean;
 		CorruptByte(buf, i, std::byte{0xFF});
-		(void)StormByte::Serializable<Config>::Deserialize(buf);
+		(void)DeserializeConfig(buf);
 	}
 	RETURN_TEST("test_corruption_deep_nested", 0);
 }
@@ -596,7 +599,7 @@ int test_comment_name_survives_roundtrip() {
 	original.Name("mycomment");
 	cfg.Add(std::move(original));
 	auto buffer = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buffer);
+	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_comment_name_survives_roundtrip", 1);
@@ -616,7 +619,7 @@ int test_corruption_random_stress() {
 		int count = 1 + (i % 5);
 		for (int c = 0; c < count; ++c)
 			CorruptByte(buf, pos_dist(rng), static_cast<std::byte>(val_dist(rng)));
-		(void)StormByte::Serializable<Config>::Deserialize(buf);
+		(void)DeserializeConfig(buf);
 	}
 	RETURN_TEST("test_corruption_random_stress", 0);
 }
@@ -628,13 +631,13 @@ int test_serialize_idempotent_roundtrip() {
 	original.Add(Item::Comment<Item::CommentType::SingleLineBash>("note"));
 
 	auto buf1 = SerializeConfig(original);
-	auto d1 = StormByte::Serializable<Config>::Deserialize(buf1);
+	auto d1 = DeserializeConfig(buf1);
 	if (!d1) {
 		std::cerr << d1.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_idempotent_roundtrip", 1);
 	}
 	auto buf2 = SerializeConfig(d1.value());
-	auto d2 = StormByte::Serializable<Config>::Deserialize(buf2);
+	auto d2 = DeserializeConfig(buf2);
 	if (!d2) {
 		std::cerr << d2.error()->what() << std::endl;
 		RETURN_TEST("test_serialize_idempotent_roundtrip", 1);
@@ -659,7 +662,7 @@ int test_deep_nesting_group() {
 	cfg.Add(std::move(root));
 
 	auto buf = SerializeConfig(cfg);
-	auto expected = StormByte::Serializable<Config>::Deserialize(buf);
+	auto expected = DeserializeConfig(buf);
 	if (!expected) {
 		std::cerr << expected.error()->what() << std::endl;
 		RETURN_TEST("test_deep_nesting_group", 1);
@@ -675,7 +678,7 @@ int test_trailing_garbage_ignored_or_rejected() {
 	dirty.push_back(std::byte{0xAD});
 	dirty.push_back(std::byte{0xBE});
 	dirty.push_back(std::byte{0xEF});
-	(void)StormByte::Serializable<Config>::Deserialize(dirty);
+	(void)DeserializeConfig(dirty);
 	RETURN_TEST("test_trailing_garbage_ignored_or_rejected", 0);
 }
 
@@ -688,7 +691,7 @@ int test_double_corruption_size_and_payload() {
 		buf[i] = std::byte{0xFF};
 	for (std::size_t i = 0; i < 4; ++i)
 		buf[buf.size() - 1 - i] = std::byte{0xAA};
-	(void)StormByte::Serializable<Config>::Deserialize(buf);
+	(void)DeserializeConfig(buf);
 	RETURN_TEST("test_double_corruption_size_and_payload", 0);
 }
 

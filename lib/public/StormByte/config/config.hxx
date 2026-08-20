@@ -6,13 +6,25 @@
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/typedefs.hxx>
-#include <StormByte/serializable.hxx>
+
+#include <cstddef>
+#include <istream>
+#include <ostream>
+#include <span>
+#include <string>
+#include <vector>
 
 /**
  * @namespace Config
  * @brief Contains all classes and utilities for handling configuration files and items.
  */
 namespace StormByte::Config {
+	// Forwards
+	namespace Binary {
+		class Reader;
+		class Writer;
+	}
+
 	/**
 	 * @class Config
 	 * @brief Abstract class representing a configuration file.
@@ -27,7 +39,8 @@ namespace StormByte::Config {
 	 * - Lists
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Config {
-		friend class StormByte::Serializable<Config>;
+		friend class Binary::Reader;
+		friend class Binary::Writer;
 		public:
 			/**
 			 * @brief Default constructor.
@@ -131,13 +144,13 @@ namespace StormByte::Config {
 			Config& operator<<(const Config& source);
 
 			/**
-			 * @brief Initialize configuration from an input stream.
+			 * @brief Initialize configuration from an input stream (text mode).
 			 * @param istream Input stream.
 			 */
 			void operator<<(std::istream& istream);
 
 			/**
-			 * @brief Initialize configuration from a string.
+			 * @brief Initialize configuration from a string (text mode).
 			 * @param str Input string.
 			 */
 			void operator<<(const std::string& str);
@@ -168,14 +181,14 @@ namespace StormByte::Config {
 			Config& operator>>(Config& dest) const;
 
 			/**
-			 * @brief Output configuration serialized to an output stream.
+			 * @brief Output configuration serialized to an output stream (text).
 			 * @param ostream Output stream.
 			 * @return Reference to the output stream.
 			 */
 			std::ostream& operator>>(std::ostream& ostream) const;
 
 			/**
-			 * @brief Output configuration serialized to a string.
+			 * @brief Output configuration serialized to a string (text).
 			 * @param str Output string.
 			 * @return Reference to the string.
 			 */
@@ -198,10 +211,25 @@ namespace StormByte::Config {
 			friend STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string&, const Config&);
 
 			/**
-			 * @brief Converts the current configuration to a string.
+			 * @brief Converts the current configuration to a string (text form).
 			 * @return Serialized configuration text.
 			 */
 			operator std::string() const;
+
+			/**
+			 * @brief Write this document to an output stream.
+			 * @param stream Destination (file, stringstream, etc.).
+			 * @param mode Text (default): config syntax; Binary: versioned wire format.
+			 */
+			void Save(std::ostream& stream, Mode mode = Mode::Text) const;
+
+			/**
+			 * @brief Read a document from an input stream.
+			 * @param stream Source (file, stringstream, etc.).
+			 * @param mode Text (default): config syntax; Binary: versioned wire format.
+			 * @return Config on success, or a StormByte::Exception derivative on failure.
+			 */
+			static ExpectedConfig Load(std::istream& stream, Mode mode = Mode::Text);
 
 			/**
 			 * @brief Adds an item to the configuration.

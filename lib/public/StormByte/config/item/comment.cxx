@@ -1,5 +1,4 @@
 #include <StormByte/config/item/comment.hxx>
-#include <StormByte/config/item/serialize/base.hxx>
 #include <StormByte/string.hxx>
 
 #include <sstream>

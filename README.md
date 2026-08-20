@@ -12,8 +12,9 @@ StormByte is a comprehensive, cross-platform C++ library aimed at easing system 
 ## Features
 
 - **Configuration Management**: Provides an intuitive API for reading and writing configuration files.
-- **Serialization**: Specializations of `StormByte::Serializable` for all items to enable serialization to raw buffers for network sending or binary writing.
-- **Binary Data Support**: Native support for binary payloads using Base64 encoding in text form and raw bytes in binary serialization.
+- **Text and binary I/O**: `Config::Save` / `Config::Load` with `Mode::Text` or `Mode::Binary` on any `std::ostream` / `std::istream`.
+- **Versioned binary format**: Magic header + format version so the library can evolve the wire layout without discarding documents written by older versions.
+- **Binary data in config values**: Native `std::vector<std::byte>` values (Base64 in text form, raw bytes on the binary wire).
 
 ## Table of Contents
 
@@ -275,58 +276,75 @@ settings = {
 }
 ```
 
-#### Serialization
+#### Text and binary I/O (`Save` / `Load`)
 
-The `Config` module supports serialization of configuration items to raw buffers, which can be useful for network transmission or binary storage. This is achieved through specializations of `StormByte::Serializable`.
+Use `Config::Save` and `Config::Load` with a stream and a `Mode`:
 
-##### Example: Serialize and Deserialize a Configuration
+| Mode | Meaning |
+|------|---------|
+| `Mode::Text` (default) | Human-readable config syntax (same path as `operator<<` / `operator>>`) |
+| `Mode::Binary` | Versioned binary document (see below) |
+
+##### Example: binary round-trip
 
 ```cpp
 #include <StormByte/config/config.hxx>
-#include <StormByte/serializable.hxx>
 #include <fstream>
 #include <iostream>
 
 using namespace StormByte::Config;
 
 int main() {
-	// Create a configuration
 	Config config;
 	config.Add(Item::Value<std::string>("username", "example_user"));
 	config.Add(Item::Value<int>("timeout", 30));
 
-	// Binary data example
-	std::vector<std::byte> secret = {std::byte{0x01}, std::byte{0x02}, std::byte{0x03}};
-	config.Add(Item::Value<std::vector<std::byte>>("secret", secret));
+	{
+		std::ofstream out("config.bin", std::ios::binary);
+		config.Save(out, Mode::Binary);
+	}
 
-	// Serialize the configuration to a buffer
-	StormByte::Serializable<Config> serializable(config);
-	std::vector<std::byte> buffer = serializable.Serialize();
-
-	// Deserialize the configuration from the buffer
-	auto deserialized_config = StormByte::Serializable<Config>::Deserialize(buffer);
-	if (!deserialized_config) {
-		std::cerr << "Failed to deserialize configuration: " << deserialized_config.error()->what() << std::endl;
+	std::ifstream in("config.bin", std::ios::binary);
+	auto loaded = Config::Load(in, Mode::Binary);
+	if (!loaded) {
+		std::cerr << loaded.error()->what() << std::endl;
 		return 1;
 	}
 
-	// Access deserialized configuration items
-	const Item::Base& username = deserialized_config.value()["username"];
-	const Item::Base& timeout = deserialized_config.value()["timeout"];
-	
-	std::cout << "Username: " << username.Value<std::string>() << std::endl;
-	std::cout << "Timeout: " << timeout.Value<int>() << std::endl;
-
+	std::cout << loaded.value()["username"].Value<std::string>() << std::endl;
 	return 0;
 }
 ```
 
-#### Sharing Configuration
+Stream operators remain the convenient path for **text** only (`file >> config`, `std::cout << config`, etc.).
 
-There are two options for sharing the configuration:
+#### Binary format and versioning
 
-1. **Human-readable**: Share the configuration as a human-readable text file (binary data appears as Base64 with `b"..."`).
-2. **Binary serialized**: Serialize the configuration to a binary format for network transmission or binary storage (binary data is stored as raw bytes).
+Binary documents are **not** a raw dump of C++ objects. They use a fixed envelope:
+
+1. **Magic** (8 bytes): identifies a StormByte Config binary (`STBTCF` plus signature bytes).
+2. **Format version** (`uint8_t`): layout revision of the payload that follows.
+3. **Payload**: policy + root group and items for that version.
+
+**Read policy**
+
+- Older versions that this library still understands are **read fully** into a normal `Config` (no data loss for supported revisions).
+- The current library **always writes** the latest format version.
+- A version **newer** than this library is **rejected** with a clear error (upgrade the library; do not guess the layout).
+- Missing or invalid magic, truncated headers, and unknown/unsupported versions are rejected instead of parsing garbage.
+
+**Why this is safe**
+
+- Format changes are intentional and versioned: readers can keep loading documents produced by previous releases of the same major product line as long as that version remains supported.
+- You never “silently” reinterpret an unknown layout. Either the document loads completely, or `Load` fails with an error—so configuration is not partially applied or corrupted in place.
+- After a successful load of an older file, saving again upgrades the on-disk/network form to the current version while preserving the logical content.
+
+Buffers without a valid magic (including pure payload “legacy” blobs without the envelope) are **not** treated as Config binaries.
+
+#### Sharing configuration
+
+1. **Human-readable**: text file or stream (`Mode::Text` / stream operators). Binary values appear as Base64 with `b"..."`.
+2. **Binary**: `Save` / `Load` with `Mode::Binary` for compact storage or network transfer (raw bytes for binary values, versioned envelope for the document).
 
 ## Contributing
 

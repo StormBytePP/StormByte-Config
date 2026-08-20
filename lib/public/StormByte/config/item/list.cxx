@@ -32,7 +32,7 @@ Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const Stor
 					break;
 				}
 				case OnExistingAction::ThrowException:
-					throw Config::ItemAlreadyExists("Config item already exists in List");
+					throw ItemAlreadyExists("Config item already exists in List");
 			}
 		}
 	}
