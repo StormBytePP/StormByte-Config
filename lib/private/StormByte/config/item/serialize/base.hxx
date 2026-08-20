@@ -13,32 +13,22 @@
 #include <string>
 #include <vector>
 
+namespace StormByte::Config::Item {
+	class Base;
+}
+
 namespace StormByte::Config::Item::Serialize {
-	using BaseData = std::pair<Type, std::optional<std::string>>;	///< Base data for a configuration item
+	using BaseData = std::pair<Type, std::optional<std::string>>;
 
-	/**
-	 * @brief Deserializes basic data for a configuration item.
-	 * @param data The byte span containing serialized data.
-	 * @param offset Reference to the current position in the data.
-	 * @return Expected<BaseData, DeserializeError> The deserialized data or an error.
-	 */
-	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, DeserializeError> DeserializeBasicData(std::span<const std::byte> data, std::size_t& offset) noexcept;
+	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, DeserializeError>
+	DeserializeBasicData(std::span<const std::byte> data, std::size_t& offset) noexcept;
 
-	/**
-	 * @brief Deserializes basic data for a configuration item and validates the item type.
-	 * @param data The byte span containing serialized data.
-	 * @param offset Reference to the current position in the data.
-	 * @param item_type The expected type of the item.
-	 * @return Expected<BaseData, DeserializeError> The deserialized data or an error.
-	 */
-	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, DeserializeError> DeserializeBasicData(std::span<const std::byte> data, std::size_t& offset, const Type& item_type) noexcept;
+	STORMBYTE_CONFIG_PRIVATE Expected<BaseData, DeserializeError>
+	DeserializeBasicData(std::span<const std::byte> data, std::size_t& offset, const Type& item_type) noexcept;
 
-	/**
-	 * @brief Deserializes a container from the byte span.
-	 * @param data The byte span containing serialized data.
-	 * @param offset Reference to the current position in the data.
-	 * @param container The container to deserialize into.
-	 * @return Expected<std::shared_ptr<Container>, DeserializeError> The deserialized container or an error.
-	 */
-	STORMBYTE_CONFIG_PRIVATE Expected<std::shared_ptr<Container>, DeserializeError> DeserializeContainer(std::span<const std::byte> data, std::size_t& offset, std::shared_ptr<Container> container) noexcept;
+	STORMBYTE_CONFIG_PRIVATE Expected<std::shared_ptr<Base>, DeserializeError>
+	DeserializeItem(std::span<const std::byte> data, std::size_t& offset) noexcept;
+
+	STORMBYTE_CONFIG_PRIVATE Expected<std::shared_ptr<Container>, DeserializeError>
+	DeserializeContainer(std::span<const std::byte> data, std::size_t& offset, std::shared_ptr<Container> container) noexcept;
 }

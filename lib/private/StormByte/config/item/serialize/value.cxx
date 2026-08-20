@@ -8,20 +8,21 @@ namespace StormByte {
 	// ---------------------------------------------------------------------
 	// Value<std::string>
 	// ---------------------------------------------------------------------
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Value<std::string>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> value_data = Serializable<std::string>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Value<std::string>>::SizeComplex(const Value<std::string>& data) noexcept {
 		return Serializable<Base>::Size(data) + Serializable<std::string>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Value<std::string>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<std::string>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Value<std::string>, DeserializeError> Serializable<Value<std::string>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::String);
@@ -44,20 +45,21 @@ namespace StormByte {
 	// ---------------------------------------------------------------------
 	// Value<int>
 	// ---------------------------------------------------------------------
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Value<int>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> value_data = Serializable<int>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Value<int>>::SizeComplex(const Value<int>& data) noexcept {
 		return Serializable<Base>::Size(data) + Serializable<int>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Value<int>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<int>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Value<int>, DeserializeError> Serializable<Value<int>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Integer);
@@ -80,20 +82,21 @@ namespace StormByte {
 	// ---------------------------------------------------------------------
 	// Value<double>
 	// ---------------------------------------------------------------------
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Value<double>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> value_data = Serializable<double>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Value<double>>::SizeComplex(const Value<double>& data) noexcept {
 		return Serializable<Base>::Size(data) + Serializable<double>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Value<double>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<double>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Value<double>, DeserializeError> Serializable<Value<double>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Double);
@@ -116,20 +119,21 @@ namespace StormByte {
 	// ---------------------------------------------------------------------
 	// Value<bool>
 	// ---------------------------------------------------------------------
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Value<bool>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> value_data = Serializable<bool>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Value<bool>>::SizeComplex(const Value<bool>& data) noexcept {
 		return Serializable<Base>::Size(data) + Serializable<bool>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Value<bool>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<bool>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Value<bool>, DeserializeError> Serializable<Value<bool>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Bool);
@@ -152,20 +156,21 @@ namespace StormByte {
 	// ---------------------------------------------------------------------
 	// Value<std::vector<std::byte>>  (Binary)
 	// ---------------------------------------------------------------------
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Value<std::vector<std::byte>>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> value_data = Serializable<std::vector<std::byte>>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(value_data.begin()), std::make_move_iterator(value_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Value<std::vector<std::byte>>>::SizeComplex(const Value<std::vector<std::byte>>& data) noexcept {
 		return Serializable<Base>::Size(data) + Serializable<std::vector<std::byte>>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Value<std::vector<std::byte>>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<std::vector<std::byte>>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Value<std::vector<std::byte>>, DeserializeError>
 	Serializable<Value<std::vector<std::byte>>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;

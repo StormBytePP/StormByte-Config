@@ -5,29 +5,25 @@
 namespace StormByte {
 	using namespace StormByte::Config::Item;
 
-	// Container
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Container>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> container_type_data = Serializable<ContainerType>(m_data.ContainerType()).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(container_type_data.begin()), std::make_move_iterator(container_type_data.end()));
-		std::vector<std::byte> size_data = Serializable<std::uint64_t>(static_cast<std::uint64_t>(m_data.Items().size())).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(size_data.begin()), std::make_move_iterator(size_data.end()));
-		for (auto& item : m_data.Items()) {
-			std::vector<std::byte> item_data = Serializable<std::shared_ptr<Base>>(item).Serialize();
-			buffer.insert(buffer.end(), std::make_move_iterator(item_data.begin()), std::make_move_iterator(item_data.end()));
-		}
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Container>::SizeComplex(const Container& data) noexcept {
 		std::size_t size = Serializable<Base>::Size(data) +
 			Serializable<ContainerType>::Size(data.ContainerType()) +
 			Serializable<std::uint64_t>::Size(static_cast<std::uint64_t>(data.Items().size()));
-		for (const auto& item : data.Items()) {
+		for (const auto& item : data.Items())
 			size += Serializable<std::shared_ptr<Base>>::Size(item);
-		}
 		return size;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Container>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<ContainerType>(m_data.ContainerType()).Serialize());
+		append_vector(buffer, Serializable<std::uint64_t>(static_cast<std::uint64_t>(m_data.Items().size())).Serialize());
+		for (auto& item : m_data.Items())
+			append_vector(buffer, Serializable<std::shared_ptr<Base>>(item).Serialize());
+		return buffer;
 	}
 }

@@ -6,19 +6,11 @@
 
 namespace StormByte {
 	using namespace StormByte::Config::Item;
-	
-	// Single Line Bash
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Comment<CommentType::SingleLineBash>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> comment_type_data = Serializable<CommentType>(m_data.CommentType()).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(comment_type_data.begin()), std::make_move_iterator(comment_type_data.end()));
-		std::vector<std::byte> string_data = Serializable<std::string>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(string_data.begin()), std::make_move_iterator(string_data.end()));
-		return buffer;
-	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	// ---------------------------------------------------------------------
+	// SingleLineBash
+	// ---------------------------------------------------------------------
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Comment<CommentType::SingleLineBash>>::SizeComplex(const Comment<CommentType::SingleLineBash>& data) noexcept {
 		return
 			Serializable<Base>::Size(data) +
@@ -26,7 +18,17 @@ namespace StormByte {
 			Serializable<std::string>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Comment<CommentType::SingleLineBash>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<CommentType>(m_data.CommentType()).Serialize());
+		append_vector(buffer, Serializable<std::string>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Comment<CommentType::SingleLineBash>, DeserializeError> Serializable<Comment<CommentType::SingleLineBash>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Comment);
@@ -35,11 +37,11 @@ namespace StormByte {
 
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for comment type");
-		
+
 		auto expected_comment_type = Serializable<CommentType>::Deserialize(data.subspan(offset));
 		if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 		offset += Serializable<CommentType>::Size(expected_comment_type.value());
-		
+
 		if (expected_comment_type.value() != CommentType::SingleLineBash) {
 			return Unexpected<DeserializeError>(
 				std::format(
@@ -52,28 +54,20 @@ namespace StormByte {
 
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for comment string");
-		
+
 		auto expected_data = Serializable<std::string>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
-		
+
 		Comment<CommentType::SingleLineBash> value(std::move(expected_data.value()));
 		if (name.has_value())
 			value.Name(std::move(name.value()));
 		return value;
 	}
 
-	// Single Line C
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Comment<CommentType::SingleLineC>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> comment_type_data = Serializable<CommentType>(m_data.CommentType()).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(comment_type_data.begin()), std::make_move_iterator(comment_type_data.end()));
-		std::vector<std::byte> string_data = Serializable<std::string>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(string_data.begin()), std::make_move_iterator(string_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	// ---------------------------------------------------------------------
+	// SingleLineC
+	// ---------------------------------------------------------------------
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Comment<CommentType::SingleLineC>>::SizeComplex(const Comment<CommentType::SingleLineC>& data) noexcept {
 		return
 			Serializable<Base>::Size(data) +
@@ -81,7 +75,17 @@ namespace StormByte {
 			Serializable<std::string>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Comment<CommentType::SingleLineC>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<CommentType>(m_data.CommentType()).Serialize());
+		append_vector(buffer, Serializable<std::string>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Comment<CommentType::SingleLineC>, DeserializeError> Serializable<Comment<CommentType::SingleLineC>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Comment);
@@ -90,11 +94,11 @@ namespace StormByte {
 
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for comment type");
-		
+
 		auto expected_comment_type = Serializable<CommentType>::Deserialize(data.subspan(offset));
 		if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 		offset += Serializable<CommentType>::Size(expected_comment_type.value());
-		
+
 		if (expected_comment_type.value() != CommentType::SingleLineC) {
 			return Unexpected<DeserializeError>(
 				std::format(
@@ -107,28 +111,20 @@ namespace StormByte {
 
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for comment string");
-		
+
 		auto expected_data = Serializable<std::string>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
-		
+
 		Comment<CommentType::SingleLineC> value(std::move(expected_data.value()));
 		if (name.has_value())
 			value.Name(std::move(name.value()));
 		return value;
 	}
 
-	// Multi Line C
-	template<> STORMBYTE_CONFIG_PUBLIC
-	std::vector<std::byte> Serializable<Comment<CommentType::MultiLineC>>::SerializeComplex() const noexcept {
-		std::vector<std::byte> buffer = Serializable<Base>(m_data).Serialize();
-		std::vector<std::byte> comment_type_data = Serializable<CommentType>(m_data.CommentType()).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(comment_type_data.begin()), std::make_move_iterator(comment_type_data.end()));
-		std::vector<std::byte> string_data = Serializable<std::string>(*m_data).Serialize();
-		buffer.insert(buffer.end(), std::make_move_iterator(string_data.begin()), std::make_move_iterator(string_data.end()));
-		return buffer;
-	}
-
-	template<> STORMBYTE_CONFIG_PUBLIC
+	// ---------------------------------------------------------------------
+	// MultiLineC
+	// ---------------------------------------------------------------------
+	template<> STORMBYTE_CONFIG_PRIVATE
 	std::size_t Serializable<Comment<CommentType::MultiLineC>>::SizeComplex(const Comment<CommentType::MultiLineC>& data) noexcept {
 		return
 			Serializable<Base>::Size(data) +
@@ -136,7 +132,17 @@ namespace StormByte {
 			Serializable<std::string>::Size(*data);
 	}
 
-	template<> STORMBYTE_CONFIG_PUBLIC
+	template<> STORMBYTE_CONFIG_PRIVATE
+	std::vector<std::byte> Serializable<Comment<CommentType::MultiLineC>>::SerializeComplex() const noexcept {
+		std::vector<std::byte> buffer;
+		buffer.reserve(SizeComplex(m_data));
+		append_vector(buffer, Serializable<Base>(m_data).Serialize());
+		append_vector(buffer, Serializable<CommentType>(m_data.CommentType()).Serialize());
+		append_vector(buffer, Serializable<std::string>(*m_data).Serialize());
+		return buffer;
+	}
+
+	template<> STORMBYTE_CONFIG_PRIVATE
 	Expected<Comment<CommentType::MultiLineC>, DeserializeError> Serializable<Comment<CommentType::MultiLineC>>::DeserializeComplex(std::span<const std::byte> data) noexcept {
 		std::size_t offset = 0;
 		auto expected_base = Serialize::DeserializeBasicData(data, offset, StormByte::Config::Item::Type::Comment);
@@ -145,11 +151,11 @@ namespace StormByte {
 
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for comment type");
-		
+
 		auto expected_comment_type = Serializable<CommentType>::Deserialize(data.subspan(offset));
 		if (!expected_comment_type) return Unexpected(expected_comment_type.error());
 		offset += Serializable<CommentType>::Size(expected_comment_type.value());
-		
+
 		if (expected_comment_type.value() != CommentType::MultiLineC) {
 			return Unexpected<DeserializeError>(
 				std::format(
@@ -162,10 +168,10 @@ namespace StormByte {
 
 		if (offset >= data.size())
 			return Unexpected<DeserializeError>("Insufficient data for comment string");
-		
+
 		auto expected_data = Serializable<std::string>::Deserialize(data.subspan(offset));
 		if (!expected_data) return Unexpected(expected_data.error());
-		
+
 		Comment<CommentType::MultiLineC> value(std::move(expected_data.value()));
 		if (name.has_value())
 			value.Name(std::move(name.value()));
