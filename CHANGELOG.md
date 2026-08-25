@@ -38,7 +38,7 @@ Initial public release of **StormByte-Config**: a hierarchical configuration lib
 
 ### Notes
 
-- Requires C++23 and StormByte Base ≥ 1.0.0 (including safe `bool` deserialization)
+- Requires C++26 and StormByte Base ≥ 1.0.0 (including safe `bool` deserialization)
 - Binary items use Base64 in text form; invalid Base64 is rejected at parse time
 - Lists reject named items; Groups require valid identifier names
 - Format upgrades: load any still-supported binary revision, then save to upgrade on disk/network without losing logical content
