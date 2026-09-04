@@ -9,7 +9,7 @@
 
 This repository is **StormByte Config**: human-readable text and versioned binary documents for the StormByte C++ suite.
 
-It depends on [StormByte Base](https://github.com/StormBytePP/StormByte). Public headers live under `StormByte/config/`.
+It depends on [StormByte Base](https://github.com/StormBytePP/StormByte). Public headers live under `StormByte/config/` and cover the document, items (values, comments, groups, lists), `Save` / `Load`, and collision / hook policy.
 
 The suite is split on purpose. Base, Buffer, Crypto, Database, Logger, Multimedia, Network and System are **other repositories**. This one does not implement them.
 
@@ -21,7 +21,7 @@ The suite is split on purpose. Base, Buffer, Crypto, Database, Logger, Multimedi
 - **Comments** — `#`, `//`, `/* */`.
 - **Containers** — lists `[]` and groups `{}`.
 - **Hooks** — `AddHookBeforeRead` / `AddHookAfterRead`.
-- **On existing** — overwrite, ignore, or throw (default).
+- **On existing** — `Keep`, `Overwrite`, or `ThrowException` (default).
 
 ## The rest of the suite
 
@@ -81,7 +81,7 @@ int main() {
 }
 ```
 
-Hooks: `AddHookBeforeRead` / `AddHookAfterRead`. Existing keys: `OnExistingAction::Overwrite` (default is throw).
+Hooks: `AddHookBeforeRead` / `AddHookAfterRead`. Existing keys: `OnExistingAction` (`Keep`, `Overwrite`, `ThrowException`; default is throw).
 
 ### Binary Save / Load
 
