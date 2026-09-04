@@ -1,37 +1,42 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
+
 #include <StormByte/config/alias.hxx>
-#include <StormByte/config/item/value.hxx>
 #include <StormByte/config/item/comment.hxx>
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/list.hxx>
+#include <StormByte/config/item/value.hxx>
 #include <StormByte/config/typedefs.hxx>
+
 #include <cstddef>
 #include <istream>
 #include <ostream>
 #include <span>
 #include <string>
 #include <vector>
+
+/**
+ * @brief Config module of the StormByte suite.
+ */
 namespace StormByte::Config {
-	// Forwards
 	namespace Binary {
 		class Reader;
 		class Writer;
@@ -39,21 +44,21 @@ namespace StormByte::Config {
 
 	/**
 	 * @class Config
-	 * @brief Abstract class representing a configuration file.
+	 * @brief Configuration document (text or versioned binary).
 	 *
-	 * A configuration file can contain various elements, including:
-	 * - Boolean values
-	 * - Double-precision floating-point values
-	 * - Integer values
-	 * - Strings
+	 * A document holds:
+	 * - Boolean, double, integer, string and binary values
 	 * - Comments (single-line or multi-line)
-	 * - Groups
-	 * - Lists
+	 * - Groups and lists
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Config {
 		friend class Binary::Reader;
 		friend class Binary::Writer;
 		public:
+			/**
+			 * @name Construction
+			 * @{
+			 */
 			/**
 			 * @brief Default constructor.
 			 */
@@ -89,7 +94,12 @@ namespace StormByte::Config {
 			 * @brief Destructor.
 			 */
 			virtual ~Config() = default;
+			/** @} */
 
+			/**
+			 * @name Access
+			 * @{
+			 */
 			/**
 			 * @brief Gets a reference to an item by path.
 			 * @param path Path to the item.
@@ -145,9 +155,12 @@ namespace StormByte::Config {
 			inline bool operator!=(const Config& config) const noexcept {
 				return !operator==(config);
 			}
+			/** @} */
 
-			/* INPUT */
-
+			/**
+			 * @name Input
+			 * @{
+			 */
 			/**
 			 * @brief Import data from another configuration.
 			 * @param source Source configuration to import.
@@ -182,9 +195,12 @@ namespace StormByte::Config {
 			 * @return Reference to the Config.
 			 */
 			friend STORMBYTE_CONFIG_PUBLIC Config& operator>>(const std::string& str, Config& file);
+			/** @} */
 
-			/* OUTPUT */
-
+			/**
+			 * @name Output
+			 * @{
+			 */
 			/**
 			 * @brief Output current configuration into another configuration.
 			 * @param dest Destination configuration.
@@ -242,7 +258,12 @@ namespace StormByte::Config {
 			 * @return Config on success, or a StormByte::Exception derivative on failure.
 			 */
 			static ExpectedConfig Load(std::istream& stream, Mode mode = Mode::Text);
+			/** @} */
 
+			/**
+			 * @name Items
+			 * @{
+			 */
 			/**
 			 * @brief Adds an item to the configuration.
 			 * @param item The item to add.
@@ -289,14 +310,51 @@ namespace StormByte::Config {
 			}
 
 			/**
-			 * @brief Removes an item by position.
-			 * @param path Index of the item.
+			 * @brief Removes an item by index.
+			 * @param index Index of the item.
 			 * @throw OutOfBounds if index is out of bounds.
 			 */
-			inline void Remove(const size_t& path) {
-				m_root.Remove(path);
+			inline void Remove(const size_t& index) {
+				m_root.Remove(index);
 			}
 
+			/**
+			 * @brief Gets the number of items in the current level.
+			 * @return Number of items.
+			 */
+			constexpr virtual size_t Size() const noexcept {
+				return m_root.Size();
+			}
+
+			/**
+			 * @brief Gets the full number of items (including nested).
+			 * @return Total number of items.
+			 */
+			inline virtual size_t Count() const noexcept {
+				return m_root.Count();
+			}
+
+			/**
+			 * @brief Gets the items in the current level.
+			 * @return Span of items.
+			 */
+			constexpr std::span<Item::Base::PointerType> Items() noexcept {
+				return m_root.Items();
+			}
+
+			/**
+			 * @brief Gets the items in the current level (const).
+			 * @return Const span of items.
+			 */
+			constexpr std::span<const Item::Base::PointerType> Items() const noexcept {
+				return m_root.Items();
+			}
+			/** @} */
+
+			/**
+			 * @name Policy
+			 * @{
+			 */
 			/**
 			 * @brief Sets the action to take when an item name/identity collision occurs.
 			 * The policy is applied to the root container and will be inherited by all nested containers.
@@ -332,52 +390,14 @@ namespace StormByte::Config {
 			constexpr void AddHookAfterRead(HookFunction hook) {
 				m_after_read_hooks.push_back(hook);
 			}
-
-			/**
-			 * @brief Gets the number of items in the current level.
-			 * @return Number of items.
-			 */
-			constexpr virtual size_t Size() const noexcept {
-				return m_root.Size();
-			}
-
-			/**
-			 * @brief Gets the full number of items (including nested).
-			 * @return Total number of items.
-			 */
-			inline virtual size_t Count() const noexcept {
-				return m_root.Count();
-			}
-
-			/**
-			 * @brief Gets the items in the current level.
-			 * @return Span of items.
-			 */
-			constexpr std::span<Item::Base::PointerType> Items() noexcept {
-				return m_root.Items();
-			}
-
-			/**
-			 * @brief Gets the items in the current level (const).
-			 * @return Const span of items.
-			 */
-			constexpr std::span<const Item::Base::PointerType> Items() const noexcept {
-				return m_root.Items();
-			}
+			/** @} */
 
 		protected:
 			Item::Group m_root; ///< Root group
 
-			/**
-			 * Ordered hook lists executed sequentially on their corresponding events.
-			 */
 			HookFunctions m_before_read_hooks;				///< Hooks executed before reading
 			HookFunctions m_after_read_hooks;				///< Hooks executed after successful reading
 			OptionalFailureHook m_on_parse_failure_hook;	///< Hook executed on failure
-
-			/**
-			 * Action taken when a duplicate name is found while inserting.
-			 */
 			StormByte::Config::OnExistingAction m_on_existing_action; ///< Collision policy
 	};
 
