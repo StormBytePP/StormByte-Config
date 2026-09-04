@@ -1,50 +1,55 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
-#include <StormByte/config/parser/type.hxx>
+
 #include <StormByte/config/exception.hxx>
+#include <StormByte/config/parser/type.hxx>
 #include <StormByte/expected.hxx>
+
 #include <istream>
 #include <string>
 #include <vector>
-namespace StormByte::Config::Parser {
 
+/**
+ * @brief Text parser internals.
+ */
+namespace StormByte::Config::Parser {
 	/**
 	 * @enum TokenType
 	 * @brief Types of tokens produced by the Tokenizer.
 	 */
 	enum class TokenType {
-		Identifier,     ///< Item name (left side of '=')
-		String,         ///< Quoted string value
-		Binary,         ///< Binary data represented as Base64 with b"..." prefix
-		Integer,        ///< Integer number
-		Double,         ///< Floating-point number
-		Bool,           ///< true / false
-		Comment,        ///< Any kind of comment
-		Equal,          ///< '='
-		LBrace,         ///< '{'
-		RBrace,         ///< '}'
-		LBracket,       ///< '['
-		RBracket,       ///< ']'
-		EndOfFile,      ///< End of input
-		Unknown         ///< Unrecognized character (error)
+		Identifier,	///< Item name (left side of `=`)
+		String,		///< Quoted string value
+		Binary,		///< Base64 payload with `b"..."` prefix
+		Integer,	///< Integer number
+		Double,		///< Floating-point number
+		Bool,		///< `true` / `false`
+		Comment,	///< Any comment
+		Equal,		///< `=`
+		LBrace,		///< `{`
+		RBrace,		///< `}`
+		LBracket,	///< `[`
+		RBracket,	///< `]`
+		EndOfFile,	///< End of input
+		Unknown		///< Unrecognized character
 	};
 
 	/**
@@ -52,18 +57,15 @@ namespace StormByte::Config::Parser {
 	 * @brief A single lexical token.
 	 */
 	struct Token {
-		TokenType       type         = TokenType::Unknown;  ///< Token type
-		std::string     value;                              ///< Lexeme / content
-		CommentType     comment_type = CommentType::None;   ///< Only valid when type == Comment
-		unsigned int    line         = 1;                   ///< Line number where the token starts
+		TokenType type = TokenType::Unknown;			///< Token type
+		std::string value;								///< Lexeme / content
+		CommentType comment_type = CommentType::None;	///< Valid when type == Comment
+		unsigned int line = 1;							///< Line where the token starts
 	};
 
 	/**
 	 * @class Tokenizer
-	 * @brief Lexical analyzer for StormByte configuration files.
-	 *
-	 * Transforms an input stream into a sequence of Tokens.
-	 * Designed to be efficient and easy to extend with new token types.
+	 * @brief Turns an input stream into a token sequence.
 	 */
 	class STORMBYTE_CONFIG_PRIVATE Tokenizer {
 		public:
@@ -73,34 +75,15 @@ namespace StormByte::Config::Parser {
 			 */
 			explicit Tokenizer(std::istream& stream);
 
-			/**
-			 * @brief Deleted copy constructor.
-			 */
 			Tokenizer(const Tokenizer&) = delete;
-
-			/**
-			 * @brief Default move constructor.
-			 */
 			Tokenizer(Tokenizer&&) = default;
-
-			/**
-			 * @brief Deleted copy assignment.
-			 */
 			Tokenizer& operator=(const Tokenizer&) = delete;
-
-			/**
-			 * @brief Default move assignment.
-			 */
 			Tokenizer& operator=(Tokenizer&&) = default;
-
-			/**
-			 * @brief Destructor.
-			 */
 			~Tokenizer() = default;
 
 			/**
 			 * @brief Returns the next token from the stream.
-			 * @return The next Token. type == EndOfFile when finished.
+			 * @return Next token. `type == EndOfFile` when finished.
 			 */
 			Token Next();
 
@@ -111,8 +94,8 @@ namespace StormByte::Config::Parser {
 			unsigned int CurrentLine() const noexcept { return m_line; }
 
 		private:
-			std::istream&   m_stream;       ///< Underlying input stream
-			unsigned int    m_line = 1;     ///< Current line number
+			std::istream& m_stream;		///< Underlying input stream
+			unsigned int m_line = 1;	///< Current line number
 
 			/**
 			 * @brief Skips whitespace and updates the line counter.
@@ -121,17 +104,14 @@ namespace StormByte::Config::Parser {
 
 			/**
 			 * @brief Reads a quoted string (handles escapes).
-			 * @return Token of type String or an error.
+			 * @return Token of type String, or a parse error.
 			 */
 			Expected<Token, ParseError> ReadString();
 
 			/**
-			 * @brief Reads a binary literal (b"...").
-			 *
-			 * The content inside the quotes is expected to be Base64.
-			 * The actual Base64 decoding is performed later by the Parser.
-			 *
-			 * @return Token of type Binary or an error.
+			 * @brief Reads a binary literal (`b"..."`).
+			 * The quoted payload is Base64; decoding happens in the parser.
+			 * @return Token of type Binary, or a parse error.
 			 */
 			Expected<Token, ParseError> ReadBinary();
 
@@ -142,21 +122,21 @@ namespace StormByte::Config::Parser {
 			Token ReadNumber();
 
 			/**
-			 * @brief Reads an identifier or keyword (true/false).
+			 * @brief Reads an identifier or keyword (`true`/`false`).
 			 * @return Token of type Identifier or Bool.
 			 */
 			Token ReadIdentifierOrKeyword();
 
 			/**
-			 * @brief Reads a single-line comment (# or //).
+			 * @brief Reads a single-line comment (`#` or `//`).
 			 * @param type Comment subtype.
 			 * @return Token of type Comment.
 			 */
 			Token ReadSingleLineComment(CommentType type);
 
 			/**
-			 * @brief Reads a multi-line comment (/* ... *​/).
-			 * @return Token of type Comment or a ParseError if unclosed.
+			 * @brief Reads a multi-line comment (`/*` … `*\/`).
+			 * @return Token of type Comment, or a parse error if unclosed.
 			 */
 			Expected<Token, ParseError> ReadMultiLineComment();
 	};

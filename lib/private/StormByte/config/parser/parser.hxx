@@ -1,69 +1,54 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
-#include <StormByte/config/parser/tokenizer.hxx>
+
 #include <StormByte/config/alias.hxx>
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/comment.hxx>
 #include <StormByte/config/item/group.hxx>
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/item/value.hxx>
+#include <StormByte/config/parser/tokenizer.hxx>
 #include <StormByte/config/parser/type.hxx>
 #include <StormByte/config/typedefs.hxx>
 #include <StormByte/expected.hxx>
+
 #include <istream>
 #include <string>
+
+/**
+ * @brief Text parser internals.
+ */
 namespace StormByte::Config::Parser {
 	/**
 	 * @class Parser
-	 * @brief Recursive descent parser that consumes tokens from a Tokenizer
-	 *        and builds the configuration item tree.
+	 * @brief Recursive descent parser: tokens → item tree.
 	 *
-	 * This class is not intended to be used directly by the user.
-	 * Use the free functions Parse() instead.
+	 * Not a public API. Use the free `Parse()` functions.
 	 */
 	class STORMBYTE_CONFIG_PRIVATE Parser {
 		public:
-			/**
-			 * @brief Deleted copy constructor.
-			 */
 			Parser(const Parser&) = delete;
-
-			/**
-			 * @brief Default move constructor.
-			 */
 			Parser(Parser&&) = default;
-
-			/**
-			 * @brief Deleted copy assignment operator.
-			 */
 			Parser& operator=(const Parser&) = delete;
-
-			/**
-			 * @brief Default move assignment operator.
-			 */
 			Parser& operator=(Parser&&) = default;
-
-			/**
-			 * @brief Destructor.
-			 */
 			~Parser() = default;
 
 			/**
@@ -103,42 +88,42 @@ namespace StormByte::Config::Parser {
 				const OptionalFailureHook& on_failure);
 
 		private:
-			Tokenizer& m_tokenizer; ///< Reference to the tokenizer
-			const OnExistingAction c_on_existing_action; ///< Action to take on name collision
-			unsigned int m_container_level = 0; ///< Current nesting level of containers
+			Tokenizer& m_tokenizer;							///< Tokenizer
+			const OnExistingAction c_on_existing_action;	///< Collision policy
+			unsigned int m_container_level = 0;				///< Nesting depth
 
 			/**
 			 * @brief Private constructor.
-			 * @param tokenizer Reference to the tokenizer that will supply tokens.
-			 * @param action Action to take when an item name already exists.
+			 * @param tokenizer Tokenizer that supplies tokens.
+			 * @param action Action when an item name already exists.
 			 */
 			explicit Parser(Tokenizer& tokenizer, const OnExistingAction& action);
 
 			/**
-			 * @brief Main recursive parsing function.
-			 * @param container Destination container that will receive the parsed items.
-			 * @param mode Parsing mode (Named for Groups, Unnamed for Lists).
+			 * @brief Main recursive parse.
+			 * @param container Destination container.
+			 * @param mode Named (groups) or Unnamed (lists).
 			 * @return Empty Expected on success, ParseError otherwise.
 			 */
 			Expected<void, ParseError> Parse(Item::Container& container, Mode mode);
 
 			/**
 			 * @brief Expects the next token to be of the given type.
-			 * @param expected The expected token type.
+			 * @param expected Expected token type.
 			 * @return The token if it matches, or a ParseError.
 			 */
 			Expected<Token, ParseError> Expect(TokenType expected);
 
 			/**
-			 * @brief Converts a Comment token into the corresponding Comment item.
-			 * @param token The comment token.
-			 * @return A shared pointer to the created Comment item.
+			 * @brief Converts a Comment token into a Comment item.
+			 * @param token Comment token.
+			 * @return Shared pointer to the created Comment item.
 			 */
 			Item::Base::PointerType MakeComment(const Token& token);
 	};
 
 	/**
-	 * @brief Convenience free function that forwards to Parser::Parse (stream version).
+	 * @brief Forwards to Parser::Parse (stream).
 	 */
 	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
 		std::istream& stream,
@@ -149,7 +134,7 @@ namespace StormByte::Config::Parser {
 		const OptionalFailureHook& on_failure);
 
 	/**
-	 * @brief Convenience free function that forwards to Parser::Parse (string version).
+	 * @brief Forwards to Parser::Parse (string).
 	 */
 	Expected<void, ParseError> STORMBYTE_CONFIG_PRIVATE Parse(
 		const std::string& string,
