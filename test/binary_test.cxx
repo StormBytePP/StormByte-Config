@@ -1,12 +1,28 @@
+/*
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License version 3
+ * or later, as published by the Free Software Foundation.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ */
+
 #include <StormByte/config/config.hxx>
 #include <StormByte/system.hxx>
 #include <StormByte/test_handlers.h>
-
 #include <fstream>
 #include <vector>
-
 using namespace StormByte::Config;
-
 namespace {
 	std::vector<std::byte> ReadFile(const std::filesystem::path& path) {
 		std::ifstream in(path, std::ios::binary | std::ios::ate);
@@ -19,7 +35,6 @@ namespace {
 			throw std::runtime_error("cannot read " + path.string());
 		return buf;
 	}
-
 	ExpectedConfig LoadBinaryFile(const std::filesystem::path& path) {
 		std::ifstream in(path, std::ios::binary);
 		if (!in) {
@@ -29,7 +44,6 @@ namespace {
 		return Config::Load(in, Mode::Binary);
 	}
 }
-
 int test_binary_rejects_legacy_payload() {
 	const auto path = CurrentFileDirectory / "files" / "config_example_legacy.bin";
 	auto result = LoadBinaryFile(path);
@@ -39,7 +53,6 @@ int test_binary_rejects_legacy_payload() {
 	}
 	RETURN_TEST("test_binary_rejects_legacy_payload", 0);
 }
-
 int test_binary_rejects_bad_magic() {
 	const auto path = CurrentFileDirectory / "files" / "config_example_bad_magic.bin";
 	auto result = LoadBinaryFile(path);
@@ -49,7 +62,6 @@ int test_binary_rejects_bad_magic() {
 	}
 	RETURN_TEST("test_binary_rejects_bad_magic", 0);
 }
-
 int test_binary_rejects_bad_version() {
 	const auto path = CurrentFileDirectory / "files" / "config_example_bad_version.bin";
 	auto result = LoadBinaryFile(path);
@@ -59,7 +71,6 @@ int test_binary_rejects_bad_version() {
 	}
 	RETURN_TEST("test_binary_rejects_bad_version", 0);
 }
-
 int test_binary_accepts_golden() {
 	const auto path = CurrentFileDirectory / "files" / "config_example.bin";
 	auto result = LoadBinaryFile(path);
@@ -67,7 +78,6 @@ int test_binary_accepts_golden() {
 		std::cerr << "test_binary_accepts_golden: " << result.error()->what() << std::endl;
 		RETURN_TEST("test_binary_accepts_golden", 1);
 	}
-
 	const auto text_path = CurrentFileDirectory / "files" / "complex_conf1.conf";
 	std::ifstream text_in(text_path);
 	if (!text_in) {
@@ -76,16 +86,13 @@ int test_binary_accepts_golden() {
 	}
 	Config from_text;
 	text_in >> from_text;
-
 	ASSERT_EQUAL("test_binary_accepts_golden", result.value(), from_text);
 	RETURN_TEST("test_binary_accepts_golden", 0);
 }
-
 int test_binary_save_load_roundtrip_stream() {
 	Config original;
 	original.Add(Item::Value<std::string>("name", "StormByte"));
 	original.Add(Item::Value<int>("n", 7));
-
 	const auto tmp = CurrentFileDirectory / "files" / "config_roundtrip_tmp.bin";
 	{
 		std::ofstream out(tmp, std::ios::binary | std::ios::trunc);
@@ -95,7 +102,6 @@ int test_binary_save_load_roundtrip_stream() {
 		}
 		original.Save(out, Mode::Binary);
 	}
-
 	std::ifstream in(tmp, std::ios::binary);
 	if (!in) {
 		std::cerr << "cannot read " << tmp << std::endl;
@@ -103,7 +109,6 @@ int test_binary_save_load_roundtrip_stream() {
 	}
 	auto loaded = Config::Load(in, Mode::Binary);
 	std::remove(tmp.string().c_str());
-
 	if (!loaded) {
 		std::cerr << loaded.error()->what() << std::endl;
 		RETURN_TEST("test_binary_save_load_roundtrip_stream", 1);
@@ -111,7 +116,6 @@ int test_binary_save_load_roundtrip_stream() {
 	ASSERT_TRUE("test_binary_save_load_roundtrip_stream", original == loaded.value());
 	RETURN_TEST("test_binary_save_load_roundtrip_stream", 0);
 }
-
 int main() {
 	int result = 0;
 	result += test_binary_accepts_golden();
@@ -119,7 +123,6 @@ int main() {
 	result += test_binary_rejects_bad_magic();
 	result += test_binary_rejects_bad_version();
 	result += test_binary_save_load_roundtrip_stream();
-
 	if (result == 0)
 		std::cout << "All tests passed!" << std::endl;
 	else

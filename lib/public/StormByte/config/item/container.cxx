@@ -1,67 +1,70 @@
+/*
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License version 3
+ * or later, as published by the Free Software Foundation.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ */
+
 #include <StormByte/config/item/container.hxx>
 #include <StormByte/string.hxx>
-
 #include <regex>
-
 using namespace StormByte::Config::Item;
-
 Container::Container(const std::string& name) : Base(name) {}
-
 Container::Container(std::string&& name) : Base(std::move(name)) {}
-
 bool Container::Equals(const Base& other) const noexcept {
 	if (this->Type() != other.Type())
 		return false;
 	if (this->Name() != other.Name())
 		return false;
-
 	const Container& other_container = static_cast<const Container&>(other);
 	if (this->ContainerType() != other_container.ContainerType())
 		return false;
 	if (m_items.size() != other_container.m_items.size())
 		return false;
-
 	for (std::size_t i = 0; i < m_items.size(); ++i) {
 		if (!m_items[i]->Equals(*other_container.m_items[i]))
 			return false;
 	}
 	return true;
 }
-
 bool Container::operator==(const Container& container) const noexcept {
 	return Equals(container);
 }
-
 Base& Container::operator[](const size_t& index) {
 	return const_cast<Base&>(static_cast<const Container&>(*this)[index]);
 }
-
 const Base& Container::operator[](const size_t& index) const {
 	if (index >= m_items.size())
 		throw OutOfBounds("Index {} is out of bounds (max size is {})", index, m_items.size());
 	return *m_items[index];
 }
-
 Base& Container::operator[](const std::string& path) {
 	return const_cast<Base&>(static_cast<const Container&>(*this)[path]);
 }
-
 Base& Container::Add(Base::PointerType item, const StormByte::Config::OnExistingAction& on_existing) {
 	// Propagate the policy to child containers
 	if (item->Type() == Type::Container) {
 		auto& child = static_cast<Container&>(*item);
 		child.SetOnExistingAction(on_existing);
 	}
-
 	Base::PointerType i = this->BeforeAdditionActions(item, on_existing);
-
 	if (i)
 		return *i;
-
 	m_items.push_back(item);
 	return *m_items.back();
 }
-
 bool Container::Exists(const std::string& path) const {
 	try {
 		LookUp(path);
@@ -70,18 +73,15 @@ bool Container::Exists(const std::string& path) const {
 		return false;
 	}
 }
-
 void Container::Remove(const size_t& index) {
 	if (index >= m_items.size())
 		throw OutOfBounds("Index {} is out of bounds (max size: {})", index, m_items.size());
 	m_items.erase(m_items.begin() + index);
 }
-
 void Container::Remove(const std::string& path) {
 	auto path_queue = String::Explode(path, '/');
 	Remove(path_queue);
 }
-
 std::string Container::Serialize(const int& indent_level) const noexcept {
 	const auto enclosure_characters = EnclosureCharacters(ContainerType());
 	std::string serial = Base::Serialize(indent_level) + std::string(1, enclosure_characters.first) + "\n";
@@ -89,7 +89,6 @@ std::string Container::Serialize(const int& indent_level) const noexcept {
 	serial += String::Indent(indent_level) + enclosure_characters.second;
 	return serial;
 }
-
 size_t Container::Count() const noexcept {
 	size_t count = 0;
 	for (const auto& item : m_items) {
@@ -104,24 +103,20 @@ size_t Container::Count() const noexcept {
 	}
 	return count;
 }
-
 std::string Container::ContentsToString(const int& indent_level) const noexcept {
 	std::string serial;
 	for (const auto& item : m_items)
 		serial += item->Serialize(indent_level) + "\n";
 	return serial;
 }
-
 bool Container::IsPathValid(const std::string& name) noexcept {
 	static const std::regex name_regex(R"(^[A-Za-z][A-Za-z0-9_]*(/[A-Za-z0-9_]+)*$)");
 	return std::regex_match(name, name_regex);
 }
-
 const Base& Container::LookUp(const std::string& path) const {
 	auto path_queue = String::Explode(path, '/');
 	return LookUp(path_queue);
 }
-
 const Base& Container::LookUp(std::queue<std::string>& path) const {
 	const std::string item_path = path.front();
 	path.pop();
@@ -144,7 +139,6 @@ const Base& Container::LookUp(std::queue<std::string>& path) const {
 		return static_cast<const Container&>(item).LookUp(path);
 	}
 }
-
 void Container::Remove(std::queue<std::string>& path) {
 	std::string item_path = path.front();
 	path.pop();
