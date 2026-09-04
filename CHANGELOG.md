@@ -31,8 +31,8 @@ Initial public release of StormByte Config.
 - Text binary values as Base64 `b"..."`; raw bytes on the binary wire
 - Comments: `#`, `//`, `/* */`
 - Containers: lists `[]` and groups `{}`
-- Pre/post read hooks
-- `OnExistingAction` (overwrite, ignore, throw)
+- Pre/post read hooks (`AddHookBeforeRead` / `AddHookAfterRead`)
+- `OnExistingAction` (`Keep`, `Overwrite`, `ThrowException`; default is throw)
 - Project version read from the `VERSION` file
 - CMake 3.28 floor
 
