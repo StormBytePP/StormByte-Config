@@ -1,35 +1,45 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
+
 #include <StormByte/config/item/base.hxx>
-#include <vector>
+
 #include <cstddef>
+#include <vector>
+
+/**
+ * @brief Configuration items (values, comments, groups, lists).
+ */
 namespace StormByte::Config::Item {
 	/**
 	 * @class Value
-	 * @brief Represents a configuration item with a value.
-	 * @tparam T The type of the value (only std::string, int, double, bool or std::vector<std::byte> allowed).
+	 * @brief Named or unnamed typed value.
+	 * @tparam T `std::string`, `int`, `double`, `bool` or `std::vector<std::byte>`.
 	 */
 	template<AllowedValueType T>
 	class STORMBYTE_CONFIG_PUBLIC Value: public Base {
 		public:
+			/**
+			 * @name Construction
+			 * @{
+			 */
 			/**
 			 * @brief Constructs a Value with the given value.
 			 * @param value The value of the item.
@@ -119,7 +129,12 @@ namespace StormByte::Config::Item {
 			 * @brief Destructor.
 			 */
 			virtual ~Value() noexcept override = default;
+			/** @} */
 
+			/**
+			 * @name Access
+			 * @{
+			 */
 			/**
 			 * @brief Polymorphic equality comparison.
 			 * @param other The other item to compare against.
@@ -208,12 +223,12 @@ namespace StormByte::Config::Item {
 			virtual PointerType Move() override {
 				return MakePointer<Value<T>>(std::move(*this));
 			}
+			/** @} */
 
 		protected:
 			T m_value; ///< The value of the item.
 	};
 
-	// Deduction guides
 	Value(const char*) -> Value<std::string>;
 	Value(const char*, const char*) -> Value<std::string>;
 }

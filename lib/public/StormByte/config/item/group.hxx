@@ -1,28 +1,33 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
+
 #include <StormByte/config/item/container.hxx>
+
+/**
+ * @brief Configuration items (values, comments, groups, lists).
+ */
 namespace StormByte::Config::Item {
 	/**
 	 * @class Group
-	 * @brief Represents a group in a configuration file that can hold other items, subgroups, and sublists recursively.
+	 * @brief Named container `{ … }` that can hold items, subgroups and lists.
 	 * @code
 	 * settings = {
 	 *     username = "StormByte"
@@ -32,6 +37,10 @@ namespace StormByte::Config::Item {
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Group: public Container {
 		public:
+			/**
+			 * @name Construction
+			 * @{
+			 */
 			/**
 			 * @brief Constructs an empty Group.
 			 */
@@ -79,7 +88,12 @@ namespace StormByte::Config::Item {
 			 * @brief Destructor.
 			 */
 			~Group() noexcept override = default;
+			/** @} */
 
+			/**
+			 * @name Access
+			 * @{
+			 */
 			/**
 			 * @brief Clones the group.
 			 * @return Cloned group.
@@ -103,6 +117,7 @@ namespace StormByte::Config::Item {
 			constexpr Item::ContainerType ContainerType() const noexcept override {
 				return ContainerType::Group;
 			}
+			/** @} */
 
 		private:
 			/**

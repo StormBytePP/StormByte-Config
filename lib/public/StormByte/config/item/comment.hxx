@@ -1,34 +1,44 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
+
 #include <StormByte/config/item/value.hxx>
+
 #include <string>
+
+/**
+ * @brief Configuration items (values, comments, groups, lists).
+ */
 namespace StormByte::Config::Item {
 	/**
 	 * @class Comment
-	 * @brief Represents a comment item in a configuration file.
-	 * @tparam T The type of the comment (e.g., single-line or multi-line).
+	 * @brief Comment item (`#`, `//` or `/* *\/`).
+	 * @tparam T Comment syntax (`CommentType`).
 	 */
 	template<CommentType T>
 	class STORMBYTE_CONFIG_PUBLIC Comment final: public Value<std::string> {
 		public:
+			/**
+			 * @name Construction
+			 * @{
+			 */
 			/**
 			 * @brief Constructs a Comment with the given string.
 			 * @param comment The comment string.
@@ -71,7 +81,12 @@ namespace StormByte::Config::Item {
 			 * @brief Destructor.
 			 */
 			~Comment() noexcept override = default;
+			/** @} */
 
+			/**
+			 * @name Access
+			 * @{
+			 */
 			/**
 			 * @brief Polymorphic equality comparison.
 			 * @param other The other item to compare against.
@@ -115,16 +130,16 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Gets the comment type.
-			 * @return Comment type.
+			 * @brief Gets the comment syntax.
+			 * @return Comment syntax.
 			 */
-			constexpr CommentType CommentType() const noexcept {
+			constexpr StormByte::Config::Item::CommentType CommentType() const noexcept {
 				return T;
 			}
 
 			/**
-			 * @brief Converts comment type to string.
-			 * @return Comment type string.
+			 * @brief Converts comment syntax to string.
+			 * @return Comment syntax string.
 			 */
 			constexpr std::string CommentTypeToString() const noexcept {
 				return Item::TypeToString(T);
@@ -145,5 +160,6 @@ namespace StormByte::Config::Item {
 			PointerType Move() override {
 				return MakePointer<Comment<T>>(std::move(*this));
 			}
+			/** @} */
 	};
 }
