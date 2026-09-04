@@ -1,36 +1,46 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License version 3
- * or later, as published by the Free Software Foundation.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License version 3
+* or later, as published by the Free Software Foundation.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
 
 #pragma once
+
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/base.hxx>
 #include <StormByte/config/typedefs.hxx>
+
 #include <queue>
 #include <span>
 #include <vector>
+
+/**
+ * @brief Configuration items (values, comments, groups, lists).
+ */
 namespace StormByte::Config::Item {
 	/**
 	 * @class Container
-	 * @brief Represents a container that can hold multiple configuration items.
+	 * @brief Holds child items. `Group` and `List` derive from this.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Container: public Base {
 		public:
+			/**
+			 * @name Construction
+			 * @{
+			 */
 			/**
 			 * @brief Constructs an empty Container.
 			 */
@@ -78,7 +88,12 @@ namespace StormByte::Config::Item {
 			 * @brief Destructor.
 			 */
 			virtual ~Container() noexcept override = default;
+			/** @} */
 
+			/**
+			 * @name Access
+			 * @{
+			 */
 			/**
 			 * @brief Polymorphic equality comparison.
 			 * @param other The other item to compare against.
@@ -139,21 +154,65 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Sets the action to take when an item with the same identity already exists.
-			 * @param action The policy to apply on name/identity collision.
+			 * @brief Serializes the container to a string.
+			 * @param indent_level Indentation level.
+			 * @return Serialized string representation.
 			 */
-			void SetOnExistingAction(StormByte::Config::OnExistingAction action) noexcept {
-				m_on_existing_action = action;
+			std::string Serialize(const int& indent_level) const noexcept override;
+
+			/**
+			 * @brief Returns the enclosure characters for a given container type.
+			 * @param type Container type.
+			 * @return Pair of opening and closing characters.
+			 */
+			static constexpr std::pair<const char, const char> EnclosureCharacters(const ContainerType& type) noexcept {
+				switch (type) {
+					case ContainerType::Group: return {'{', '}'};
+					case ContainerType::List:  return {'[', ']'};
+					default:                   return {'\0', '\0'};
+				}
 			}
 
 			/**
-			 * @brief Gets the current OnExistingAction policy.
-			 * @return The current policy.
+			 * @brief Returns the closing character for a given container type.
+			 * @param type Container type.
+			 * @return Closing character.
 			 */
-			StormByte::Config::OnExistingAction GetOnExistingAction() const noexcept {
-				return m_on_existing_action;
+			static constexpr const char EndCharacter(const ContainerType& type) noexcept {
+				switch (type) {
+					case ContainerType::Group: return '}';
+					case ContainerType::List:  return ']';
+					default:                   return '\0';
+				}
 			}
 
+			/**
+			 * @brief Gets the container type.
+			 * @return Container type.
+			 */
+			constexpr virtual Item::ContainerType ContainerType() const noexcept = 0;
+
+			/**
+			 * @brief Gets the container type as string.
+			 * @return Container type as string.
+			 */
+			constexpr std::string ContainerTypeToString() const noexcept {
+				return Item::TypeToString(this->ContainerType());
+			}
+
+			/**
+			 * @brief Gets the item type.
+			 * @return Item type.
+			 */
+			constexpr Item::Type Type() const noexcept override {
+				return Item::Type::Container;
+			}
+			/** @} */
+
+			/**
+			 * @name Items
+			 * @{
+			 */
 			/**
 			 * @brief Adds an item (const reference) using an explicit policy.
 			 * @param item Item to add.
@@ -230,39 +289,6 @@ namespace StormByte::Config::Item {
 			void Remove(const std::string& path);
 
 			/**
-			 * @brief Serializes the container to a string.
-			 * @param indent_level Indentation level.
-			 * @return Serialized string representation.
-			 */
-			std::string Serialize(const int& indent_level) const noexcept override;
-
-			/**
-			 * @brief Returns the enclosure characters for a given container type.
-			 * @param type Container type.
-			 * @return Pair of opening and closing characters.
-			 */
-			static constexpr std::pair<const char, const char> EnclosureCharacters(const ContainerType& type) noexcept {
-				switch (type) {
-					case ContainerType::Group: return {'{', '}'};
-					case ContainerType::List:  return {'[', ']'};
-					default:                   return {'\0', '\0'};
-				}
-			}
-
-			/**
-			 * @brief Returns the closing character for a given container type.
-			 * @param type Container type.
-			 * @return Closing character.
-			 */
-			static constexpr const char EndCharacter(const ContainerType& type) noexcept {
-				switch (type) {
-					case ContainerType::Group: return '}';
-					case ContainerType::List:  return ']';
-					default:                   return '\0';
-				}
-			}
-
-			/**
 			 * @brief Returns a span of all items in the container.
 			 * @return Span of items.
 			 */
@@ -279,28 +305,6 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Gets the container type.
-			 * @return Container type.
-			 */
-			constexpr virtual Item::ContainerType ContainerType() const noexcept = 0;
-
-			/**
-			 * @brief Gets the container type as string.
-			 * @return Container type as string.
-			 */
-			constexpr std::string ContainerTypeToString() const noexcept {
-				return Item::TypeToString(this->ContainerType());
-			}
-
-			/**
-			 * @brief Gets the item type.
-			 * @return Item type.
-			 */
-			constexpr Item::Type Type() const noexcept override {
-				return Item::Type::Container;
-			}
-
-			/**
 			 * @brief Gets the number of items in the current level.
 			 * @return Number of items.
 			 */
@@ -313,6 +317,28 @@ namespace StormByte::Config::Item {
 			 * @return Total number of items.
 			 */
 			size_t Count() const noexcept;
+			/** @} */
+
+			/**
+			 * @name Policy
+			 * @{
+			 */
+			/**
+			 * @brief Sets the action to take when an item with the same identity already exists.
+			 * @param action The policy to apply on name/identity collision.
+			 */
+			void SetOnExistingAction(StormByte::Config::OnExistingAction action) noexcept {
+				m_on_existing_action = action;
+			}
+
+			/**
+			 * @brief Gets the current OnExistingAction policy.
+			 * @return The current policy.
+			 */
+			StormByte::Config::OnExistingAction GetOnExistingAction() const noexcept {
+				return m_on_existing_action;
+			}
+			/** @} */
 
 		protected:
 			std::vector<Base::PointerType> m_items; ///< Items stored in the container
