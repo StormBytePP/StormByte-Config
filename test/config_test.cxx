@@ -1193,6 +1193,18 @@ int test_numeric_path_overflow_exceptions() {
 	}
 	RETURN_TEST("test_numeric_path_overflow_exceptions", 0);
 }
+int test_double_precision_serialization() {
+	int result = 0;
+	Item::Value<double> v("pi", 3.141592653589793);
+	std::string serialized = v.Serialize(0);
+	ASSERT_EQUAL("test_double_precision_serialization", std::string("pi = 3.141592653589793"), serialized);
+
+	Item::Value<double> integer_double("val", 42.0);
+	std::string serialized_int = integer_double.Serialize(0);
+	ASSERT_EQUAL("test_double_precision_serialization", std::string("val = 42.0"), serialized_int);
+
+	RETURN_TEST("test_double_precision_serialization", result);
+}
 int main() {
 	int result = 0;
 	try {
@@ -1261,6 +1273,7 @@ int main() {
 		result += test_exception_component();
 		result += test_invalid_path_exceptions();
 		result += test_numeric_path_overflow_exceptions();
+		result += test_double_precision_serialization();
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result++;

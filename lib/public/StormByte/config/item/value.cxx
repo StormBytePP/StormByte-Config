@@ -20,6 +20,7 @@
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/base64.hxx>
 #include <StormByte/string.hxx>
+#include <format>
 #include <string_view>
 namespace StormByte::Config::Item {
 	// ---------------------------------------------------------------------
@@ -55,7 +56,11 @@ namespace StormByte::Config::Item {
 	// ---------------------------------------------------------------------
 	template<>
 	std::string STORMBYTE_CONFIG_PUBLIC Value<double>::Serialize(const int& indent_level) const noexcept {
-		return Base::Serialize(indent_level) + std::to_string(m_value);
+		std::string str = std::format("{}", m_value);
+		if (str.find('.') == std::string::npos && str.find('e') == std::string::npos && str.find('E') == std::string::npos) {
+			str += ".0";
+		}
+		return Base::Serialize(indent_level) + str;
 	}
 	template class Value<double>;
 	// ---------------------------------------------------------------------
