@@ -20,6 +20,8 @@ If you landed here from a release link and have not read the tree:
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-13
+
 ### Added
 
 - **`Add` pointer overloads**: Added `Add(Base::PointerType)` overloads to `Config` and `Container` for direct item pointer insertion.
@@ -61,4 +63,6 @@ Initial public release of StormByte Config.
 - Save always writes the current format version.
 - Needs a C++26 compiler and StormByte Base ≥ 1.0.0.
 
+[Unreleased]: https://github.com/StormBytePP/StormByte-Config/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/StormBytePP/StormByte-Config/releases/tag/1.1.0
 [1.0.0]: https://github.com/StormBytePP/StormByte-Config/releases/tag/1.0.0
