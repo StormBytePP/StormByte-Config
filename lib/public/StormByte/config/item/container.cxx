@@ -54,6 +54,9 @@ Base& Container::operator[](const std::string& path) {
 	return const_cast<Base&>(static_cast<const Container&>(*this)[path]);
 }
 Base& Container::Add(Base::PointerType item, const StormByte::Config::OnExistingAction& on_existing) {
+	if (!item) {
+		throw Exception("Tried to add a null pointer to Container!");
+	}
 	// Propagate the policy to child containers
 	if (item->Type() == Type::Container) {
 		auto& child = static_cast<Container&>(*item);

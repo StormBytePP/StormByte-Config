@@ -20,10 +20,15 @@ If you landed here from a release link and have not read the tree:
 
 ## [Unreleased]
 
+### Added
+
+- **`Add` pointer overloads**: Added `Add(Base::PointerType)` overloads to `Config` and `Container` for direct item pointer insertion.
+
 ### Fixed
 
 - **Container path exception safety**: Prevented stock C++ exception leaks (`std::out_of_range`, `std::invalid_argument`) when looking up or removing numeric or malformed container paths, throwing `StormByte::Config::OutOfBounds` or `StormByte::Config::InvalidPath` instead.
 - **Double precision serialization**: Switched `Value<double>::Serialize` to `std::format` for full floating-point precision and ensured integer-like floating point values maintain a `.0` suffix so they are recognized as Double tokens by the parser.
+- **Container null item protection**: Added null pointer check at the start of `Container::Add` to prevent null pointer dereferences when propagating container policies.
 
 ### Changed
 

@@ -1205,6 +1205,16 @@ int test_double_precision_serialization() {
 
 	RETURN_TEST("test_double_precision_serialization", result);
 }
+int test_null_pointer_addition() {
+	Config cfg;
+	try {
+		cfg.Add(Item::Base::PointerType(nullptr));
+		return 1;
+	} catch (const Exception&) {
+		// Expected
+	}
+	RETURN_TEST("test_null_pointer_addition", 0);
+}
 int main() {
 	int result = 0;
 	try {
@@ -1274,6 +1284,7 @@ int main() {
 		result += test_invalid_path_exceptions();
 		result += test_numeric_path_overflow_exceptions();
 		result += test_double_precision_serialization();
+		result += test_null_pointer_addition();
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result++;

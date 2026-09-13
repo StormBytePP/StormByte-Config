@@ -252,6 +252,15 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
+			 * @brief Adds an item to the container using current policy.
+			 * @param item The item to add.
+			 * @return Reference to the added item.
+			 */
+			inline Base& Add(Base::PointerType item) {
+				return Add(item, m_on_existing_action);
+			}
+
+			/**
 			 * @brief Adds an item to the container.
 			 * @param item The item to add.
 			 * @param on_existing The action to take if the item already exists.

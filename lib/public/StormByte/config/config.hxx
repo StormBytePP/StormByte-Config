@@ -285,6 +285,26 @@ namespace StormByte::Config {
 			}
 
 			/**
+			 * @brief Adds an item pointer to the configuration.
+			 * @param item Item pointer to add.
+			 * @throw ItemNameAlreadyExists if item name already exists.
+			 * @return Reference to the added item.
+			 */
+			inline Item::Base& Add(Item::Base::PointerType item) {
+				return m_root.Add(item, m_on_existing_action);
+			}
+
+			/**
+			 * @brief Adds an item pointer using an explicit policy.
+			 * @param item Item pointer to add.
+			 * @param on_existing Action to take if the item already exists.
+			 * @return Reference to the added item.
+			 */
+			inline Item::Base& Add(Item::Base::PointerType item, const StormByte::Config::OnExistingAction& on_existing) {
+				return m_root.Add(item, on_existing);
+			}
+
+			/**
 			 * @brief Clears all configuration items.
 			 */
 			inline void Clear() noexcept {
