@@ -24,6 +24,7 @@ If you landed here from a release link and have not read the tree:
 
 - **Exception handling**: Ported `StormByte::Config::Exception` constructors to pass `StormByte::Component("Config")` introduced in StormByte Base 1.1.0, automatically formatting exception messages with `StormByte::Config: `.
 - **Dependencies**: Requires [StormByte Base](https://github.com/StormBytePP/StormByte/releases/tag/1.1.0) ≥ 1.1.0.
+- **Type traits**: Replaced stock C++ type traits (`std::is_same_v`, `std::is_base_of_v`) with StormByte flavor equivalents (`StormByte::Type::SameAs`, `StormByte::Type::DerivedFrom`).
 
 ## [1.0.0] - 2026-09-05
 

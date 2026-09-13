@@ -22,6 +22,7 @@
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/type.hxx>
 #include <StormByte/clonable.hxx>
+#include <StormByte/type_traits.hxx>
 
 #include <optional>
 #include <string>
@@ -183,9 +184,9 @@ namespace StormByte::Config::Item {
 			 */
 			template<typename T>
 			const T& Value() const {
-				if constexpr (std::is_base_of_v<std::remove_reference_t<decltype(*this)>, T>) {
+				if constexpr (StormByte::Type::DerivedFrom<T, std::remove_reference_t<decltype(*this)>>) {
 					return static_cast<const T&>(*this);
-				} else if constexpr (std::is_base_of_v<std::remove_reference_t<decltype(*this)>, Item::Value<T>>) {
+				} else if constexpr (StormByte::Type::DerivedFrom<Item::Value<T>, std::remove_reference_t<decltype(*this)>>) {
 					return *static_cast<const Item::Value<T>&>(*this);
 				} else {
 					throw WrongValueTypeConversion("Wrong value type {} while expecting {}", this->TypeToString(), typeid(T).name());

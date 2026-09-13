@@ -21,6 +21,7 @@
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/visibility.h>
+#include <StormByte/type_traits.hxx>
 
 #include <concepts>
 #include <cstddef>
@@ -129,9 +130,9 @@ namespace StormByte::Config::Item {
 	 */
 	template<typename T>
 	concept AllowedValueType =
-		std::is_same_v<T, int> ||
-		std::is_same_v<T, double> ||
-		std::is_same_v<T, bool> ||
-		std::is_same_v<T, std::string> ||
-		std::is_same_v<T, std::vector<std::byte>>;
+		StormByte::Type::SameAs<T, int> ||
+		StormByte::Type::SameAs<T, double> ||
+		StormByte::Type::SameAs<T, bool> ||
+		StormByte::Type::SameAs<T, std::string> ||
+		StormByte::Type::SameAs<T, std::vector<std::byte>>;
 }

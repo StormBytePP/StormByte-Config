@@ -20,6 +20,7 @@
 #pragma once
 
 #include <StormByte/config/item/base.hxx>
+#include <StormByte/type_traits.hxx>
 
 #include <cstddef>
 #include <vector>
@@ -51,7 +52,7 @@ namespace StormByte::Config::Item {
 			 * @param value Source C string.
 			 */
 			template <typename U = T>
-			Value(const char* value) requires std::is_same_v<U, std::string>
+			Value(const char* value) requires StormByte::Type::SameAs<U, std::string>
 				: Base(), m_value(std::string(value)) {}
 
 			/**
@@ -60,7 +61,7 @@ namespace StormByte::Config::Item {
 			 * @param value Source C string.
 			 */
 			template <typename U = T>
-			Value(const char* name, const char* value) requires std::is_same_v<U, std::string>
+			Value(const char* name, const char* value) requires StormByte::Type::SameAs<U, std::string>
 				: Base(std::string(name)), m_value(std::string(value)) {}
 
 			/**
@@ -88,7 +89,7 @@ namespace StormByte::Config::Item {
 			 * @param name Item name.
 			 * @param value C string value.
 			 */
-			Value(const std::string& name, const char* value) requires std::is_same_v<T, std::string>
+			Value(const std::string& name, const char* value) requires StormByte::Type::SameAs<T, std::string>
 				: Base(name), m_value(std::string(value)) {}
 
 			/**
@@ -96,7 +97,7 @@ namespace StormByte::Config::Item {
 			 * @param name Item name.
 			 * @param value C string value.
 			 */
-			Value(std::string&& name, const char* value) requires std::is_same_v<T, std::string>
+			Value(std::string&& name, const char* value) requires StormByte::Type::SameAs<T, std::string>
 				: Base(std::move(name)), m_value(std::string(value)) {}
 
 			/**
@@ -154,15 +155,15 @@ namespace StormByte::Config::Item {
 			 * @return Item::Type The type of the item.
 			 */
 			constexpr virtual Item::Type Type() const noexcept override {
-				if constexpr (std::is_same_v<T, std::string>) {
+				if constexpr (StormByte::Type::SameAs<T, std::string>) {
 					return Item::Type::String;
-				} else if constexpr (std::is_same_v<T, int>) {
+				} else if constexpr (StormByte::Type::SameAs<T, int>) {
 					return Item::Type::Integer;
-				} else if constexpr (std::is_same_v<T, double>) {
+				} else if constexpr (StormByte::Type::SameAs<T, double>) {
 					return Item::Type::Double;
-				} else if constexpr (std::is_same_v<T, bool>) {
+				} else if constexpr (StormByte::Type::SameAs<T, bool>) {
 					return Item::Type::Bool;
-				} else if constexpr (std::is_same_v<T, std::vector<std::byte>>) {
+				} else if constexpr (StormByte::Type::SameAs<T, std::vector<std::byte>>) {
 					return Item::Type::Binary;
 				}
 			}
