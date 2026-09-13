@@ -33,9 +33,70 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC Exception: public StormByte::Exception {
 		public:
 			/**
-			 * @brief Inherits constructors from StormByte::Exception.
+			 * @brief Constructs from a message string with default Component("Config").
+			 * @param message Exception text.
 			 */
-			using StormByte::Exception::Exception;
+			explicit Exception(const std::string& message)
+				: StormByte::Exception(Component("Config"), "{}", message) {}
+
+			/**
+			 * @brief Constructs from a moved message string with default Component("Config").
+			 * @param message Exception text.
+			 */
+			explicit Exception(std::string&& message)
+				: StormByte::Exception(Component("Config"), "{}", std::move(message)) {}
+
+			/**
+			 * @brief Constructs with std::format using default Component("Config").
+			 * @tparam Args Format argument types.
+			 * @param fmt Format string.
+			 * @param args Format arguments.
+			 */
+			template <typename... Args>
+			Exception(std::format_string<Args...> fmt, Args&&... args)
+				: StormByte::Exception(Component("Config"), fmt, std::forward<Args>(args)...) {}
+
+			/**
+			 * @brief Constructs with a custom Component and std::format.
+			 * @tparam Args Format argument types.
+			 * @param component Module component wrapper.
+			 * @param fmt Format string.
+			 * @param args Format arguments.
+			 */
+			template <typename... Args>
+			Exception(Component component, std::format_string<Args...> fmt, Args&&... args)
+				: StormByte::Exception(component, fmt, std::forward<Args>(args)...) {}
+
+			/**
+			 * @brief Copy constructor.
+			 * @param other Exception to copy.
+			 */
+			Exception(const Exception& other) = default;
+
+			/**
+			 * @brief Move constructor.
+			 * @param other Exception to move.
+			 */
+			Exception(Exception&& other) noexcept = default;
+
+			/**
+			 * @brief Copy assignment operator.
+			 * @param other Exception to copy.
+			 * @return Reference to this Exception.
+			 */
+			Exception& operator=(const Exception& other) = default;
+
+			/**
+			 * @brief Move assignment operator.
+			 * @param other Exception to move.
+			 * @return Reference to this Exception.
+			 */
+			Exception& operator=(Exception&& other) noexcept = default;
+
+			/**
+			 * @brief Destructor.
+			 */
+			~Exception() noexcept override = default;
 	};
 
 	/**
