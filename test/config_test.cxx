@@ -1162,6 +1162,37 @@ int test_exception_component() {
 
 	RETURN_TEST("test_exception_component", result);
 }
+int test_invalid_path_exceptions() {
+	Config cfg;
+	try {
+		cfg["foo//bar"];
+		return 1;
+	} catch (const InvalidPath&) {
+		// Expected
+	}
+	try {
+		cfg["/foo"];
+		return 1;
+	} catch (const InvalidPath&) {
+		// Expected
+	}
+	RETURN_TEST("test_invalid_path_exceptions", 0);
+}
+int test_numeric_path_overflow_exceptions() {
+	Config cfg;
+	Item::List& list = cfg.Add(Item::List("mylist")).Value<Item::List>();
+	list.Add(Item::Value(123));
+	try {
+		list["9999999999999999999999"];
+		return 1;
+	} catch (const OutOfBounds&) {
+		// Expected StormByte::Config::OutOfBounds
+	} catch (const std::exception&) {
+		std::cerr << "test_numeric_path_overflow_exceptions leaked std::exception!\n";
+		return 1;
+	}
+	RETURN_TEST("test_numeric_path_overflow_exceptions", 0);
+}
 int main() {
 	int result = 0;
 	try {
@@ -1228,6 +1259,8 @@ int main() {
 		result += test_empty_containers_equality();
 		result += test_invalid_name_in_group();
 		result += test_exception_component();
+		result += test_invalid_path_exceptions();
+		result += test_numeric_path_overflow_exceptions();
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result++;

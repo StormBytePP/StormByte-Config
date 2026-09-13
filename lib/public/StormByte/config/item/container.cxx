@@ -79,6 +79,9 @@ void Container::Remove(const size_t& index) {
 	m_items.erase(m_items.begin() + index);
 }
 void Container::Remove(const std::string& path) {
+	if (!IsPathValid(path)) {
+		throw InvalidPath("Invalid path '{}'", path);
+	}
 	auto path_queue = String::Explode(path, '/');
 	Remove(path_queue);
 }
@@ -110,19 +113,35 @@ std::string Container::ContentsToString(const int& indent_level) const noexcept 
 	return serial;
 }
 bool Container::IsPathValid(const std::string& name) noexcept {
-	static const std::regex name_regex(R"(^[A-Za-z][A-Za-z0-9_]*(/[A-Za-z0-9_]+)*$)");
+	static const std::regex name_regex(R"(^[A-Za-z0-9_]+(/([A-Za-z0-9_]+))*$)");
 	return std::regex_match(name, name_regex);
 }
 const Base& Container::LookUp(const std::string& path) const {
+	if (!IsPathValid(path)) {
+		throw InvalidPath("Invalid path '{}'", path);
+	}
 	auto path_queue = String::Explode(path, '/');
 	return LookUp(path_queue);
 }
 const Base& Container::LookUp(std::queue<std::string>& path) const {
+	if (path.empty()) {
+		throw InvalidPath("Empty path given for lookup");
+	}
 	const std::string item_path = path.front();
 	path.pop();
 	if (path.empty()) {
 		if (String::IsNumeric(item_path)) {
-			return *m_items.at(std::stoi(item_path));
+			try {
+				int idx = std::stoi(item_path);
+				if (idx < 0) {
+					throw OutOfBounds("Index {} is out of bounds", idx);
+				}
+				return operator[](static_cast<size_t>(idx));
+			} catch (const OutOfBounds&) {
+				throw;
+			} catch (const std::exception&) {
+				throw OutOfBounds("Invalid or out of bounds index '{}'", item_path);
+			}
 		} else {
 			const auto it = std::find_if(m_items.begin(), m_items.end(), [&item_path](const Base::PointerType& item) {
 				const auto& name = item->Name();
@@ -133,19 +152,47 @@ const Base& Container::LookUp(std::queue<std::string>& path) const {
 			throw ItemNotFound(item_path);
 		}
 	} else {
-		const Base& item = String::IsNumeric(item_path) ? operator[](std::stoi(item_path)) : operator[](item_path);
+		size_t idx = 0;
+		bool is_num = String::IsNumeric(item_path);
+		if (is_num) {
+			try {
+				int num = std::stoi(item_path);
+				if (num < 0) {
+					throw OutOfBounds("Index {} is out of bounds", num);
+				}
+				idx = static_cast<size_t>(num);
+			} catch (const OutOfBounds&) {
+				throw;
+			} catch (const std::exception&) {
+				throw OutOfBounds("Invalid or out of bounds index '{}'", item_path);
+			}
+		}
+		const Base& item = is_num ? operator[](idx) : operator[](item_path);
 		if (item.Type() != Type::Container)
 			throw Exception("Lookup path " + item_path + " applied to non container item");
 		return static_cast<const Container&>(item).LookUp(path);
 	}
 }
 void Container::Remove(std::queue<std::string>& path) {
+	if (path.empty()) {
+		throw InvalidPath("Empty path given for remove");
+	}
 	std::string item_path = path.front();
 	path.pop();
 	if (path.empty()) {
-		if (String::IsNumeric(item_path))
-			Remove(std::stoi(item_path));
-		else {
+		if (String::IsNumeric(item_path)) {
+			try {
+				int idx = std::stoi(item_path);
+				if (idx < 0) {
+					throw OutOfBounds("Index {} is out of bounds", idx);
+				}
+				Remove(static_cast<size_t>(idx));
+			} catch (const OutOfBounds&) {
+				throw;
+			} catch (const std::exception&) {
+				throw OutOfBounds("Invalid or out of bounds index '{}'", item_path);
+			}
+		} else {
 			const auto it = std::find_if(m_items.begin(), m_items.end(), [&item_path](const Base::PointerType& item) {
 				const auto& name = item->Name();
 				return name && name.value() == item_path;
@@ -156,7 +203,22 @@ void Container::Remove(std::queue<std::string>& path) {
 				throw ItemNotFound(item_path);
 		}
 	} else {
-		Base& item = String::IsNumeric(item_path) ? operator[](std::stoi(item_path)) : operator[](item_path);
+		size_t idx = 0;
+		bool is_num = String::IsNumeric(item_path);
+		if (is_num) {
+			try {
+				int num = std::stoi(item_path);
+				if (num < 0) {
+					throw OutOfBounds("Index {} is out of bounds", num);
+				}
+				idx = static_cast<size_t>(num);
+			} catch (const OutOfBounds&) {
+				throw;
+			} catch (const std::exception&) {
+				throw OutOfBounds("Invalid or out of bounds index '{}'", item_path);
+			}
+		}
+		Base& item = is_num ? operator[](idx) : operator[](item_path);
 		if (item.Type() != Type::Container)
 			throw Exception("Lookup path " + item_path + " applied to non container item");
 		item.Value<Container>().Remove(path);
