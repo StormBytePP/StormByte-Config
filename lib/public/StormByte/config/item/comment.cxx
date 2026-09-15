@@ -25,11 +25,13 @@ namespace StormByte::Config::Item {
 	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {
 		return String::Indent(indent_level) + "#" + m_value; // It is expected to start already indented
 	}
+
 	template class Comment<CommentType::SingleLineBash>;
 	template<>
 	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept {
 		return String::Indent(indent_level) + "//" + m_value; // It is expected to start already indented
 	}
+
 	template class Comment<CommentType::SingleLineC>;
 	template<>
 	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::MultiLineC>::Serialize(const int& indent_level) const noexcept {
@@ -46,7 +48,9 @@ namespace StormByte::Config::Item {
 				if (!ss.eof()) serial += "\n";
 			}
 		}
+
 		return serial + "*/";
 	}
+
 	template class Comment<CommentType::MultiLineC>;
 }

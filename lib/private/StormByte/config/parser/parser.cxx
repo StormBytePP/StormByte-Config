@@ -47,10 +47,12 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
 			return Unexpected(std::move(res.error()));
 		return {};
 	}
+
 	for (const auto& hook : after)
 		hook(root);
 	return {};
 }
+
 StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
 	const std::string& string,
 	Item::Group& root,
@@ -61,6 +63,7 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
 	std::istringstream iss(string);
 	return Parse(iss, root, action, before, after, on_failure);
 }
+
 // ----------------------------------------------------------------------
 // Core recursive parser
 // ----------------------------------------------------------------------
@@ -72,30 +75,37 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 			if (m_container_level == 0) {
 				return Unexpected<ParseError>("Unexpected container end on line {}", token.line);
 			}
+
 			--m_container_level;
 			return {};
 		}
+
 		if (token.type == TokenType::EndOfFile) {
 			if (m_container_level > 0) {
 				return Unexpected<ParseError>("Unexpected EOF (unclosed container)");
 			}
+
 			return {};
 		}
+
 		// Comments can appear anywhere
 		if (token.type == TokenType::Comment) {
 			container.Add(MakeComment(token), c_on_existing_action);
 			continue;
 		}
+
 		std::string name;
 		if (mode == Mode::Named) {
 			if (token.type != TokenType::Identifier) {
 				return Unexpected<ParseError>("Expected item name on line {}, got something else", token.line);
 			}
+
 			name = std::move(token.value);
 			auto eq = Expect(TokenType::Equal);
 			if (!eq) return Unexpected(std::move(eq.error()));
 			token = m_tokenizer.Next(); // value token
 		}
+
 		// Now token holds the value (or opening of a container)
 		Expected<Item::Base::PointerType, ParseError> item_res;
 		switch (token.type) {
@@ -109,8 +119,10 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 				} catch (const StormByte::Base64Error& ex) {
 					return Unexpected<ParseError>("Invalid Base64 data on line {}: {}", token.line, ex.what());
 				}
+
 				break;
 			}
+
 			case TokenType::Integer: {
 				try {
 					int v = std::stoi(token.value);
@@ -118,8 +130,10 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 				} catch (...) {
 					return Unexpected<ParseError>("Invalid integer '{}' on line {}", token.value, token.line);
 				}
+
 				break;
 			}
+
 			case TokenType::Double: {
 				try {
 					double v = std::stod(token.value);
@@ -127,8 +141,10 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 				} catch (...) {
 					return Unexpected<ParseError>("Invalid double '{}' on line {}", token.value, token.line);
 				}
+
 				break;
 			}
+
 			case TokenType::Bool:
 				item_res = Item::Base::MakePointer<Item::Value<bool>>(token.value == "true");
 				break;
@@ -140,6 +156,7 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 				item_res = group.Move();
 				break;
 			}
+
 			case TokenType::LBracket: {
 				++m_container_level;
 				Item::List list;
@@ -148,12 +165,14 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 				item_res = list.Move();
 				break;
 			}
+
 			case TokenType::Comment:
 				item_res = MakeComment(token);
 				break;
 			default:
 				return Unexpected<ParseError>("Unexpected token on line {}", token.line);
 		}
+
 		if (!item_res) return Unexpected(std::move(item_res.error()));
 		auto item = std::move(item_res.value());
 		if (mode == Mode::Named)
@@ -161,6 +180,7 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 		container.Add(item, c_on_existing_action);
 	}
 }
+
 // ----------------------------------------------------------------------
 // Helpers
 // ----------------------------------------------------------------------
@@ -169,8 +189,10 @@ StormByte::Expected<Token, ParseError> StormByte::Config::Parser::Parser::Expect
 	if (token.type != expected) {
 		return Unexpected<ParseError>("Unexpected token on line {}", token.line);
 	}
+
 	return token;
 }
+
 Item::Base::PointerType StormByte::Config::Parser::Parser::MakeComment(const Token& token) {
 	switch (token.comment_type) {
 		case CommentType::SingleLineBash:
@@ -183,6 +205,7 @@ Item::Base::PointerType StormByte::Config::Parser::Parser::MakeComment(const Tok
 			return Item::Base::MakePointer<Item::Comment<Item::CommentType::SingleLineBash>>(token.value);
 	}
 }
+
 // ----------------------------------------------------------------------
 // Free functions
 // ----------------------------------------------------------------------
@@ -196,6 +219,7 @@ namespace StormByte::Config::Parser {
 		const OptionalFailureHook& on_failure) {
 		return Parser::Parse(stream, root, action, before, after, on_failure);
 	}
+
 	StormByte::Expected<void, ParseError> Parse(
 		const std::string& string,
 		Item::Group& root,

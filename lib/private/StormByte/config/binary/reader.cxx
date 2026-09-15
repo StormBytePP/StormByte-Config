@@ -106,6 +106,7 @@ namespace StormByte::Config::Binary {
 					return Unexpected(child.error());
 				container.Add(std::move(child.value()), container.GetOnExistingAction());
 			}
+
 			return {};
 		}
 
@@ -135,6 +136,7 @@ namespace StormByte::Config::Binary {
 					apply_name(*item);
 					return item;
 				}
+
 				case Type::Integer: {
 					auto value = Serializable<int>::Deserialize(data.subspan(offset));
 					if (!value)
@@ -144,6 +146,7 @@ namespace StormByte::Config::Binary {
 					apply_name(*item);
 					return item;
 				}
+
 				case Type::Double: {
 					auto value = Serializable<double>::Deserialize(data.subspan(offset));
 					if (!value)
@@ -153,6 +156,7 @@ namespace StormByte::Config::Binary {
 					apply_name(*item);
 					return item;
 				}
+
 				case Type::Bool: {
 					auto value = Serializable<bool>::Deserialize(data.subspan(offset));
 					if (!value)
@@ -162,6 +166,7 @@ namespace StormByte::Config::Binary {
 					apply_name(*item);
 					return item;
 				}
+
 				case Type::Binary: {
 					auto value = Serializable<std::vector<std::byte>>::Deserialize(data.subspan(offset));
 					if (!value)
@@ -171,6 +176,7 @@ namespace StormByte::Config::Binary {
 					apply_name(*item);
 					return item;
 				}
+
 				case Type::Comment: {
 					auto ct = Serializable<CommentType>::Deserialize(data.subspan(offset));
 					if (!ct)
@@ -196,9 +202,11 @@ namespace StormByte::Config::Binary {
 						default:
 							return Unexpected<DeserializeError>("Unknown comment type");
 					}
+
 					apply_name(*item);
 					return item;
 				}
+
 				case Type::Container: {
 					offset = start;
 					std::size_t peek = start;
@@ -225,6 +233,7 @@ namespace StormByte::Config::Binary {
 						return Unexpected(filled.error());
 					return std::static_pointer_cast<Base>(container);
 				}
+
 				default:
 					return Unexpected<DeserializeError>("Unhandled item type");
 			}
@@ -276,6 +285,7 @@ namespace StormByte::Config::Binary {
 					"Config binary version {} is newer than this library (max {})",
 					version.value(), CurrentVersion));
 			}
+
 			if (version.value() < 1) {
 				return Unexpected<DeserializeError>(std::format(
 					"Unsupported config binary version {}", version.value()));
@@ -302,6 +312,7 @@ namespace StormByte::Config::Binary {
 			cfg.m_root.SetOnExistingAction(cfg.m_on_existing_action);
 			return cfg;
 		}
+
 		catch (const StormByte::Exception& e) {
 			return Unexpected<DeserializeError>(e.what());
 		}

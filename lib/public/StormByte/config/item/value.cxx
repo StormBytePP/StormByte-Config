@@ -40,8 +40,10 @@ namespace StormByte::Config::Item {
 				default:   escaped += c;      break;
 			}
 		}
+
 		return Base::Serialize(indent_level) + "\"" + escaped + "\"";
 	}
+
 	template class Value<std::string>;
 	// ---------------------------------------------------------------------
 	// int
@@ -50,6 +52,7 @@ namespace StormByte::Config::Item {
 	std::string STORMBYTE_CONFIG_PUBLIC Value<int>::Serialize(const int& indent_level) const noexcept {
 		return Base::Serialize(indent_level) + std::to_string(m_value);
 	}
+
 	template class Value<int>;
 	// ---------------------------------------------------------------------
 	// double
@@ -60,8 +63,10 @@ namespace StormByte::Config::Item {
 		if (str.find('.') == std::string::npos && str.find('e') == std::string::npos && str.find('E') == std::string::npos) {
 			str += ".0";
 		}
+
 		return Base::Serialize(indent_level) + str;
 	}
+
 	template class Value<double>;
 	// ---------------------------------------------------------------------
 	// bool
@@ -70,6 +75,7 @@ namespace StormByte::Config::Item {
 	std::string STORMBYTE_CONFIG_PUBLIC Value<bool>::Serialize(const int& indent_level) const noexcept {
 		return Base::Serialize(indent_level) + (m_value ? "true" : "false");
 	}
+
 	template class Value<bool>;
 	// ---------------------------------------------------------------------
 	// Binary (std::vector<std::byte>)
@@ -80,5 +86,6 @@ namespace StormByte::Config::Item {
 		std::string base64 = StormByte::Base64Encode(m_value);
 		return Base::Serialize(indent_level) + "b\"" + base64 + "\"";
 	}
+
 	template class Value<std::vector<std::byte>>;
 }

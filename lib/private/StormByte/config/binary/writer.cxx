@@ -81,6 +81,7 @@ namespace StormByte::Config::Binary {
 					append_vector(out, Serializable<std::string>(item.Value<std::string>()).Serialize());
 					break;
 				}
+
 				case Type::Container:
 					WriteContainer(out, static_cast<const Container&>(item), version);
 					break;
