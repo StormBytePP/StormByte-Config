@@ -44,20 +44,18 @@
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/serializable.hxx>
+#include <StormByte/string/serializable.hxx>
 #include <StormByte/string/string.hxx>
 
 #include <cstring>
 #include <format>
 #include <memory>
 #include <optional>
-#include <string>
-#include <string_view>
 #include <utility>
 
 namespace StormByte::Config::Binary {
 	namespace {
 		using namespace StormByte::Config::Item;
-		using StormByte::String::String;
 
 		bool MagicMatches(BufferView data) noexcept {
 			if (data.size() < Magic.size())
@@ -65,7 +63,7 @@ namespace StormByte::Config::Binary {
 			return std::memcmp(data.data(), Magic.data(), Magic.size()) == 0;
 		}
 
-		Expected<std::pair<Type, std::optional<std::string>>, DeserializeError>
+		Expected<std::pair<Type, std::optional<StormByte::String::String>>, DeserializeError>
 		ReadBase(BufferView data, std::size_t& offset) {
 			if (offset >= data.size())
 				return Unexpected<DeserializeError>("Insufficient data for item type");
@@ -78,17 +76,17 @@ namespace StormByte::Config::Binary {
 			if (offset >= data.size())
 				return Unexpected<DeserializeError>("Insufficient data for item name");
 
-			auto name = Serializable<std::optional<std::string>>::Deserialize(data.subspan(offset));
+			auto name = Serializable<std::optional<StormByte::String::String>>::Deserialize(data.subspan(offset));
 			if (!name)
 				return Unexpected(name.error());
-			offset += Serializable<std::optional<std::string>>::Size(name.value());
+			offset += Serializable<std::optional<StormByte::String::String>>::Size(name.value());
 
 			return std::make_pair(type.value(), std::move(name.value()));
 		}
 
-		void ApplyName(Base& item, std::optional<std::string>& name) {
+		void ApplyName(Base& item, std::optional<StormByte::String::String>& name) {
 			if (name)
-				item.Name(String(std::string_view(*name)));
+				item.Name(*name);
 		}
 
 		Expected<std::shared_ptr<Base>, DeserializeError>
@@ -151,11 +149,11 @@ namespace StormByte::Config::Binary {
 
 			switch (type) {
 				case Type::String: {
-					auto value = Serializable<std::string>::Deserialize(data.subspan(offset));
+					auto value = Serializable<StormByte::String::String>::Deserialize(data.subspan(offset));
 					if (!value)
 						return Unexpected(value.error());
-					offset += Serializable<std::string>::Size(value.value());
-					auto item = std::make_shared<Value<String>>(String(std::string_view(value.value())));
+					offset += Serializable<StormByte::String::String>::Size(value.value());
+					auto item = std::make_shared<Value<StormByte::String::String>>(std::move(value.value()));
 					ApplyName(*item, name);
 					return item;
 				}
@@ -206,22 +204,21 @@ namespace StormByte::Config::Binary {
 						return Unexpected(ct.error());
 					offset += Serializable<CommentType>::Size(ct.value());
 
-					auto text = Serializable<std::string>::Deserialize(data.subspan(offset));
+					auto text = Serializable<StormByte::String::String>::Deserialize(data.subspan(offset));
 					if (!text)
 						return Unexpected(text.error());
-					offset += Serializable<std::string>::Size(text.value());
+					offset += Serializable<StormByte::String::String>::Size(text.value());
 
-					const String body(std::string_view(text.value()));
 					std::shared_ptr<Base> item;
 					switch (ct.value()) {
 						case CommentType::SingleLineBash:
-							item = std::make_shared<Comment<CommentType::SingleLineBash>>(body);
+							item = std::make_shared<Comment<CommentType::SingleLineBash>>(std::move(text.value()));
 							break;
 						case CommentType::SingleLineC:
-							item = std::make_shared<Comment<CommentType::SingleLineC>>(body);
+							item = std::make_shared<Comment<CommentType::SingleLineC>>(std::move(text.value()));
 							break;
 						case CommentType::MultiLineC:
-							item = std::make_shared<Comment<CommentType::MultiLineC>>(body);
+							item = std::make_shared<Comment<CommentType::MultiLineC>>(std::move(text.value()));
 							break;
 						default:
 							return Unexpected<DeserializeError>("Unknown comment type");

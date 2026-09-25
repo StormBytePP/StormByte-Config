@@ -45,26 +45,18 @@
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/helpers.hxx>
 #include <StormByte/serializable.hxx>
+#include <StormByte/string/serializable.hxx>
 #include <StormByte/string/string.hxx>
 
 #include <optional>
-#include <string>
-#include <string_view>
 
 namespace StormByte::Config::Binary {
 	namespace {
 		using namespace StormByte::Config::Item;
-		using StormByte::String::String;
-
-		std::optional<std::string> WireName(const std::optional<String>& name) {
-			if (!name)
-				return std::nullopt;
-			return static_cast<std::string>(*name);
-		}
 
 		void WriteBase(Buffer& out, const Base& item) {
 			append_vector(out, Serializable<Type>(item.Type()).Serialize());
-			append_vector(out, Serializable<std::optional<std::string>>(WireName(item.Name())).Serialize());
+			append_vector(out, Serializable<std::optional<StormByte::String::String>>(item.Name()).Serialize());
 		}
 
 		void WriteItem(Buffer& out, const Base& item, std::uint8_t version);
@@ -85,7 +77,7 @@ namespace StormByte::Config::Binary {
 			switch (item.Type()) {
 				case Type::String:
 					WriteBase(out, item);
-					append_vector(out, Serializable<std::string>(static_cast<std::string>(item.Value<String>())).Serialize());
+					append_vector(out, Serializable<StormByte::String::String>(item.Value<StormByte::String::String>()).Serialize());
 					break;
 				case Type::Integer:
 					WriteBase(out, item);
@@ -108,7 +100,7 @@ namespace StormByte::Config::Binary {
 					WriteBase(out, item);
 					const CommentType ct = *item.GetCommentType();
 					append_vector(out, Serializable<CommentType>(ct).Serialize());
-					append_vector(out, Serializable<std::string>(static_cast<std::string>(item.Value<String>())).Serialize());
+					append_vector(out, Serializable<StormByte::String::String>(item.Value<StormByte::String::String>()).Serialize());
 					break;
 				}
 

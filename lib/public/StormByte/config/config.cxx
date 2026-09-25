@@ -65,7 +65,7 @@ void Config::operator<<(std::istream& istream) {
 		throw *res.error();
 }
 
-void Config::operator<<(const String& str) {
+void Config::operator<<(const class String& str) {
 	auto res = Parser::Parse(std::string(static_cast<std::string_view>(str)), m_root, m_on_existing_action, m_before_read_hooks, m_after_read_hooks, m_on_parse_failure_hook);
 	if (!res)
 		throw *res.error();
@@ -82,7 +82,7 @@ Config& StormByte::Config::operator>>(std::istream& istream, Config& config) {
 	return config;
 }
 
-Config& StormByte::Config::operator>>(const String& str, Config& config) {
+Config& StormByte::Config::operator>>(const class String& str, Config& config) {
 	config << str;
 	return config;
 }
@@ -124,7 +124,7 @@ String Config::Text() const {
 		serialized += '\n';
 	}
 
-	return String(std::string_view(serialized));
+	return String::String(std::string_view(serialized));
 }
 
 void Config::Save(std::ostream& stream, Mode mode) const {

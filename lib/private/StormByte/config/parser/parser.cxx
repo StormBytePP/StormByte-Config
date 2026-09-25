@@ -47,7 +47,6 @@
 
 using namespace StormByte::Config;
 using namespace StormByte::Config::Parser;
-using StormByte::String::String;
 
 StormByte::Config::Parser::Parser::Parser(Tokenizer& tokenizer, const OnExistingAction& action)
 	: m_tokenizer(tokenizer), c_on_existing_action(action) {}
@@ -129,7 +128,8 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 		Expected<Item::Base::PointerType, ParseError> item_res;
 		switch (token.type) {
 			case TokenType::String:
-				item_res = Item::Base::MakePointer<Item::Value<String>>(String(std::string_view(token.value)));
+				item_res = Item::Base::MakePointer<Item::Value<StormByte::String::String>>(
+					StormByte::String::String(std::string_view(token.value)));
 				break;
 			case TokenType::Binary: {
 				try {
@@ -195,7 +195,7 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 		if (!item_res) return Unexpected(std::move(item_res.error()));
 		auto item = std::move(item_res.value());
 		if (mode == Mode::Named)
-			item->Name(String(std::string_view(name)));
+			item->Name(StormByte::String::String(std::string_view(name)));
 		container.Add(item, c_on_existing_action);
 	}
 }
@@ -210,7 +210,7 @@ StormByte::Expected<Token, ParseError> StormByte::Config::Parser::Parser::Expect
 }
 
 Item::Base::PointerType StormByte::Config::Parser::Parser::MakeComment(const Token& token) {
-	const String text(std::string_view(token.value));
+	const StormByte::String::String text(std::string_view(token.value));
 	switch (token.comment_type) {
 		case CommentType::SingleLineBash:
 			return Item::Base::MakePointer<Item::Comment<Item::CommentType::SingleLineBash>>(text);

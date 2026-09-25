@@ -59,7 +59,7 @@ namespace {
 	}
 }
 
-Base::Base(const String& name): m_name(name) {}
+Base::Base(const class String& name): m_name(name) {}
 
 String Base::Serialize(const int& indent_level) const noexcept {
 	std::string serialized = static_cast<std::string>(Indent(indent_level));
@@ -67,11 +67,11 @@ String Base::Serialize(const int& indent_level) const noexcept {
 		serialized += static_cast<std::string>(*m_name);
 		serialized += " = ";
 	}
-	return String(std::string_view(serialized));
+	return String::String(std::string_view(serialized));
 }
 
 namespace StormByte::Config::Item {
-	bool IsNameValid(const String& name) noexcept {
+	bool IsNameValid(const class String& name) noexcept {
 		static const std::regex name_regex(R"(^[A-Za-z][A-Za-z0-9_]*$)");
 		return std::regex_match(static_cast<std::string>(name), name_regex);
 	}
