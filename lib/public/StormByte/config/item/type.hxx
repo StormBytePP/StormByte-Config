@@ -1,52 +1,54 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config original source is dual-licensed:
- *
- * 1. GNU Lesser General Public License v3.0 (or later)
- *    You may redistribute and/or modify this file under the terms of the
- *    GNU Lesser General Public License as published by the Free Software
- *    Foundation, either version 3 of the License, or (at your option)
- *    any later version.
- *
- * 2. Commercial license
- *    Alternatively, this file may be used under the terms of a commercial
- *    license agreement with the copyright holder
- *    (David C. Manuelda <StormByte@gmail.com>).
- *
- * Both licenses apply only to original StormByte-Config source in this
- * repository. They do not cover other StormByte modules or any third-party
- * material shipped with this repository (including everything under
- * thirdparty/, and in particular the bundled StormByte-String tree and
- * the StormByte Base tree it vendors), which remains under its own license.
- *
- * Neither license grants any patent rights. Any patent licenses required
- * to use this software or third-party components must be obtained separately
- * from the patent holders.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- *
- * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config original source is dual-licensed:
+*
+* 1. GNU Lesser General Public License v3.0 (or later)
+*    You may redistribute and/or modify this file under the terms of the
+*    GNU Lesser General Public License as published by the Free Software
+*    Foundation, either version 3 of the License, or (at your option)
+*    any later version.
+*
+* 2. Commercial license
+*    Alternatively, this file may be used under the terms of a commercial
+*    license agreement with the copyright holder
+*    (David C. Manuelda <StormByte@gmail.com>).
+*
+* Both licenses apply only to original StormByte-Config source in this
+* repository. They do not cover other StormByte modules or any third-party
+* material shipped with this repository (including everything under
+* thirdparty/, and in particular the bundled StormByte-String tree and
+* the StormByte Base tree it vendors), which remains under its own license.
+*
+* Neither license grants any patent rights. Any patent licenses required
+* to use this software or third-party components must be obtained separately
+* from the patent holders.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* version 3 along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*
+* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+*/
 
 #pragma once
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/visibility.h>
+#include <StormByte/string/string.hxx>
 #include <StormByte/type_traits.hxx>
 
 #include <concepts>
 #include <cstddef>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -64,16 +66,16 @@ namespace StormByte::Config::Item {
 		Container,  ///< Container item.
 		Double,     ///< Double-precision floating-point item.
 		Integer,    ///< Integer item.
-		String,     ///< String item.
+		String,     ///< String item (`StormByte::String::String`).
 		Binary      ///< Binary data (`std::vector<std::byte>`; text form is Base64 `b"..."`)
 	};
 
 	/**
 	 * @brief Converts a Type to its string representation.
 	 * @param t The Type to convert.
-	 * @return The string representation of the Type.
+	 * @return Literal name. Lives for the program.
 	 */
-	static constexpr std::string TypeToString(const Type& t) noexcept {
+	static constexpr std::string_view TypeToString(const Type& t) noexcept {
 		switch(t) {
 			case Type::String:		return "String";
 			case Type::Integer:		return "Integer";
@@ -99,9 +101,9 @@ namespace StormByte::Config::Item {
 	/**
 	 * @brief Converts a CommentType to a human-readable string.
 	 * @param t Comment type to convert.
-	 * @return String representation.
+	 * @return Literal description. Lives for the program.
 	 */
-	constexpr STORMBYTE_CONFIG_PUBLIC std::string TypeToString(const CommentType& t) noexcept {
+	constexpr STORMBYTE_CONFIG_PUBLIC std::string_view TypeToString(const CommentType& t) noexcept {
 		switch(t) {
 			case CommentType::SingleLineBash:	return "Bash like single line comment";
 			case CommentType::SingleLineC:		return "C++ like single line comment";
@@ -122,9 +124,9 @@ namespace StormByte::Config::Item {
 	/**
 	 * @brief Converts a ContainerType to a string.
 	 * @param t Container type to convert.
-	 * @return String representation.
+	 * @return Literal name. Lives for the program.
 	 */
-	constexpr STORMBYTE_CONFIG_PUBLIC std::string TypeToString(const ContainerType& t) noexcept {
+	constexpr STORMBYTE_CONFIG_PUBLIC std::string_view TypeToString(const ContainerType& t) noexcept {
 		switch(t) {
 			case ContainerType::Group:	return "Group";
 			case ContainerType::List:	return "List";
@@ -154,6 +156,6 @@ namespace StormByte::Config::Item {
 		StormByte::Type::SameAs<T, int> ||
 		StormByte::Type::SameAs<T, double> ||
 		StormByte::Type::SameAs<T, bool> ||
-		StormByte::Type::SameAs<T, std::string> ||
+		StormByte::Type::SameAs<T, StormByte::String::String> ||
 		StormByte::Type::SameAs<T, std::vector<std::byte>>;
 }

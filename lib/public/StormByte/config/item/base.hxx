@@ -1,52 +1,54 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config original source is dual-licensed:
- *
- * 1. GNU Lesser General Public License v3.0 (or later)
- *    You may redistribute and/or modify this file under the terms of the
- *    GNU Lesser General Public License as published by the Free Software
- *    Foundation, either version 3 of the License, or (at your option)
- *    any later version.
- *
- * 2. Commercial license
- *    Alternatively, this file may be used under the terms of a commercial
- *    license agreement with the copyright holder
- *    (David C. Manuelda <StormByte@gmail.com>).
- *
- * Both licenses apply only to original StormByte-Config source in this
- * repository. They do not cover other StormByte modules or any third-party
- * material shipped with this repository (including everything under
- * thirdparty/, and in particular the bundled StormByte-String tree and
- * the StormByte Base tree it vendors), which remains under its own license.
- *
- * Neither license grants any patent rights. Any patent licenses required
- * to use this software or third-party components must be obtained separately
- * from the patent holders.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- *
- * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config original source is dual-licensed:
+*
+* 1. GNU Lesser General Public License v3.0 (or later)
+*    You may redistribute and/or modify this file under the terms of the
+*    GNU Lesser General Public License as published by the Free Software
+*    Foundation, either version 3 of the License, or (at your option)
+*    any later version.
+*
+* 2. Commercial license
+*    Alternatively, this file may be used under the terms of a commercial
+*    license agreement with the copyright holder
+*    (David C. Manuelda <StormByte@gmail.com>).
+*
+* Both licenses apply only to original StormByte-Config source in this
+* repository. They do not cover other StormByte modules or any third-party
+* material shipped with this repository (including everything under
+* thirdparty/, and in particular the bundled StormByte-String tree and
+* the StormByte Base tree it vendors), which remains under its own license.
+*
+* Neither license grants any patent rights. Any patent licenses required
+* to use this software or third-party components must be obtained separately
+* from the patent holders.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* version 3 along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*
+* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+*/
 
 #pragma once
 
+#include <StormByte/clonable.hxx>
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/type.hxx>
-#include <StormByte/clonable.hxx>
+#include <StormByte/string/string.hxx>
 #include <StormByte/type_traits.hxx>
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 /**
@@ -57,7 +59,7 @@ namespace StormByte::Config::Item {
 	class Group;
 	class List;
 	template<AllowedValueType T> class Value;
-	bool STORMBYTE_CONFIG_PUBLIC IsNameValid(const std::string&) noexcept;
+	bool STORMBYTE_CONFIG_PUBLIC IsNameValid(const StormByte::String::String&) noexcept;
 
 	/**
 	 * @class Base
@@ -74,7 +76,7 @@ namespace StormByte::Config::Item {
 			 * @brief Constructs a Base item with a name.
 			 * @param name The name of the item.
 			 */
-			Base(const std::string& name);
+			Base(const StormByte::String::String& name);
 
 			/**
 			 * @brief Copy constructor.
@@ -136,7 +138,7 @@ namespace StormByte::Config::Item {
 			 * @brief Gets the name of the item.
 			 * @return The name of the item.
 			 */
-			constexpr const std::optional<std::string>& Name() const noexcept {
+			constexpr const std::optional<StormByte::String::String>& Name() const noexcept {
 				return m_name;
 			}
 
@@ -144,7 +146,7 @@ namespace StormByte::Config::Item {
 			 * @brief Sets the item name.
 			 * @param name New name.
 			 */
-			constexpr void Name(const std::string& name) noexcept {
+			constexpr void Name(const StormByte::String::String& name) noexcept {
 				m_name = name;
 			}
 
@@ -178,23 +180,23 @@ namespace StormByte::Config::Item {
 			 * @brief Gets the item type as a string.
 			 * @return Item type as string.
 			 */
-			constexpr std::string TypeToString() const noexcept {
+			constexpr std::string_view TypeToString() const noexcept {
 				return Item::TypeToString(this->Type());
 			}
 
 			/**
 			 * @brief Serializes the item.
 			 * @param indent_level Indentation level.
-			 * @return Serialized string.
+			 * @return Serialized text owned by StormByte-String.
 			 */
-			virtual std::string Serialize(const int& indent_level) const noexcept;
+			virtual StormByte::String::String Serialize(const int& indent_level) const noexcept;
 
 			/**
 			 * @brief Converts the item to a string.
-			 * @return Serialized representation.
+			 * @return Serialized representation on the caller heap.
 			 */
-			operator std::string() const {
-				return this->Serialize(0);
+			explicit operator std::string() const {
+				return static_cast<std::string>(this->Serialize(0));
 			}
 
 			/**
@@ -226,6 +228,6 @@ namespace StormByte::Config::Item {
 			}
 
 		protected:
-			std::optional<std::string> m_name; ///< Item name
+			std::optional<StormByte::String::String> m_name; ///< Item name
 	};
 }

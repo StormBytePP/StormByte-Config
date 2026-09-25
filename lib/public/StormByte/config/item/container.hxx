@@ -1,51 +1,53 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config original source is dual-licensed:
- *
- * 1. GNU Lesser General Public License v3.0 (or later)
- *    You may redistribute and/or modify this file under the terms of the
- *    GNU Lesser General Public License as published by the Free Software
- *    Foundation, either version 3 of the License, or (at your option)
- *    any later version.
- *
- * 2. Commercial license
- *    Alternatively, this file may be used under the terms of a commercial
- *    license agreement with the copyright holder
- *    (David C. Manuelda <StormByte@gmail.com>).
- *
- * Both licenses apply only to original StormByte-Config source in this
- * repository. They do not cover other StormByte modules or any third-party
- * material shipped with this repository (including everything under
- * thirdparty/, and in particular the bundled StormByte-String tree and
- * the StormByte Base tree it vendors), which remains under its own license.
- *
- * Neither license grants any patent rights. Any patent licenses required
- * to use this software or third-party components must be obtained separately
- * from the patent holders.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- *
- * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config original source is dual-licensed:
+*
+* 1. GNU Lesser General Public License v3.0 (or later)
+*    You may redistribute and/or modify this file under the terms of the
+*    GNU Lesser General Public License as published by the Free Software
+*    Foundation, either version 3 of the License, or (at your option)
+*    any later version.
+*
+* 2. Commercial license
+*    Alternatively, this file may be used under the terms of a commercial
+*    license agreement with the copyright holder
+*    (David C. Manuelda <StormByte@gmail.com>).
+*
+* Both licenses apply only to original StormByte-Config source in this
+* repository. They do not cover other StormByte modules or any third-party
+* material shipped with this repository (including everything under
+* thirdparty/, and in particular the bundled StormByte-String tree and
+* the StormByte Base tree it vendors), which remains under its own license.
+*
+* Neither license grants any patent rights. Any patent licenses required
+* to use this software or third-party components must be obtained separately
+* from the patent holders.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* version 3 along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*
+* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+*/
 
 #pragma once
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/base.hxx>
 #include <StormByte/config/typedefs.hxx>
+#include <StormByte/string/string.hxx>
 
 #include <queue>
 #include <span>
+#include <string_view>
 #include <vector>
 
 /**
@@ -71,13 +73,13 @@ namespace StormByte::Config::Item {
 			 * @brief Constructs a Container with the given name.
 			 * @param name The name of the container.
 			 */
-			Container(const std::string& name);
+			Container(const StormByte::String::String& name);
 
 			/**
 			 * @brief Constructs a Container with the given name (move).
 			 * @param name The name of the container.
 			 */
-			Container(std::string&& name);
+			Container(StormByte::String::String&& name);
 
 			/**
 			 * @brief Copy constructor.
@@ -145,7 +147,7 @@ namespace StormByte::Config::Item {
 			 * @throw ItemNotFound if item is not found.
 			 * @return Reference to the item.
 			 */
-			Base& operator[](const std::string& path);
+			Base& operator[](const StormByte::String::String& path);
 
 			/**
 			 * @brief Gets a const reference to an item by path.
@@ -154,7 +156,7 @@ namespace StormByte::Config::Item {
 			 * @throw ItemNotFound if item is not found.
 			 * @return Const reference to the item.
 			 */
-			inline const Base& operator[](const std::string& path) const {
+			inline const Base& operator[](const StormByte::String::String& path) const {
 				return LookUp(path);
 			}
 
@@ -177,9 +179,9 @@ namespace StormByte::Config::Item {
 			/**
 			 * @brief Serializes the container to a string.
 			 * @param indent_level Indentation level.
-			 * @return Serialized string representation.
+			 * @return Serialized text.
 			 */
-			std::string Serialize(const int& indent_level) const noexcept override;
+			StormByte::String::String Serialize(const int& indent_level) const noexcept override;
 
 			/**
 			 * @brief Returns the enclosure characters for a given container type.
@@ -217,7 +219,7 @@ namespace StormByte::Config::Item {
 			 * @brief Gets the container type as string.
 			 * @return Container type as string.
 			 */
-			constexpr std::string ContainerTypeToString() const noexcept {
+			constexpr std::string_view ContainerTypeToString() const noexcept {
 				return Item::TypeToString(this->ContainerType());
 			}
 
@@ -301,7 +303,7 @@ namespace StormByte::Config::Item {
 			 * @param path Path to the item.
 			 * @return true if the item exists.
 			 */
-			bool Exists(const std::string& path) const;
+			bool Exists(const StormByte::String::String& path) const;
 
 			/**
 			 * @brief Removes an item by index.
@@ -316,7 +318,7 @@ namespace StormByte::Config::Item {
 			 * @throw InvalidPath if path is invalid.
 			 * @throw ItemNotFound if item is not found.
 			 */
-			void Remove(const std::string& path);
+			void Remove(const StormByte::String::String& path);
 
 			/**
 			 * @brief Returns a span of all items in the container.
@@ -388,33 +390,33 @@ namespace StormByte::Config::Item {
 			 * @param level Indentation level.
 			 * @return Serialized contents.
 			 */
-			virtual std::string ContentsToString(const int& level) const noexcept;
+			virtual StormByte::String::String ContentsToString(const int& level) const noexcept;
 
 			/**
 			 * @brief Checks whether a path is syntactically valid.
 			 * @param name Path to validate.
 			 * @return true if the path is valid.
 			 */
-			static bool IsPathValid(const std::string& name) noexcept;
+			static bool IsPathValid(const StormByte::String::String& name) noexcept;
 
 			/**
 			 * @brief Looks up a child item by path.
 			 * @param path Path to the child.
 			 * @return Const reference to the found item.
 			 */
-			const Base& LookUp(const std::string& path) const;
+			const Base& LookUp(const StormByte::String::String& path) const;
 
 			/**
 			 * @brief Looks up a child item by path (queue version).
 			 * @param path Path components.
 			 * @return Const reference to the found item.
 			 */
-			const Base& LookUp(std::queue<std::string>& path) const;
+			const Base& LookUp(std::queue<StormByte::String::String>& path) const;
 
 			/**
 			 * @brief Removes an item by path (queue version).
 			 * @param path Path components.
 			 */
-			void Remove(std::queue<std::string>& path);
+			void Remove(std::queue<StormByte::String::String>& path);
 	};
 }

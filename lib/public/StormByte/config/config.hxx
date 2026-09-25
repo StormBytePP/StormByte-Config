@@ -1,42 +1,42 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config original source is dual-licensed:
- *
- * 1. GNU Lesser General Public License v3.0 (or later)
- *    You may redistribute and/or modify this file under the terms of the
- *    GNU Lesser General Public License as published by the Free Software
- *    Foundation, either version 3 of the License, or (at your option)
- *    any later version.
- *
- * 2. Commercial license
- *    Alternatively, this file may be used under the terms of a commercial
- *    license agreement with the copyright holder
- *    (David C. Manuelda <StormByte@gmail.com>).
- *
- * Both licenses apply only to original StormByte-Config source in this
- * repository. They do not cover other StormByte modules or any third-party
- * material shipped with this repository (including everything under
- * thirdparty/, and in particular the bundled StormByte-String tree and
- * the StormByte Base tree it vendors), which remains under its own license.
- *
- * Neither license grants any patent rights. Any patent licenses required
- * to use this software or third-party components must be obtained separately
- * from the patent holders.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- *
- * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config original source is dual-licensed:
+*
+* 1. GNU Lesser General Public License v3.0 (or later)
+*    You may redistribute and/or modify this file under the terms of the
+*    GNU Lesser General Public License as published by the Free Software
+*    Foundation, either version 3 of the License, or (at your option)
+*    any later version.
+*
+* 2. Commercial license
+*    Alternatively, this file may be used under the terms of a commercial
+*    license agreement with the copyright holder
+*    (David C. Manuelda <StormByte@gmail.com>).
+*
+* Both licenses apply only to original StormByte-Config source in this
+* repository. They do not cover other StormByte modules or any third-party
+* material shipped with this repository (including everything under
+* thirdparty/, and in particular the bundled StormByte-String tree and
+* the StormByte Base tree it vendors), which remains under its own license.
+*
+* Neither license grants any patent rights. Any patent licenses required
+* to use this software or third-party components must be obtained separately
+* from the patent holders.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* version 3 along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*
+* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+*/
 
 #pragma once
 
@@ -46,12 +46,14 @@
 #include <StormByte/config/item/list.hxx>
 #include <StormByte/config/item/value.hxx>
 #include <StormByte/config/typedefs.hxx>
+#include <StormByte/string/string.hxx>
 
 #include <cstddef>
 #include <istream>
 #include <ostream>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 /**
@@ -126,7 +128,7 @@ namespace StormByte::Config {
 			 * @param path Path to the item.
 			 * @return Item reference.
 			 */
-			inline Item::Base& operator[](const std::string& path) {
+			inline Item::Base& operator[](const StormByte::String::String& path) {
 				return m_root.operator[](path);
 			}
 
@@ -135,7 +137,7 @@ namespace StormByte::Config {
 			 * @param path Path to the item.
 			 * @return Item const reference.
 			 */
-			inline const Item::Base& operator[](const std::string& path) const {
+			inline const Item::Base& operator[](const StormByte::String::String& path) const {
 				return m_root.operator[](path);
 			}
 
@@ -197,7 +199,13 @@ namespace StormByte::Config {
 
 			/**
 			 * @brief Initialize configuration from a string (text mode).
-			 * @param str Input string.
+			 * @param str Input text. Copied into the parser; not stored as `std::string`.
+			 */
+			void operator<<(const StormByte::String::String& str);
+
+			/**
+			 * @brief Initialize configuration from a caller-owned `std::string` (text mode).
+			 * @param str Input text.
 			 */
 			void operator<<(const std::string& str);
 
@@ -210,8 +218,16 @@ namespace StormByte::Config {
 			friend STORMBYTE_CONFIG_PUBLIC Config& operator>>(std::istream& istream, Config& file);
 
 			/**
+			 * @brief Initializes configuration when String is on the left-hand side.
+			 * @param str Input text.
+			 * @param file Config to put data into.
+			 * @return Reference to the Config.
+			 */
+			friend STORMBYTE_CONFIG_PUBLIC Config& operator>>(const StormByte::String::String& str, Config& file);
+
+			/**
 			 * @brief Initializes configuration when string is on the left-hand side.
-			 * @param str Input string.
+			 * @param str Input text.
 			 * @param file Config to put data into.
 			 * @return Reference to the Config.
 			 */
@@ -237,7 +253,7 @@ namespace StormByte::Config {
 			std::ostream& operator>>(std::ostream& ostream) const;
 
 			/**
-			 * @brief Output configuration serialized to a string (text).
+			 * @brief Append serialized text to a caller-owned string.
 			 * @param str Output string.
 			 * @return Reference to the string.
 			 */
@@ -260,10 +276,18 @@ namespace StormByte::Config {
 			friend STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string&, const Config&);
 
 			/**
-			 * @brief Converts the current configuration to a string (text form).
-			 * @return Serialized configuration text.
+			 * @brief Serialized document as StormByte text.
+			 * @return Owned UTF-8 text.
 			 */
-			operator std::string() const;
+			StormByte::String::String Text() const;
+
+			/**
+			 * @brief Converts the current configuration to a string (text form).
+			 * @return Serialized configuration text on the caller heap.
+			 */
+			explicit operator std::string() const {
+				return static_cast<std::string>(Text());
+			}
 
 			/**
 			 * @brief Write this document to an output stream.
@@ -337,7 +361,7 @@ namespace StormByte::Config {
 			 * @param path Path to the item.
 			 * @return true if the item exists.
 			 */
-			inline bool Exists(const std::string& path) const {
+			inline bool Exists(const StormByte::String::String& path) const {
 				return m_root.Exists(path);
 			}
 
@@ -346,7 +370,7 @@ namespace StormByte::Config {
 			 * @param path Item path.
 			 * @throw ItemNotFound if item is not found.
 			 */
-			inline void Remove(const std::string& path) {
+			inline void Remove(const StormByte::String::String& path) {
 				m_root.Remove(path);
 			}
 
@@ -451,8 +475,16 @@ namespace StormByte::Config {
 	STORMBYTE_CONFIG_PUBLIC Config& operator>>(std::istream& istream, Config& file);
 
 	/**
+	 * @brief Initializes configuration when String is on the left-hand side.
+	 * @param str Input text.
+	 * @param file Config to put data into.
+	 * @return Reference to the Config.
+	 */
+	STORMBYTE_CONFIG_PUBLIC Config& operator>>(const StormByte::String::String& str, Config& file);
+
+	/**
 	 * @brief Initializes configuration when string is on the left-hand side.
-	 * @param str Input string.
+	 * @param str Input text.
 	 * @param file Config to put data into.
 	 * @return Reference to the Config.
 	 */

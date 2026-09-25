@@ -1,76 +1,99 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config original source is dual-licensed:
- *
- * 1. GNU Lesser General Public License v3.0 (or later)
- *    You may redistribute and/or modify this file under the terms of the
- *    GNU Lesser General Public License as published by the Free Software
- *    Foundation, either version 3 of the License, or (at your option)
- *    any later version.
- *
- * 2. Commercial license
- *    Alternatively, this file may be used under the terms of a commercial
- *    license agreement with the copyright holder
- *    (David C. Manuelda <StormByte@gmail.com>).
- *
- * Both licenses apply only to original StormByte-Config source in this
- * repository. They do not cover other StormByte modules or any third-party
- * material shipped with this repository (including everything under
- * thirdparty/, and in particular the bundled StormByte-String tree and
- * the StormByte Base tree it vendors), which remains under its own license.
- *
- * Neither license grants any patent rights. Any patent licenses required
- * to use this software or third-party components must be obtained separately
- * from the patent holders.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- *
- * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config original source is dual-licensed:
+*
+* 1. GNU Lesser General Public License v3.0 (or later)
+*    You may redistribute and/or modify this file under the terms of the
+*    GNU Lesser General Public License as published by the Free Software
+*    Foundation, either version 3 of the License, or (at your option)
+*    any later version.
+*
+* 2. Commercial license
+*    Alternatively, this file may be used under the terms of a commercial
+*    license agreement with the copyright holder
+*    (David C. Manuelda <StormByte@gmail.com>).
+*
+* Both licenses apply only to original StormByte-Config source in this
+* repository. They do not cover other StormByte modules or any third-party
+* material shipped with this repository (including everything under
+* thirdparty/, and in particular the bundled StormByte-String tree and
+* the StormByte Base tree it vendors), which remains under its own license.
+*
+* Neither license grants any patent rights. Any patent licenses required
+* to use this software or third-party components must be obtained separately
+* from the patent holders.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* version 3 along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*
+* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+*/
 
 #include <StormByte/config/item/comment.hxx>
-#include <StormByte/string.hxx>
+#include <StormByte/string/string.hxx>
+
 #include <sstream>
+#include <string>
+#include <string_view>
+
 namespace StormByte::Config::Item {
+	using StormByte::String::String;
+
+	namespace {
+		String Indent(const int indent_level) {
+			const int level = indent_level > 0 ? indent_level : 0;
+			return String(std::string(static_cast<std::size_t>(level), '\t'));
+		}
+	}
+
 	template<>
-	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {
-		return String::Indent(indent_level) + "#" + m_value; // It is expected to start already indented
+	String STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {
+		std::string out = static_cast<std::string>(Indent(indent_level));
+		out += '#';
+		out += static_cast<std::string_view>(m_value);
+		return String(std::string_view(out));
 	}
 
 	template class Comment<CommentType::SingleLineBash>;
+
 	template<>
-	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept {
-		return String::Indent(indent_level) + "//" + m_value; // It is expected to start already indented
+	String STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept {
+		std::string out = static_cast<std::string>(Indent(indent_level));
+		out += "//";
+		out += static_cast<std::string_view>(m_value);
+		return String(std::string_view(out));
 	}
 
 	template class Comment<CommentType::SingleLineC>;
+
 	template<>
-	std::string STORMBYTE_CONFIG_PUBLIC Comment<CommentType::MultiLineC>::Serialize(const int& indent_level) const noexcept {
-		// The MultiLineC comments already have the indent
-		std::stringstream ss(m_value);
+	String STORMBYTE_CONFIG_PUBLIC Comment<CommentType::MultiLineC>::Serialize(const int& indent_level) const noexcept {
+		std::stringstream ss{ std::string(static_cast<std::string_view>(m_value)) };
 		std::string item;
-		std::string serial = String::Indent(indent_level) + "/*";
+		std::string serial = static_cast<std::string>(Indent(indent_level));
+		serial += "/*";
 		std::getline(ss, item);
 		serial += item;
 		if (!ss.eof()) {
 			serial += "\n";
 			while (std::getline(ss, item)) {
-				serial += item; 
-				if (!ss.eof()) serial += "\n";
+				serial += item;
+				if (!ss.eof())
+					serial += "\n";
 			}
 		}
 
-		return serial + "*/";
+		serial += "*/";
+		return String(std::string_view(serial));
 	}
 
 	template class Comment<CommentType::MultiLineC>;

@@ -1,49 +1,56 @@
 /*
- * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
- *
- * This file is part of StormByte-Config.
- *
- * StormByte-Config original source is dual-licensed:
- *
- * 1. GNU Lesser General Public License v3.0 (or later)
- *    You may redistribute and/or modify this file under the terms of the
- *    GNU Lesser General Public License as published by the Free Software
- *    Foundation, either version 3 of the License, or (at your option)
- *    any later version.
- *
- * 2. Commercial license
- *    Alternatively, this file may be used under the terms of a commercial
- *    license agreement with the copyright holder
- *    (David C. Manuelda <StormByte@gmail.com>).
- *
- * Both licenses apply only to original StormByte-Config source in this
- * repository. They do not cover other StormByte modules or any third-party
- * material shipped with this repository (including everything under
- * thirdparty/, and in particular the bundled StormByte-String tree and
- * the StormByte Base tree it vendors), which remains under its own license.
- *
- * Neither license grants any patent rights. Any patent licenses required
- * to use this software or third-party components must be obtained separately
- * from the patent holders.
- *
- * StormByte-Config is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * version 3 along with StormByte-Config. If not, see
- * <https://www.gnu.org/licenses/lgpl-3.0.html>.
- *
- * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
- */
+* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+*
+* This file is part of StormByte-Config.
+*
+* StormByte-Config original source is dual-licensed:
+*
+* 1. GNU Lesser General Public License v3.0 (or later)
+*    You may redistribute and/or modify this file under the terms of the
+*    GNU Lesser General Public License as published by the Free Software
+*    Foundation, either version 3 of the License, or (at your option)
+*    any later version.
+*
+* 2. Commercial license
+*    Alternatively, this file may be used under the terms of a commercial
+*    license agreement with the copyright holder
+*    (David C. Manuelda <StormByte@gmail.com>).
+*
+* Both licenses apply only to original StormByte-Config source in this
+* repository. They do not cover other StormByte modules or any third-party
+* material shipped with this repository (including everything under
+* thirdparty/, and in particular the bundled StormByte-String tree and
+* the StormByte Base tree it vendors), which remains under its own license.
+*
+* Neither license grants any patent rights. Any patent licenses required
+* to use this software or third-party components must be obtained separately
+* from the patent holders.
+*
+* StormByte-Config is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* version 3 along with StormByte-Config. If not, see
+* <https://www.gnu.org/licenses/lgpl-3.0.html>.
+*
+* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+*/
 
-#include <StormByte/config/config.hxx>
 #include <StormByte/config/binary/reader.hxx>
 #include <StormByte/config/binary/writer.hxx>
+#include <StormByte/config/config.hxx>
 #include <StormByte/config/parser/parser.hxx>
+#include <StormByte/string/string.hxx>
+
 #include <cstring>
+#include <string>
+#include <string_view>
+
 using namespace StormByte::Config;
+using StormByte::String::String;
+
 Config::Config(): m_on_existing_action(OnExistingAction::ThrowException) {}
 
 Config& Config::operator<<(const Config& source) {
@@ -54,6 +61,12 @@ Config& Config::operator<<(const Config& source) {
 
 void Config::operator<<(std::istream& istream) {
 	auto res = Parser::Parse(istream, m_root, m_on_existing_action, m_before_read_hooks, m_after_read_hooks, m_on_parse_failure_hook);
+	if (!res)
+		throw *res.error();
+}
+
+void Config::operator<<(const String& str) {
+	auto res = Parser::Parse(std::string(static_cast<std::string_view>(str)), m_root, m_on_existing_action, m_before_read_hooks, m_after_read_hooks, m_on_parse_failure_hook);
 	if (!res)
 		throw *res.error();
 }
@@ -69,6 +82,11 @@ Config& StormByte::Config::operator>>(std::istream& istream, Config& config) {
 	return config;
 }
 
+Config& StormByte::Config::operator>>(const String& str, Config& config) {
+	config << str;
+	return config;
+}
+
 Config& StormByte::Config::operator>>(const std::string& str, Config& config) {
 	config << str;
 	return config;
@@ -80,37 +98,38 @@ Config& Config::operator>>(Config& dest) const {
 }
 
 std::ostream& Config::operator>>(std::ostream& ostream) const {
-	ostream << (std::string)*this;
+	ostream << static_cast<std::string>(Text());
 	return ostream;
 }
 
 std::string& Config::operator>>(std::string& str) const {
-	str += *this;
+	str += static_cast<std::string>(Text());
 	return str;
 }
 
 std::ostream& StormByte::Config::operator<<(std::ostream& ostream, const Config& config) {
-	ostream << (std::string)config;
+	ostream << static_cast<std::string>(config.Text());
 	return ostream;
 }
 
 std::string& operator<<(std::string& str, const Config& config) {
-	str += config;
+	str += static_cast<std::string>(config.Text());
 	return str;
 }
 
-Config::operator std::string() const {
-	std::string serialized = "";
+String Config::Text() const {
+	std::string serialized;
 	for (const auto& item : Items()) {
-		serialized += item->Serialize(0) + "\n";
+		serialized += static_cast<std::string>(item->Serialize(0));
+		serialized += '\n';
 	}
 
-	return serialized;
+	return String(std::string_view(serialized));
 }
 
 void Config::Save(std::ostream& stream, Mode mode) const {
 	if (mode == Mode::Text) {
-		stream << static_cast<std::string>(*this);
+		stream << static_cast<std::string>(Text());
 		return;
 	}
 
@@ -126,7 +145,7 @@ ExpectedConfig Config::Load(std::istream& stream, Mode mode) {
 	if (mode == Mode::Text) {
 		Config cfg;
 		try {
-			cfg << stream; // Same path as operator<< (parser + hooks)
+			cfg << stream;
 		} catch (const StormByte::Exception& e) {
 			return StormByte::Unexpected(e);
 		}
@@ -134,12 +153,10 @@ ExpectedConfig Config::Load(std::istream& stream, Mode mode) {
 		return cfg;
 	}
 
-	// Binary: read the entire stream into a buffer
 	stream.seekg(0, std::ios::end);
 	const std::streamsize size = stream.tellg();
 	stream.seekg(0, std::ios::beg);
 	if (size < 0) {
-		// Non-seekable stream (e.g. pipe): read in chunks
 		std::vector<std::byte> buffer;
 		char chunk[4096];
 		while (stream.read(chunk, sizeof(chunk)) || stream.gcount() > 0) {
