@@ -192,6 +192,30 @@ namespace StormByte::Config::Item {
 			/** @} */
 	};
 
+	/**
+	 * @brief Serializes a bash single-line comment.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept;
+
+	/**
+	 * @brief Serializes a C single-line comment.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept;
+
+	/**
+	 * @brief Serializes a C multi-line comment.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Comment<CommentType::MultiLineC>::Serialize(const int& indent_level) const noexcept;
+
 	extern template class STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineBash>;
 	extern template class STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineC>;
 	extern template class STORMBYTE_CONFIG_PUBLIC Comment<CommentType::MultiLineC>;

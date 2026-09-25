@@ -256,6 +256,46 @@ namespace StormByte::Config::Item {
 	Value(const char*) -> Value<StormByte::String::String>;
 	Value(const char*, const char*) -> Value<StormByte::String::String>;
 
+	/**
+	 * @brief Serializes a string value.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<StormByte::String::String>::Serialize(const int& indent_level) const noexcept;
+
+	/**
+	 * @brief Serializes an integer value.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<int>::Serialize(const int& indent_level) const noexcept;
+
+	/**
+	 * @brief Serializes a double value.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<double>::Serialize(const int& indent_level) const noexcept;
+
+	/**
+	 * @brief Serializes a boolean value.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<bool>::Serialize(const int& indent_level) const noexcept;
+
+	/**
+	 * @brief Serializes a binary value.
+	 * @param indent_level Indentation level.
+	 * @return Serialized text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<std::vector<std::byte>>::Serialize(const int& indent_level) const noexcept;
+
 	extern template class STORMBYTE_CONFIG_PUBLIC Value<StormByte::String::String>;
 	extern template class STORMBYTE_CONFIG_PUBLIC Value<int>;
 	extern template class STORMBYTE_CONFIG_PUBLIC Value<double>;

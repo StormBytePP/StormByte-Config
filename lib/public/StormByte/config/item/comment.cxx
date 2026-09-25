@@ -46,37 +46,31 @@
 #include <string_view>
 
 namespace StormByte::Config::Item {
-	using StormByte::String::String;
-
 	namespace {
-		String Indent(const int indent_level) {
+		StormByte::String::String Indent(const int indent_level) {
 			const int level = indent_level > 0 ? indent_level : 0;
-			return String(std::string(static_cast<std::size_t>(level), '\t'));
+			return StormByte::String::String(std::string(static_cast<std::size_t>(level), '\t'));
 		}
 	}
 
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {
 		std::string out = static_cast<std::string>(Indent(indent_level));
 		out += '#';
 		out += static_cast<std::string_view>(m_value);
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Comment<CommentType::SingleLineBash>;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Comment<CommentType::SingleLineC>::Serialize(const int& indent_level) const noexcept {
 		std::string out = static_cast<std::string>(Indent(indent_level));
 		out += "//";
 		out += static_cast<std::string_view>(m_value);
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Comment<CommentType::SingleLineC>;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Comment<CommentType::MultiLineC>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Comment<CommentType::MultiLineC>::Serialize(const int& indent_level) const noexcept {
 		std::stringstream ss{ std::string(static_cast<std::string_view>(m_value)) };
 		std::string item;
 		std::string serial = static_cast<std::string>(Indent(indent_level));
@@ -93,8 +87,10 @@ namespace StormByte::Config::Item {
 		}
 
 		serial += "*/";
-		return String(std::string_view(serial));
+		return StormByte::String::String(std::string_view(serial));
 	}
 
-	template class Comment<CommentType::MultiLineC>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Comment<CommentType::SingleLineBash>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Comment<CommentType::SingleLineC>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Comment<CommentType::MultiLineC>;
 }

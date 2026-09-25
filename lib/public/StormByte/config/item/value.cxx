@@ -47,10 +47,8 @@
 #include <string_view>
 
 namespace StormByte::Config::Item {
-	using StormByte::String::String;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Value<String>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Value<StormByte::String::String>::Serialize(const int& indent_level) const noexcept {
 		std::string escaped;
 		const std::string_view raw = m_value;
 		escaped.reserve(raw.size() + 8);
@@ -69,22 +67,18 @@ namespace StormByte::Config::Item {
 		out += '"';
 		out += escaped;
 		out += '"';
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Value<String>;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Value<int>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Value<int>::Serialize(const int& indent_level) const noexcept {
 		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
 		out += std::to_string(m_value);
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Value<int>;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Value<double>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Value<double>::Serialize(const int& indent_level) const noexcept {
 		std::string str = std::format("{}", m_value);
 		if (str.find('.') == std::string::npos && str.find('e') == std::string::npos && str.find('E') == std::string::npos) {
 			str += ".0";
@@ -92,29 +86,29 @@ namespace StormByte::Config::Item {
 
 		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
 		out += str;
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Value<double>;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Value<bool>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Value<bool>::Serialize(const int& indent_level) const noexcept {
 		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
 		out += m_value ? "true" : "false";
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Value<bool>;
-
 	template<>
-	String STORMBYTE_CONFIG_PUBLIC Value<std::vector<std::byte>>::Serialize(const int& indent_level) const noexcept {
+	StormByte::String::String Value<std::vector<std::byte>>::Serialize(const int& indent_level) const noexcept {
 		const std::string base64 = StormByte::Base64Encode(m_value);
 		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
 		out += "b\"";
 		out += base64;
 		out += '"';
-		return String(std::string_view(out));
+		return StormByte::String::String(std::string_view(out));
 	}
 
-	template class Value<std::vector<std::byte>>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Value<StormByte::String::String>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Value<int>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Value<double>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Value<bool>;
+	template class STORMBYTE_CONFIG_INSTANTIATE Value<std::vector<std::byte>>;
 }
