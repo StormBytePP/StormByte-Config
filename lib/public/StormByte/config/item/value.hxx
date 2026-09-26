@@ -88,6 +88,14 @@ namespace StormByte::Config::Item {
 				: Base(StormByte::String::String(name)), m_value(StormByte::String::String(value)) {}
 
 			/**
+			 * @brief Constructs a named Value from a C string name.
+			 * @param name Item name.
+			 * @param value Item value.
+			 */
+			Value(const char* name, const T& value)
+				: Base(StormByte::String::String(name)), m_value(value) {}
+
+			/**
 			 * @brief Move constructor from value.
 			 * @param value Item value.
 			 */

@@ -161,6 +161,24 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
+			 * @brief Gets a reference to an item by a C string path.
+			 * @param path Path to the item.
+			 * @return Reference to the item.
+			 */
+			inline Base& operator[](const char* path) {
+				return operator[](StormByte::String::String(path));
+			}
+
+			/**
+			 * @brief Gets a const reference to an item by a C string path.
+			 * @param path Path to the item.
+			 * @return Const reference to the item.
+			 */
+			inline const Base& operator[](const char* path) const {
+				return operator[](StormByte::String::String(path));
+			}
+
+			/**
 			 * @brief Equality operator.
 			 * @param container Container to compare.
 			 * @return true if equal.
@@ -306,6 +324,15 @@ namespace StormByte::Config::Item {
 			bool Exists(const StormByte::String::String& path) const;
 
 			/**
+			 * @brief Checks if an item exists by a C string path.
+			 * @param path Path to the item.
+			 * @return true if the item exists.
+			 */
+			inline bool Exists(const char* path) const {
+				return Exists(StormByte::String::String(path));
+			}
+
+			/**
 			 * @brief Removes an item by index.
 			 * @param index Index of the item to remove.
 			 * @throw OutOfBounds if index is out of bounds.
@@ -319,6 +346,14 @@ namespace StormByte::Config::Item {
 			 * @throw ItemNotFound if item is not found.
 			 */
 			void Remove(const StormByte::String::String& path);
+
+			/**
+			 * @brief Removes an item by a C string path.
+			 * @param path Path to the item to remove.
+			 */
+			inline void Remove(const char* path) {
+				Remove(StormByte::String::String(path));
+			}
 
 			/**
 			 * @brief Returns a span of all items in the container.

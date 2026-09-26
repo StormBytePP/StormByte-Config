@@ -142,6 +142,24 @@ namespace StormByte::Config {
 			}
 
 			/**
+			 * @brief Gets a reference to an item by a C string path.
+			 * @param path Path to the item.
+			 * @return Item reference.
+			 */
+			inline Item::Base& operator[](const char* path) {
+				return m_root.operator[](path);
+			}
+
+			/**
+			 * @brief Gets a const reference to an item by a C string path.
+			 * @param path Path to the item.
+			 * @return Item const reference.
+			 */
+			inline const Item::Base& operator[](const char* path) const {
+				return m_root.operator[](path);
+			}
+
+			/**
 			 * @brief Gets a reference to an item by index.
 			 * @param index Index of the item.
 			 * @throw OutOfBounds if index is out of bounds.
@@ -366,11 +384,28 @@ namespace StormByte::Config {
 			}
 
 			/**
+			 * @brief Checks if an item exists by a C string path.
+			 * @param path Path to the item.
+			 * @return true if the item exists.
+			 */
+			inline bool Exists(const char* path) const {
+				return m_root.Exists(path);
+			}
+
+			/**
 			 * @brief Removes an item by path.
 			 * @param path Item path.
 			 * @throw ItemNotFound if item is not found.
 			 */
 			inline void Remove(const StormByte::String::String& path) {
+				m_root.Remove(path);
+			}
+
+			/**
+			 * @brief Removes an item by a C string path.
+			 * @param path Item path.
+			 */
+			inline void Remove(const char* path) {
 				m_root.Remove(path);
 			}
 

@@ -49,7 +49,7 @@ using namespace StormByte::Config;
 namespace {
 Config MakeSampleConfig() {
 	Config cfg;
-	cfg.Add(Item::Value<std::string>("name", "StormByte"));
+	cfg.Add(Item::Value<StormByte::String::String>("name", "StormByte"));
 	cfg.Add(Item::Value<int>("version", 42));
 	cfg.Add(Item::Value<bool>("enabled", true));
 	cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("a comment"));
@@ -110,7 +110,7 @@ std::vector<std::byte> Truncate(const std::vector<std::byte>& buf, std::size_t n
 // =============================================================================
 int test_serialize_value_string() {
 	Config cfg;
-	cfg.Add(Item::Value<std::string>("test", "Hello, World!"));
+	cfg.Add(Item::Value<StormByte::String::String>("test", "Hello, World!"));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -209,7 +209,7 @@ int test_serialize_comment_multi_C() {
 
 int test_serialize_group() {
 	Config cfg;
-	cfg.Add(Item::Value<std::string>("string", "Hello, World!"));
+	cfg.Add(Item::Value<StormByte::String::String>("string", "Hello, World!"));
 	cfg.Add(Item::Value<int>("int", 62));
 	cfg.Add(Item::Value<double>("double", 62.78));
 	cfg.Add(Item::Value<bool>("bool", true));
@@ -231,7 +231,7 @@ int test_serialize_group() {
 int test_serialize_list() {
 	Config cfg;
 	Item::List list("test");
-	list.Add(Item::Value<std::string>("Hello, World!"));
+	list.Add(Item::Value<StormByte::String::String>("Hello, World!"));
 	list.Add(Item::Value<int>(62));
 	list.Add(Item::Value<double>(62.78));
 	list.Add(Item::Value<bool>(true));
@@ -253,12 +253,12 @@ int test_serialize_list() {
 
 int test_serialize_nested_groups() {
 	Config cfg;
-	cfg.Add(Item::Value<std::string>("string", "Hello, World!"));
+	cfg.Add(Item::Value<StormByte::String::String>("string", "Hello, World!"));
 	cfg.Add(Item::Value<int>("int", 62));
 	cfg.Add(Item::Value<double>("double", 62.78));
 	cfg.Add(Item::Value<bool>("bool", true));
 	Item::Group nested("nested");
-	nested.Add(Item::Value<std::string>("string", "Hello, World!"));
+	nested.Add(Item::Value<StormByte::String::String>("string", "Hello, World!"));
 	nested.Add(Item::Value<int>("int", 62));
 	nested.Add(Item::Value<double>("double", 62.78));
 	nested.Add(Item::Value<bool>("bool", true));
@@ -383,7 +383,7 @@ int test_serialize_value_binary_large() {
 
 int test_serialize_group_with_binary() {
 	Config cfg;
-	cfg.Add(Item::Value<std::string>("string", "Hello"));
+	cfg.Add(Item::Value<StormByte::String::String>("string", "Hello"));
 	cfg.Add(Item::Value<int>("int", 42));
 	cfg.Add(Item::Value<std::vector<std::byte>>("binary",
 		{std::byte{0x01}, std::byte{0x02}, std::byte{0x03}}));
@@ -402,7 +402,7 @@ int test_serialize_group_with_binary() {
 int test_serialize_list_with_binary() {
 	Config cfg;
 	Item::List list("test");
-	list.Add(Item::Value<std::string>("text"));
+	list.Add(Item::Value<StormByte::String::String>("text"));
 	list.Add(Item::Value<int>(99));
 	list.Add(Item::Value<std::vector<std::byte>>(
 		{std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}}));
@@ -425,7 +425,7 @@ int test_serialize_nested_with_binary() {
 	nested.Add(Item::Value<std::vector<std::byte>>("secret",
 		{std::byte{0x53}, std::byte{0x65}, std::byte{0x63},
 		std::byte{0x72}, std::byte{0x65}, std::byte{0x74}}));
-	nested.Add(Item::Value<std::string>("name", "hidden"));
+	nested.Add(Item::Value<StormByte::String::String>("name", "hidden"));
 	cfg.Add(std::move(nested));
 	cfg.Add(Item::Value<int>("version", 1));
 	auto buffer = SerializeConfig(cfg);
@@ -584,7 +584,7 @@ int test_corruption_no_crash_single_byte_overwrite() {
 
 int test_corruption_payload_still_safe() {
 	Config cfg;
-	cfg.Add(Item::Value<std::string>("key", "Hello, StormByte!"));
+	cfg.Add(Item::Value<StormByte::String::String>("key", "Hello, StormByte!"));
 	auto clean = SerializeConfig(cfg);
 	std::size_t start = clean.size() / 2;
 	for (std::size_t i = start; i < clean.size(); ++i) {
@@ -687,7 +687,7 @@ int test_corruption_random_stress() {
 
 int test_serialize_idempotent_roundtrip() {
 	Config original;
-	original.Add(Item::Value<std::string>("name", "StormByte"));
+	original.Add(Item::Value<StormByte::String::String>("name", "StormByte"));
 	original.Add(Item::Value<int>("n", 7));
 	original.Add(Item::Comment<Item::CommentType::SingleLineBash>("note"));
 	auto buf1 = SerializeConfig(original);

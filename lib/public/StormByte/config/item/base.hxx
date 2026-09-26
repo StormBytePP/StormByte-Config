@@ -151,6 +151,14 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
+			 * @brief Sets the item name from a C string.
+			 * @param name New name. Copied into a @ref StormByte::String::String.
+			 */
+			void Name(const char* name) noexcept {
+				m_name = StormByte::String::String(name);
+			}
+
+			/**
 			 * @brief Checks if the current name is valid.
 			 * @return true if the name is valid.
 			 */

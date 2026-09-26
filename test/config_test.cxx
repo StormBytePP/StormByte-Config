@@ -86,7 +86,7 @@ int test_add_and_lookup() {
 		const Item::Base& lookup_int = config["TestInt"];
 		ASSERT_EQUAL("test_add_and_lookup", 42, lookup_int.Value<int>());
 		const Item::Base& lookup_str = config["TestStr"];
-		ASSERT_EQUAL("test_add_and_lookup", "Hello, World!", lookup_str.Value<std::string>());
+		ASSERT_EQUAL("test_add_and_lookup", "Hello, World!", lookup_str.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& ex) {
@@ -109,7 +109,7 @@ int test_write_and_read() {
 		const Item::Base& int_item = config["TestInt"];
 		ASSERT_EQUAL("test_write_and_read", 42, int_item.Value<int>());
 		const Item::Base& str_item = config["TestStr"];
-		ASSERT_EQUAL("test_write_and_read", "Hello, World!", str_item.Value<std::string>());
+		ASSERT_EQUAL("test_write_and_read", "Hello, World!", str_item.Value<StormByte::String::String>());
 		std::fstream file;
 		file.open(temp_file, std::ios::out);
 		file << config;
@@ -121,7 +121,7 @@ int test_write_and_read() {
 		const Item::Base& int_item2 = config["TestInt"];
 		ASSERT_EQUAL("test_write_and_read", 42, int_item2.Value<int>());
 		const Item::Base& str_item2 = config["TestStr"];
-		ASSERT_EQUAL("test_write_and_read", "Hello, World!", str_item2.Value<std::string>());
+		ASSERT_EQUAL("test_write_and_read", "Hello, World!", str_item2.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& ex) {
@@ -144,7 +144,7 @@ int test_nested_groups() {
 		const Item::Base& lookup_int = config["Group1/Group2/SubTestInt"];
 		ASSERT_EQUAL("test_nested_groups", 99, lookup_int.Value<int>());
 		const Item::Base& lookup_str = config["Group1/Group2/SubTestStr"];
-		ASSERT_EQUAL("test_nested_groups", "Sub Hello", lookup_str.Value<std::string>());
+		ASSERT_EQUAL("test_nested_groups", "Sub Hello", lookup_str.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& e) {
@@ -190,7 +190,7 @@ int test_write_nested_groups() {
 		const Item::Base& lookup_int = config["Group1/Group2/SubTestInt"];
 		ASSERT_EQUAL("test_write_nested_groups", 99, lookup_int.Value<int>());
 		const Item::Base& lookup_str = config["Group1/Group2/SubTestStr"];
-		ASSERT_EQUAL("test_write_nested_groups", "Sub Hello", lookup_str.Value<std::string>());
+		ASSERT_EQUAL("test_write_nested_groups", "Sub Hello", lookup_str.Value<StormByte::String::String>());
 		std::fstream file;
 		file.open(temp_file, std::ios::out);
 		file << config;
@@ -202,7 +202,7 @@ int test_write_nested_groups() {
 		const Item::Base& lookup_int2 = config2["Group1/Group2/SubTestInt"];
 		ASSERT_EQUAL("test_write_nested_groups", 99, lookup_int2.Value<int>());
 		const Item::Base& lookup_str2 = config2["Group1/Group2/SubTestStr"];
-		ASSERT_EQUAL("test_write_nested_groups", "Sub Hello", lookup_str2.Value<std::string>());
+		ASSERT_EQUAL("test_write_nested_groups", "Sub Hello", lookup_str2.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& ex) {
@@ -378,7 +378,7 @@ int commented_config() {
 	config >> file;
 	file.close();
 	const Item::Base& test_string = config["test_group/test_string"];
-	ASSERT_EQUAL("commented_config", "# But this is not a comment", test_string.Value<std::string>());
+	ASSERT_EQUAL("commented_config", "# But this is not a comment", test_string.Value<StormByte::String::String>());
 	std::ifstream temp_file_stream(temp_file);
 	std::stringstream buffer;
 	buffer << temp_file_stream.rdbuf();
@@ -396,11 +396,11 @@ int good_string_conf() {
 		cfg << file;
 		file.close();
 		const Item::Base& lookup_string = cfg["test_string"];
-		ASSERT_EQUAL("good_string_conf", "This is a test string", lookup_string.Value<std::string>());
+		ASSERT_EQUAL("good_string_conf", "This is a test string", lookup_string.Value<StormByte::String::String>());
 		const Item::Base& lookup_quoted = cfg["test_quoted"];
-		ASSERT_EQUAL("good_string_conf", "This \"quote\" allows more things", lookup_quoted.Value<std::string>());
+		ASSERT_EQUAL("good_string_conf", "This \"quote\" allows more things", lookup_quoted.Value<StormByte::String::String>());
 		const Item::Base& lookup_unfinished = cfg["test_unfinished"];
-		ASSERT_EQUAL("good_string_conf", "When you see a \" you might have the start of a string", lookup_unfinished.Value<std::string>());
+		ASSERT_EQUAL("good_string_conf", "When you see a \" you might have the start of a string", lookup_unfinished.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& e) {
@@ -417,7 +417,7 @@ int test_empty_string() {
 	config.Add(Item::Value("EmptyString", ""));
 	try {
 		const Item::Base& lookup_str = config["EmptyString"];
-		ASSERT_EQUAL("test_empty_string", "", lookup_str.Value<std::string>());
+		ASSERT_EQUAL("test_empty_string", "", lookup_str.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& e) {
@@ -454,7 +454,7 @@ int test_special_characters_in_string() {
 	config.Add(Item::Value("SpecialChars", "Line1\nLine2\tTabbed"));
 	try {
 		const Item::Base& lookup_str = config["SpecialChars"];
-		ASSERT_EQUAL("test_special_characters_in_string", "Line1\nLine2\tTabbed", lookup_str.Value<std::string>());
+		ASSERT_EQUAL("test_special_characters_in_string", "Line1\nLine2\tTabbed", lookup_str.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& e) {
@@ -509,7 +509,7 @@ int test_special_characters_string() {
 		cfg << file;
 		file.close();
 		const Item::Base& lookup_special = cfg["special_string"];
-		ASSERT_EQUAL("test_special_characters_string", "This is a test string with special characters: \n, \t, \\", lookup_special.Value<std::string>());
+		ASSERT_EQUAL("test_special_characters_string", "This is a test string with special characters: \n, \t, \\", lookup_special.Value<StormByte::String::String>());
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result = 1;
@@ -527,7 +527,7 @@ int test_long_string() {
 		cfg << file;
 		file.close();
 		const Item::Base& lookup_long = cfg["long_string"];
-		ASSERT_EQUAL("test_long_string", std::string(1000, 'a'), lookup_long.Value<std::string>());
+		ASSERT_EQUAL("test_long_string", std::string(1000, 'a'), lookup_long.Value<StormByte::String::String>());
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result = 1;
@@ -724,7 +724,7 @@ int config_to_config_output() {
 		const Item::Base& testInt = cfg1["testInt"];
 		ASSERT_EQUAL("config_to_config_output", 0, testInt.Value<int>());
 		const Item::Base& testString = cfg1["testString"];
-		ASSERT_EQUAL("config_to_config_output", "Hello!", testString.Value<std::string>());
+		ASSERT_EQUAL("config_to_config_output", "Hello!", testString.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& ex) {
@@ -762,7 +762,7 @@ int config_remove_full_path() {
 	try {
 		cfg.Remove("testGroup/testInt");
 		const auto& testString = cfg["testGroup/testString"];
-		ASSERT_EQUAL("config_remove_full_path", "Group String", testString.Value<std::string>());
+		ASSERT_EQUAL("config_remove_full_path", "Group String", testString.Value<StormByte::String::String>());
 	}
 
 	catch(const StormByte::Config::Exception& ex) {
@@ -1075,7 +1075,7 @@ int good_binary_mixed() {
 		file.open(CurrentFileDirectory / "files" / "good_binary_mixed.conf", std::ios::in);
 		cfg << file;
 		file.close();
-		ASSERT_EQUAL("good_binary_mixed", "StormByte", cfg["name"].Value<std::string>());
+		ASSERT_EQUAL("good_binary_mixed", "StormByte", cfg["name"].Value<StormByte::String::String>());
 		ASSERT_EQUAL("good_binary_mixed", 1.2, cfg["version"].Value<double>());
 		ASSERT_EQUAL("good_binary_mixed", true, cfg["enabled"].Value<bool>());
 		const auto& payload = cfg["payload"].Value<std::vector<std::byte>>();
@@ -1085,7 +1085,7 @@ int good_binary_mixed() {
 		std::string recovered2(reinterpret_cast<const char*>(binary_key.data()), binary_key.size());
 		ASSERT_EQUAL("good_binary_mixed", "This is a test", recovered2);
 		const auto& list = cfg["list_of_things"].Value<Item::List>();
-		ASSERT_EQUAL("good_binary_mixed", "first", list[0].Value<std::string>());
+		ASSERT_EQUAL("good_binary_mixed", "first", list[0].Value<StormByte::String::String>());
 		const auto& second = list[1].Value<std::vector<std::byte>>();
 		std::string recovered3(reinterpret_cast<const char*>(second.data()), second.size());
 		ASSERT_EQUAL("good_binary_mixed", "second", recovered3);
@@ -1203,7 +1203,7 @@ int bad_binary_wrong_prefix() {
 		file.open(CurrentFileDirectory / "files" / "bad_binary_wrong_prefix.conf", std::ios::in);
 		cfg << file;
 		file.close();
-		const auto& data = cfg["data"].Value<std::string>();
+		const auto& data = cfg["data"].Value<StormByte::String::String>();
 		ASSERT_EQUAL("bad_binary_wrong_prefix", "SGVsbG8=", data);
 	}
 

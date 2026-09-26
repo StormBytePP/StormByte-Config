@@ -81,6 +81,12 @@ namespace StormByte::Config::Item {
 			List(StormByte::String::String&& name);
 
 			/**
+			 * @brief Constructs a List from a C string name.
+			 * @param name The name of the list.
+			 */
+			List(const char* name): List(StormByte::String::String(name)) {}
+
+			/**
 			 * @brief Copy constructor.
 			 * @param list List to copy.
 			 */
