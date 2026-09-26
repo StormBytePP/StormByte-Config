@@ -46,9 +46,9 @@
 using namespace StormByte::Config::Item;
 using StormByte::String::String;
 
-List::List(const String& name) : Container(name) {}
+List::List(const String::String& name) : Container(name) {}
 
-List::List(String&& name) : Container(std::move(name)) {}
+List::List(String::String&& name) : Container(std::move(name)) {}
 
 Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction on_existing) {
 	if (!item) {
@@ -63,7 +63,7 @@ Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const Stor
 		auto item_iterator = std::find_if(
 			m_items.begin(),
 			m_items.end(),
-			[&item](std::shared_ptr<Base>& i) {
+			[&item](Base::PointerType& i) {
 				return *i == *item;
 			}
 

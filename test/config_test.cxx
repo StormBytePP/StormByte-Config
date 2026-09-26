@@ -1344,13 +1344,13 @@ int test_invalid_name_in_group() {
 int test_exception_component() {
 	int result = 0;
 	StormByte::Config::Exception ex_default("default message");
-	ASSERT_EQUAL("test_exception_component", std::string("StormByte::Config: default message"), std::string(ex_default.what()));
+	ASSERT_EQUAL("test_exception_component", std::string("StormByte.Config: default message"), std::string(ex_default.what()));
 
 	StormByte::Config::InvalidName ex_derived("invalid item name");
-	ASSERT_EQUAL("test_exception_component", std::string("StormByte::Config: invalid item name"), std::string(ex_derived.what()));
+	ASSERT_EQUAL("test_exception_component", std::string("StormByte.Config: invalid item name"), std::string(ex_derived.what()));
 
-	StormByte::Config::Exception ex_custom(StormByte::Component("Custom"), "custom message");
-	ASSERT_EQUAL("test_exception_component", std::string("StormByte::Custom: custom message"), std::string(ex_custom.what()));
+	StormByte::Config::Exception ex_custom(StormByte::Exception::Path{"Custom"}, "custom message");
+	ASSERT_EQUAL("test_exception_component", std::string("StormByte.Custom: custom message"), std::string(ex_custom.what()));
 
 	RETURN_TEST("test_exception_component", result);
 }

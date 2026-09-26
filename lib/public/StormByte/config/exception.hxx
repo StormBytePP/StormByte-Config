@@ -43,50 +43,46 @@
 #include <StormByte/exception.hxx>
 #include <StormByte/config/visibility.h>
 
+#include <string>
+#include <utility>
+
 /**
  * @brief Config module of the StormByte suite.
  */
 namespace StormByte::Config {
 	/**
 	 * @class Exception
-	 * @brief Base class for all configuration-related exceptions.
+	 * @brief Root exception for Config. `what()` is `StormByte.Config: message`.
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Exception: public StormByte::Exception {
 		public:
 			/**
-			 * @brief Constructs from a message string with default Component("Config").
-			 * @param message Exception text.
-			 */
-			explicit Exception(const std::string& message)
-				: StormByte::Exception(Component("Config"), "{}", message) {}
-
-			/**
-			 * @brief Constructs from a moved message string with default Component("Config").
-			 * @param message Exception text.
-			 */
-			explicit Exception(std::string&& message)
-				: StormByte::Exception(Component("Config"), "{}", std::move(message)) {}
-
-			/**
-			 * @brief Constructs with std::format using default Component("Config").
+			 * @brief Format under `StormByte.Config`.
 			 * @tparam Args Format argument types.
 			 * @param fmt Format string.
 			 * @param args Format arguments.
 			 */
 			template <typename... Args>
-			Exception(std::format_string<Args...> fmt, Args&&... args)
-				: StormByte::Exception(Component("Config"), fmt, std::forward<Args>(args)...) {}
+			explicit Exception(std::format_string<Args...> fmt, Args&&... args)
+				: StormByte::Exception(StormByte::Exception::Path{"Config"}, fmt, std::forward<Args>(args)...) {}
 
 			/**
-			 * @brief Constructs with a custom Component and std::format.
+			 * @brief Format a plain message under `StormByte.Config`.
+			 * @param message Exception text. Not a format string.
+			 */
+			explicit Exception(std::string message)
+				: Exception("{}", std::move(message)) {}
+
+			/**
+			 * @brief Format under an explicit path.
 			 * @tparam Args Format argument types.
-			 * @param component Module component wrapper.
+			 * @param path Segments under `StormByte`.
 			 * @param fmt Format string.
 			 * @param args Format arguments.
 			 */
 			template <typename... Args>
-			Exception(Component component, std::format_string<Args...> fmt, Args&&... args)
-				: StormByte::Exception(component, fmt, std::forward<Args>(args)...) {}
+			Exception(StormByte::Exception::Path path, std::format_string<Args...> fmt, Args&&... args)
+				: StormByte::Exception(path, fmt, std::forward<Args>(args)...) {}
 
 			/**
 			 * @brief Copy constructor.
@@ -101,6 +97,11 @@ namespace StormByte::Config {
 			Exception(Exception&& other) noexcept = default;
 
 			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~Exception() noexcept override;
+
+			/**
 			 * @brief Copy assignment operator.
 			 * @param other Exception to copy.
 			 * @return Reference to this Exception.
@@ -113,11 +114,6 @@ namespace StormByte::Config {
 			 * @return Reference to this Exception.
 			 */
 			Exception& operator=(Exception&& other) noexcept = default;
-
-			/**
-			 * @brief Destructor.
-			 */
-			~Exception() noexcept override = default;
 	};
 
 	/**
@@ -127,6 +123,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC WrongValueTypeConversion final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~WrongValueTypeConversion() noexcept override;
 	};
 
 	/**
@@ -136,6 +137,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC ValueFailure final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~ValueFailure() noexcept override;
 	};
 
 	/**
@@ -145,6 +151,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC InvalidName final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~InvalidName() noexcept override;
 	};
 
 	/**
@@ -154,6 +165,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC InvalidPath final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~InvalidPath() noexcept override;
 	};
 
 	/**
@@ -163,6 +179,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC ParseError final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~ParseError() noexcept override;
 	};
 
 	/**
@@ -172,6 +193,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC ItemNotFound final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~ItemNotFound() noexcept override;
 	};
 
 	/**
@@ -181,6 +207,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC ItemAlreadyExists final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~ItemAlreadyExists() noexcept override;
 	};
 
 	/**
@@ -190,6 +221,11 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC ItemNameAlreadyExists final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~ItemNameAlreadyExists() noexcept override;
 	};
 
 	/**
@@ -199,5 +235,10 @@ namespace StormByte::Config {
 	class STORMBYTE_CONFIG_PUBLIC OutOfBounds final: public Exception {
 		public:
 			using Exception::Exception;
+
+			/**
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
+			 */
+			~OutOfBounds() noexcept override;
 	};
 }

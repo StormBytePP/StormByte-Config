@@ -89,7 +89,7 @@ namespace StormByte::Config::Binary {
 				item.Name(*name);
 		}
 
-		Expected<std::shared_ptr<Base>, DeserializeError>
+		Expected<StormByte::Shared<Base>, DeserializeError>
 		ReadItem(BufferView data, std::size_t& offset, std::uint8_t version);
 
 		Expected<void, DeserializeError>
@@ -136,7 +136,7 @@ namespace StormByte::Config::Binary {
 			return {};
 		}
 
-		Expected<std::shared_ptr<Base>, DeserializeError>
+		Expected<StormByte::Shared<Base>, DeserializeError>
 		ReadItem(BufferView data, std::size_t& offset, std::uint8_t version) {
 			(void)version;
 			const std::size_t start = offset;
@@ -153,7 +153,7 @@ namespace StormByte::Config::Binary {
 					if (!value)
 						return Unexpected(value.error());
 					offset += Serializable<StormByte::String::String>::Size(value.value());
-					auto item = std::make_shared<Value<StormByte::String::String>>(std::move(value.value()));
+					auto item = StormByte::Shared<Base>::MakePointer<Value<StormByte::String::String>>(std::move(value.value()));
 					ApplyName(*item, name);
 					return item;
 				}
@@ -163,7 +163,7 @@ namespace StormByte::Config::Binary {
 					if (!value)
 						return Unexpected(value.error());
 					offset += Serializable<int>::Size(value.value());
-					auto item = std::make_shared<Value<int>>(value.value());
+					auto item = StormByte::Shared<Base>::MakePointer<Value<int>>(value.value());
 					ApplyName(*item, name);
 					return item;
 				}
@@ -173,7 +173,7 @@ namespace StormByte::Config::Binary {
 					if (!value)
 						return Unexpected(value.error());
 					offset += Serializable<double>::Size(value.value());
-					auto item = std::make_shared<Value<double>>(value.value());
+					auto item = StormByte::Shared<Base>::MakePointer<Value<double>>(value.value());
 					ApplyName(*item, name);
 					return item;
 				}
@@ -183,7 +183,7 @@ namespace StormByte::Config::Binary {
 					if (!value)
 						return Unexpected(value.error());
 					offset += Serializable<bool>::Size(value.value());
-					auto item = std::make_shared<Value<bool>>(value.value());
+					auto item = StormByte::Shared<Base>::MakePointer<Value<bool>>(value.value());
 					ApplyName(*item, name);
 					return item;
 				}
@@ -193,7 +193,7 @@ namespace StormByte::Config::Binary {
 					if (!value)
 						return Unexpected(value.error());
 					offset += Serializable<std::vector<std::byte>>::Size(value.value());
-					auto item = std::make_shared<Value<std::vector<std::byte>>>(std::move(value.value()));
+					auto item = StormByte::Shared<Base>::MakePointer<Value<std::vector<std::byte>>>(std::move(value.value()));
 					ApplyName(*item, name);
 					return item;
 				}
@@ -209,16 +209,16 @@ namespace StormByte::Config::Binary {
 						return Unexpected(text.error());
 					offset += Serializable<StormByte::String::String>::Size(text.value());
 
-					std::shared_ptr<Base> item;
+					StormByte::Shared<Base> item;
 					switch (ct.value()) {
 						case CommentType::SingleLineBash:
-							item = std::make_shared<Comment<CommentType::SingleLineBash>>(std::move(text.value()));
+							item = StormByte::Shared<Base>::MakePointer<Comment<CommentType::SingleLineBash>>(std::move(text.value()));
 							break;
 						case CommentType::SingleLineC:
-							item = std::make_shared<Comment<CommentType::SingleLineC>>(std::move(text.value()));
+							item = StormByte::Shared<Base>::MakePointer<Comment<CommentType::SingleLineC>>(std::move(text.value()));
 							break;
 						case CommentType::MultiLineC:
-							item = std::make_shared<Comment<CommentType::MultiLineC>>(std::move(text.value()));
+							item = StormByte::Shared<Base>::MakePointer<Comment<CommentType::MultiLineC>>(std::move(text.value()));
 							break;
 						default:
 							return Unexpected<DeserializeError>("Unknown comment type");
@@ -241,18 +241,18 @@ namespace StormByte::Config::Binary {
 					if (!ctype)
 						return Unexpected(ctype.error());
 
-					std::shared_ptr<Container> container;
+					StormByte::Shared<Container> container;
 					if (ctype.value() == ContainerType::Group)
-						container = std::make_shared<Group>();
+						container = StormByte::Shared<Container>::MakePointer<Group>();
 					else if (ctype.value() == ContainerType::List)
-						container = std::make_shared<List>();
+						container = StormByte::Shared<Container>::MakePointer<List>();
 					else
 						return Unexpected<DeserializeError>("Unknown container type");
 
 					auto filled = ReadContainerInto(data, offset, *container, version);
 					if (!filled)
 						return Unexpected(filled.error());
-					return std::static_pointer_cast<Base>(container);
+					return StormByte::Shared<Base>(std::move(container));
 				}
 
 				default:

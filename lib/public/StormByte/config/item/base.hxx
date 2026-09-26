@@ -65,7 +65,7 @@ namespace StormByte::Config::Item {
 	 * @class Base
 	 * @brief The base class for all configuration items.
 	 */
-	class STORMBYTE_CONFIG_PUBLIC Base: public Clonable<Base, std::shared_ptr<Base>> {
+	class STORMBYTE_CONFIG_PUBLIC Base: public Clonable<Base, StormByte::Shared<Base>> {
 		public:
 			/**
 			 * @brief Default constructor.

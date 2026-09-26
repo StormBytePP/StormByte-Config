@@ -55,9 +55,9 @@ namespace {
 	}
 }
 
-Container::Container(const String& name) : Base(name) {}
+Container::Container(const class String& name) : Base(name) {}
 
-Container::Container(String&& name) : Base(name) {}
+Container::Container(class String&& name) : Base(name) {}
 
 bool Container::Equals(const Base& other) const noexcept {
 	if (this->Type() != other.Type())
@@ -91,7 +91,7 @@ const Base& Container::operator[](const size_t& index) const {
 	return *m_items[index];
 }
 
-Base& Container::operator[](const String& path) {
+Base& Container::operator[](const class String& path) {
 	return const_cast<Base&>(static_cast<const Container&>(*this)[path]);
 }
 
@@ -112,7 +112,7 @@ Base& Container::Add(Base::PointerType item, const StormByte::Config::OnExisting
 	return *m_items.back();
 }
 
-bool Container::Exists(const String& path) const {
+bool Container::Exists(const class String& path) const {
 	try {
 		LookUp(path);
 		return true;
@@ -127,7 +127,7 @@ void Container::Remove(const size_t& index) {
 	m_items.erase(m_items.begin() + index);
 }
 
-void Container::Remove(const String& path) {
+void Container::Remove(const class String& path) {
 	if (!IsPathValid(path)) {
 		throw InvalidPath("Invalid path '{}'", static_cast<std::string_view>(path));
 	}
@@ -136,7 +136,7 @@ void Container::Remove(const String& path) {
 	Remove(path_queue);
 }
 
-String Container::Serialize(const int& indent_level) const noexcept {
+String::String Container::Serialize(const int& indent_level) const noexcept {
 	const auto enclosure_characters = EnclosureCharacters(ContainerType());
 	std::string serial = static_cast<std::string>(Base::Serialize(indent_level));
 	serial += enclosure_characters.first;
@@ -144,7 +144,7 @@ String Container::Serialize(const int& indent_level) const noexcept {
 	serial += static_cast<std::string>(ContentsToString(indent_level + 1));
 	serial += static_cast<std::string>(Indent(indent_level));
 	serial += enclosure_characters.second;
-	return String(std::string_view(serial));
+	return String::String(std::string_view(serial));
 }
 
 size_t Container::Count() const noexcept {
@@ -163,21 +163,21 @@ size_t Container::Count() const noexcept {
 	return count;
 }
 
-String Container::ContentsToString(const int& indent_level) const noexcept {
+String::String Container::ContentsToString(const int& indent_level) const noexcept {
 	std::string serial;
 	for (const auto& item : m_items) {
 		serial += static_cast<std::string>(item->Serialize(indent_level));
 		serial += '\n';
 	}
-	return String(std::string_view(serial));
+	return String::String(std::string_view(serial));
 }
 
-bool Container::IsPathValid(const String& name) noexcept {
+bool Container::IsPathValid(const String::String& name) noexcept {
 	static const std::regex name_regex(R"(^[A-Za-z0-9_]+(/([A-Za-z0-9_]+))*$)");
 	return std::regex_match(static_cast<std::string>(name), name_regex);
 }
 
-const Base& Container::LookUp(const String& path) const {
+const Base& Container::LookUp(const String::String& path) const {
 	if (!IsPathValid(path)) {
 		throw InvalidPath("Invalid path '{}'", static_cast<std::string_view>(path));
 	}
@@ -186,12 +186,12 @@ const Base& Container::LookUp(const String& path) const {
 	return LookUp(path_queue);
 }
 
-const Base& Container::LookUp(std::queue<String>& path) const {
+const Base& Container::LookUp(std::queue<String::String>& path) const {
 	if (path.empty()) {
 		throw InvalidPath("Empty path given for lookup");
 	}
 
-	const String item_path = path.front();
+	const String::String item_path = path.front();
 	path.pop();
 	const std::string_view item_view = item_path;
 	if (path.empty()) {
@@ -242,12 +242,12 @@ const Base& Container::LookUp(std::queue<String>& path) const {
 	}
 }
 
-void Container::Remove(std::queue<String>& path) {
+void Container::Remove(std::queue<String::String>& path) {
 	if (path.empty()) {
 		throw InvalidPath("Empty path given for remove");
 	}
 
-	String item_path = path.front();
+	String::String item_path = path.front();
 	path.pop();
 	const std::string_view item_view = item_path;
 	if (path.empty()) {
