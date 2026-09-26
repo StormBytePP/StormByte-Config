@@ -44,6 +44,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <typeinfo>
 
 using namespace StormByte::Config::Item;
 
@@ -51,6 +52,15 @@ namespace {
 	StormByte::String::String Indent(const int indent_level) {
 		const int level = indent_level > 0 ? indent_level : 0;
 		return StormByte::String::String(std::string(static_cast<std::size_t>(level), '\t'));
+	}
+
+	template<CommentType T>
+	bool CommentEquals(const Comment<T>& self, const Base& other) noexcept {
+		if (typeid(other) != typeid(Comment<T>))
+			return false;
+		if (self.Name() != other.Name())
+			return false;
+		return self.Text() == static_cast<const Comment<T>&>(other).Text();
 	}
 }
 
@@ -63,6 +73,21 @@ namespace StormByte::Config::Item {
 
 	template<>
 	Comment<CommentType::MultiLineC>::~Comment() noexcept = default;
+
+	template<>
+	bool Comment<CommentType::SingleLineBash>::Equals(const Base& other) const noexcept {
+		return CommentEquals(*this, other);
+	}
+
+	template<>
+	bool Comment<CommentType::SingleLineC>::Equals(const Base& other) const noexcept {
+		return CommentEquals(*this, other);
+	}
+
+	template<>
+	bool Comment<CommentType::MultiLineC>::Equals(const Base& other) const noexcept {
+		return CommentEquals(*this, other);
+	}
 
 	template<>
 	StormByte::String::String Comment<CommentType::SingleLineBash>::Serialize(const int& indent_level) const noexcept {

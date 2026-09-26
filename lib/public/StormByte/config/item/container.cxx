@@ -55,9 +55,19 @@ namespace {
 	}
 }
 
+Container::Container() = default;
+
 Container::Container(const StormByte::String::String& name): Base(name) {}
 
 Container::Container(StormByte::String::String&& name): Base(std::move(name)) {}
+
+Container::Container(const Container& base) = default;
+
+Container::Container(Container&& base) noexcept = default;
+
+Container& Container::operator=(const Container& base) = default;
+
+Container& Container::operator=(Container&& base) noexcept = default;
 
 Container::~Container() noexcept = default;
 

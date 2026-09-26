@@ -68,45 +68,45 @@ namespace StormByte::Config::Item {
 			/**
 			 * @brief Constructs an empty Container.
 			 */
-			Container() = default;
+			Container();
 
 			/**
 			 * @brief Constructs a Container with the given name.
-			 * @param name The name of the container.
+			 * @param name	The name of the container.
 			 */
 			Container(const StormByte::String::String& name);
 
 			/**
 			 * @brief Constructs a Container with the given name (move).
-			 * @param name The name of the container.
+			 * @param name	The name of the container.
 			 */
 			Container(StormByte::String::String&& name);
 
 			/**
 			 * @brief Copy constructor.
-			 * @param base Container to copy.
+			 * @param base	Container to copy.
 			 */
-			Container(const Container& base) = default;
+			Container(const Container& base);
 
 			/**
 			 * @brief Move constructor.
-			 * @param base Container to move.
+			 * @param base	Container to move.
 			 */
-			Container(Container&& base) noexcept = default;
+			Container(Container&& base) noexcept;
 
 			/**
 			 * @brief Copy assignment operator.
-			 * @param base Container to copy.
-			 * @return Reference to this Container.
+			 * @param base	Container to copy.
+			 * @return		Reference to this Container.
 			 */
-			Container& operator=(const Container& base) = default;
+			Container& operator=(const Container& base);
 
 			/**
 			 * @brief Move assignment operator.
-			 * @param base Container to move.
-			 * @return Reference to this Container.
+			 * @param base	Container to move.
+			 * @return		Reference to this Container.
 			 */
-			Container& operator=(Container&& base) noexcept = default;
+			Container& operator=(Container&& base) noexcept;
 
 			/**
 			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
@@ -120,42 +120,42 @@ namespace StormByte::Config::Item {
 			 */
 			/**
 			 * @brief Polymorphic equality comparison.
-			 * @param other The other item to compare against.
-			 * @return true if both containers have the same type, name and contents.
+			 * @param other	The other item to compare against.
+			 * @return		true if both containers have the same type, name and contents.
 			 */
 			bool Equals(const Base& other) const noexcept override;
 
 			/**
 			 * @brief Gets a reference to an item by index.
-			 * @param index Index of the item.
+			 * @param index	Index of the item.
 			 * @throw OutOfBounds if index is out of bounds.
-			 * @return Reference to the item.
+			 * @return		Reference to the item.
 			 */
 			Base& operator[](const StormByte::Size& index);
 
 			/**
 			 * @brief Gets a const reference to an item by index.
-			 * @param index Index of the item.
+			 * @param index	Index of the item.
 			 * @throw OutOfBounds if index is out of bounds.
-			 * @return Const reference to the item.
+			 * @return		Const reference to the item.
 			 */
 			const Base& operator[](const StormByte::Size& index) const;
 
 			/**
 			 * @brief Gets a reference to an item by path.
-			 * @param path Path to the item.
+			 * @param path	Path to the item.
 			 * @throw InvalidPath if path is invalid.
 			 * @throw ItemNotFound if item is not found.
-			 * @return Reference to the item.
+			 * @return		Reference to the item.
 			 */
 			Base& operator[](const StormByte::String::String& path);
 
 			/**
 			 * @brief Gets a const reference to an item by path.
-			 * @param path Path to the item.
+			 * @param path	Path to the item.
 			 * @throw InvalidPath if path is invalid.
 			 * @throw ItemNotFound if item is not found.
-			 * @return Const reference to the item.
+			 * @return		Const reference to the item.
 			 */
 			inline const Base& operator[](const StormByte::String::String& path) const {
 				return LookUp(path);
@@ -163,8 +163,8 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Gets a reference to an item by a path view.
-			 * @param path Path to the item.
-			 * @return Reference to the item.
+			 * @param path	Path to the item.
+			 * @return		Reference to the item.
 			 */
 			inline Base& operator[](std::string_view path) {
 				return operator[](StormByte::String::String(path));
@@ -172,8 +172,8 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Gets a const reference to an item by a path view.
-			 * @param path Path to the item.
-			 * @return Const reference to the item.
+			 * @param path	Path to the item.
+			 * @return		Const reference to the item.
 			 */
 			inline const Base& operator[](std::string_view path) const {
 				return operator[](StormByte::String::String(path));
@@ -181,15 +181,15 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Equality operator.
-			 * @param container Container to compare.
-			 * @return true if equal.
+			 * @param container	Container to compare.
+			 * @return			true if equal.
 			 */
 			bool operator==(const Container& container) const noexcept;
 
 			/**
 			 * @brief Inequality operator.
-			 * @param container Container to compare.
-			 * @return true if not equal.
+			 * @param container	Container to compare.
+			 * @return			true if not equal.
 			 */
 			inline bool operator!=(const Container& container) const noexcept {
 				return !operator==(container);
@@ -197,15 +197,15 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Serializes the container to a string.
-			 * @param indent_level Indentation level.
-			 * @return Serialized text.
+			 * @param indent_level	Indentation level.
+			 * @return				Serialized text.
 			 */
 			StormByte::String::String Serialize(const int& indent_level) const noexcept override;
 
 			/**
 			 * @brief Returns the enclosure characters for a given container type.
-			 * @param type Container type.
-			 * @return Pair of opening and closing characters.
+			 * @param type	Container type.
+			 * @return		Pair of opening and closing characters.
 			 */
 			static constexpr std::pair<const char, const char> EnclosureCharacters(const ContainerType& type) noexcept {
 				switch (type) {
@@ -217,8 +217,8 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Returns the closing character for a given container type.
-			 * @param type Container type.
-			 * @return Closing character.
+			 * @param type	Container type.
+			 * @return		Closing character.
 			 */
 			static constexpr const char EndCharacter(const ContainerType& type) noexcept {
 				switch (type) {
@@ -230,13 +230,13 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Gets the container type.
-			 * @return Container type.
+			 * @return	Container type.
 			 */
 			constexpr virtual Item::ContainerType ContainerType() const noexcept = 0;
 
 			/**
 			 * @brief Gets the container type as string.
-			 * @return Container type as string.
+			 * @return	Container type as string.
 			 */
 			constexpr std::string_view ContainerTypeToString() const noexcept {
 				return Item::TypeToString(this->ContainerType());
@@ -244,7 +244,7 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Gets the item type.
-			 * @return Item type.
+			 * @return	Item type.
 			 */
 			constexpr Item::Type Type() const noexcept override {
 				return Item::Type::Container;
@@ -257,9 +257,9 @@ namespace StormByte::Config::Item {
 			 */
 			/**
 			 * @brief Adds an item (const reference) using an explicit policy.
-			 * @param item Item to add.
-			 * @param on_existing Action to take if the item already exists.
-			 * @return Reference to the added item.
+			 * @param item			Item to add.
+			 * @param on_existing	Action to take if the item already exists.
+			 * @return				Reference to the added item.
 			 */
 			inline Base& Add(const Base& item, const StormByte::Config::OnExistingAction& on_existing) {
 				return Add(std::move(*item.Clone()), on_existing);
@@ -267,9 +267,9 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Adds an item (rvalue) using an explicit policy.
-			 * @param item Item to add.
-			 * @param on_existing Action to take if the item already exists.
-			 * @return Reference to the added item.
+			 * @param item			Item to add.
+			 * @param on_existing	Action to take if the item already exists.
+			 * @return				Reference to the added item.
 			 */
 			inline Base& Add(Base&& item, const StormByte::Config::OnExistingAction& on_existing) {
 				return Add(item.Move(), on_existing);
@@ -277,8 +277,8 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Adds an item using the container's current OnExistingAction policy.
-			 * @param item Item to add.
-			 * @return Reference to the added item.
+			 * @param item	Item to add.
+			 * @return		Reference to the added item.
 			 */
 			inline Base& Add(const Base& item) {
 				return Add(std::move(*item.Clone()), m_on_existing_action);
@@ -286,8 +286,8 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Adds an item using the container's current OnExistingAction policy (move).
-			 * @param item Item to add.
-			 * @return Reference to the added item.
+			 * @param item	Item to add.
+			 * @return		Reference to the added item.
 			 */
 			inline Base& Add(Base&& item) {
 				return Add(item.Move(), m_on_existing_action);
@@ -295,8 +295,8 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Adds an item to the container using current policy.
-			 * @param item The item to add.
-			 * @return Reference to the added item.
+			 * @param item	The item to add.
+			 * @return		Reference to the added item.
 			 */
 			inline Base& Add(Base::PointerType item) {
 				return Add(item, m_on_existing_action);
@@ -304,9 +304,9 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Adds an item to the container.
-			 * @param item The item to add.
-			 * @param on_existing The action to take if the item already exists.
-			 * @return A reference to the added item.
+			 * @param item			The item to add.
+			 * @param on_existing	The action to take if the item already exists.
+			 * @return				A reference to the added item.
 			 */
 			Base& Add(Base::PointerType item, const StormByte::Config::OnExistingAction& on_existing);
 
@@ -317,15 +317,15 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Checks if an item exists by path.
-			 * @param path Path to the item.
-			 * @return true if the item exists.
+			 * @param path	Path to the item.
+			 * @return		true if the item exists.
 			 */
 			bool Exists(const StormByte::String::String& path) const;
 
 			/**
 			 * @brief Checks if an item exists by a path view.
-			 * @param path Path to the item.
-			 * @return true if the item exists.
+			 * @param path	Path to the item.
+			 * @return		true if the item exists.
 			 */
 			inline bool Exists(std::string_view path) const {
 				return Exists(StormByte::String::String(path));
@@ -333,14 +333,14 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Removes an item by index.
-			 * @param index Index of the item to remove.
+			 * @param index	Index of the item to remove.
 			 * @throw OutOfBounds if index is out of bounds.
 			 */
 			void Remove(const StormByte::Size& index);
 
 			/**
 			 * @brief Removes an item by path.
-			 * @param path Path to the item to remove.
+			 * @param path	Path to the item to remove.
 			 * @throw InvalidPath if path is invalid.
 			 * @throw ItemNotFound if item is not found.
 			 */
@@ -348,37 +348,37 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Removes an item by a path view.
-			 * @param path Path to the item to remove.
+			 * @param path	Path to the item to remove.
 			 */
 			inline void Remove(std::string_view path) {
 				Remove(StormByte::String::String(path));
 			}
 
 			/**
-			 * @brief Returns a span of all items in the container.
-			 * @return Span of items.
+			 * @brief Items in this level. The span cannot reseat or grow the store; each pointer's item is mutable.
+			 * @return	Span of item pointers.
 			 */
-			constexpr std::span<Base::PointerType> Items() noexcept {
-				return std::span(m_items);
+			constexpr std::span<const Base::PointerType> Items() noexcept {
+				return std::span<const Base::PointerType>(m_items);
 			}
 
 			/**
-			 * @brief Returns a const span of all items in the container.
-			 * @return Const span of items.
+			 * @brief Items in this level.
+			 * @return	Span of item pointers.
 			 */
 			constexpr std::span<const Base::PointerType> Items() const noexcept {
-				return std::span(m_items);
+				return std::span<const Base::PointerType>(m_items);
 			}
 
 			/**
 			 * @brief Gets the number of items in the current level.
-			 * @return Number of items.
+			 * @return	Number of items.
 			 */
 			StormByte::Size Size() const noexcept;
 
 			/**
 			 * @brief Gets the total number of items including nested ones.
-			 * @return Total number of items.
+			 * @return	Total number of items.
 			 */
 			StormByte::Size Count() const noexcept;
 			/** @} */
@@ -389,7 +389,7 @@ namespace StormByte::Config::Item {
 			 */
 			/**
 			 * @brief Sets the action to take when an item with the same identity already exists.
-			 * @param action The policy to apply on name/identity collision.
+			 * @param action	The policy to apply on name/identity collision.
 			 */
 			void SetOnExistingAction(StormByte::Config::OnExistingAction action) noexcept {
 				m_on_existing_action = action;
@@ -397,7 +397,7 @@ namespace StormByte::Config::Item {
 
 			/**
 			 * @brief Gets the current OnExistingAction policy.
-			 * @return The current policy.
+			 * @return	The current policy.
 			 */
 			StormByte::Config::OnExistingAction GetOnExistingAction() const noexcept {
 				return m_on_existing_action;
@@ -405,49 +405,49 @@ namespace StormByte::Config::Item {
 			/** @} */
 
 		protected:
-			std::vector<Base::PointerType> m_items; ///< Items stored in the container
-			StormByte::Config::OnExistingAction m_on_existing_action = StormByte::Config::OnExistingAction::ThrowException; ///< Collision policy
+			std::vector<Base::PointerType> m_items;	///< Items stored in the container
+			StormByte::Config::OnExistingAction m_on_existing_action = StormByte::Config::OnExistingAction::ThrowException;	///< Collision policy
 
 			/**
 			 * @brief Actions performed before adding an item.
-			 * @param item Item to check.
-			 * @param onexisting Action to take if the item already exists.
-			 * @return Pointer to the existing item if kept, otherwise nullptr.
+			 * @param item			Item to check.
+			 * @param onexisting	Action to take if the item already exists.
+			 * @return				Pointer to the existing item if kept, otherwise nullptr.
 			 */
 			virtual Base::PointerType BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction onexisting) = 0;
 
 		private:
 			/**
 			 * @brief Internal helper that serializes the contents of the container.
-			 * @param level Indentation level.
-			 * @return Serialized contents.
+			 * @param level	Indentation level.
+			 * @return		Serialized contents.
 			 */
 			virtual StormByte::String::String ContentsToString(const int& level) const noexcept;
 
 			/**
 			 * @brief Checks whether a path is syntactically valid.
-			 * @param name Path to validate.
-			 * @return true if the path is valid.
+			 * @param name	Path to validate.
+			 * @return		true if the path is valid.
 			 */
 			static bool IsPathValid(const StormByte::String::String& name) noexcept;
 
 			/**
 			 * @brief Looks up a child item by path.
-			 * @param path Path to the child.
-			 * @return Const reference to the found item.
+			 * @param path	Path to the child.
+			 * @return		Const reference to the found item.
 			 */
 			const Base& LookUp(const StormByte::String::String& path) const;
 
 			/**
 			 * @brief Looks up a child item by path (queue version).
-			 * @param path Path components.
-			 * @return Const reference to the found item.
+			 * @param path	Path components.
+			 * @return		Const reference to the found item.
 			 */
 			const Base& LookUp(std::queue<StormByte::String::String>& path) const;
 
 			/**
 			 * @brief Removes an item by path (queue version).
-			 * @param path Path components.
+			 * @param path	Path components.
 			 */
 			void Remove(std::queue<StormByte::String::String>& path);
 	};

@@ -45,7 +45,6 @@
 #include <StormByte/string/string.hxx>
 
 #include <string_view>
-#include <typeinfo>
 #include <utility>
 
 /**
@@ -116,13 +115,7 @@ namespace StormByte::Config::Item {
 			 * @param other	The other item to compare against.
 			 * @return		true if both are the same comment specialization and content.
 			 */
-			bool Equals(const Base& other) const noexcept override {
-				if (typeid(other) != typeid(Comment<T>))
-					return false;
-				if (this->Name() != other.Name())
-					return false;
-				return m_text == static_cast<const Comment<T>&>(other).m_text;
-			}
+			bool Equals(const Base& other) const noexcept override;
 
 			/**
 			 * @brief Serializes the comment item.
@@ -188,7 +181,7 @@ namespace StormByte::Config::Item {
 			}
 
 		private:
-			StormByte::String::String m_text; ///< Comment text
+			StormByte::String::String m_text;	///< Comment text
 	};
 
 	/**
@@ -208,6 +201,30 @@ namespace StormByte::Config::Item {
 	 */
 	template<>
 	STORMBYTE_CONFIG_PUBLIC Comment<CommentType::MultiLineC>::~Comment() noexcept;
+
+	/**
+	 * @brief Equality for bash single-line comments.
+	 * @param other	The other item.
+	 * @return		true if both are the same specialization and text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC bool Comment<CommentType::SingleLineBash>::Equals(const Base& other) const noexcept;
+
+	/**
+	 * @brief Equality for C single-line comments.
+	 * @param other	The other item.
+	 * @return		true if both are the same specialization and text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC bool Comment<CommentType::SingleLineC>::Equals(const Base& other) const noexcept;
+
+	/**
+	 * @brief Equality for C multi-line comments.
+	 * @param other	The other item.
+	 * @return		true if both are the same specialization and text.
+	 */
+	template<>
+	STORMBYTE_CONFIG_PUBLIC bool Comment<CommentType::MultiLineC>::Equals(const Base& other) const noexcept;
 
 	/**
 	 * @brief Serializes a bash single-line comment.

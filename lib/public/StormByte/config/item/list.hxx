@@ -41,19 +41,18 @@
 #pragma once
 
 #include <StormByte/config/item/container.hxx>
-#include <StormByte/config/typedefs.hxx>
+#include <StormByte/config/visibility.h>
 #include <StormByte/string/string.hxx>
 
 #include <string_view>
 
 /**
- * @namespace Item
- * @brief All the classes for item configuration
+ * @brief Configuration items (values, comments, groups, lists).
  */
 namespace StormByte::Config::Item {
 	/**
 	 * @class List
-	 * @brief List container
+	 * @brief Unnamed container (`[ ... ]`).
 	 */
 	class STORMBYTE_CONFIG_PUBLIC List final: public Container {
 		public:
@@ -84,27 +83,27 @@ namespace StormByte::Config::Item {
 			 * @brief Copy constructor
 			 * @param list	list to copy
 			 */
-			List(const List& list) = default;
+			List(const List& list);
 
 			/**
 			 * @brief Move constructor
 			 * @param list	list to move
 			 */
-			List(List&& list) noexcept = default;
+			List(List&& list) noexcept;
 
 			/**
 			 * @brief Assignment operator
 			 * @param list	list to copy
 			 * @return		this
 			 */
-			List& operator=(const List& list) = default;
+			List& operator=(const List& list);
 
 			/**
 			 * @brief Move assignment operator
 			 * @param list	list to move
 			 * @return		this
 			 */
-			List& operator=(List&& list) noexcept = default;
+			List& operator=(List&& list) noexcept;
 
 			/**
 			 * @brief Destructor

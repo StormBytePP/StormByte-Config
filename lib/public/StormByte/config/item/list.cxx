@@ -42,7 +42,7 @@
 #include <StormByte/string/string.hxx>
 
 #include <algorithm>
-#include <string_view>
+#include <string>
 
 using namespace StormByte::Config::Item;
 
@@ -53,6 +53,14 @@ List::List(const StormByte::String::String& name): Container(name) {}
 List::List(StormByte::String::String&& name): Container(std::move(name)) {}
 
 List::List(std::string_view name): Container(StormByte::String::String(name)) {}
+
+List::List(const List& list) = default;
+
+List::List(List&& list) noexcept = default;
+
+List& List::operator=(const List& list) = default;
+
+List& List::operator=(List&& list) noexcept = default;
 
 List::~List() noexcept = default;
 
