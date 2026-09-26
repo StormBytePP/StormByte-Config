@@ -38,6 +38,12 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
  */
 
+/**************************** WARNING: *******************************/
+/**** NEVER fix the comparisons on this test if the test fails    ****/
+/**** because the test is intented to test backward compatibility ****/
+/**** with older binary versions. If something fails fix reader   ****/
+/*********************************************************************/
+
 #include <StormByte/config/config.hxx>
 #include <StormByte/test_handlers.h>
 
