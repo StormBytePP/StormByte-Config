@@ -52,45 +52,54 @@
 
 using namespace StormByte::Config;
 
-namespace {
-	int test_version_1_1_0_matches_text() {
-		const auto dir = CurrentFileDirectory / "version";
-		const auto text_path = dir / "config.cfg";
-		const auto bin_path = dir / "config_v1.1.0.bin";
+// -------------------
+// Version
+// -------------------
 
-		std::ifstream text_in(text_path);
-		if (!text_in) {
-			std::cerr << "cannot open " << text_path << std::endl;
-			RETURN_TEST("test_version_1_1_0_matches_text", 1);
-		}
+int test_version_1_1_0_matches_text() {
+	int result = 0;
+	const auto dir = CurrentFileDirectory / "version";
+	const auto text_path = dir / "config.cfg";
+	const auto bin_path = dir / "config_v1.1.0.bin";
 
-		Config from_text;
-		try {
-			text_in >> from_text;
-		} catch (const StormByte::Exception& ex) {
-			std::cerr << ex.what() << std::endl;
-			RETURN_TEST("test_version_1_1_0_matches_text", 1);
-		}
-
-		std::ifstream bin_in(bin_path, std::ios::binary);
-		if (!bin_in) {
-			std::cerr << "cannot open " << bin_path << std::endl;
-			RETURN_TEST("test_version_1_1_0_matches_text", 1);
-		}
-
-		auto from_bin = Config::Load(bin_in, Mode::Binary);
-		if (!from_bin) {
-			std::cerr << from_bin.error()->what() << std::endl;
-			RETURN_TEST("test_version_1_1_0_matches_text", 1);
-		}
-
-		ASSERT_EQUAL("test_version_1_1_0_matches_text", from_text, from_bin.value());
-		RETURN_TEST("test_version_1_1_0_matches_text", 0);
+	std::ifstream text_in(text_path);
+	if (!text_in) {
+		std::cerr << "cannot open " << text_path << std::endl;
+		RETURN_TEST("test_version_1_1_0_matches_text", 1);
 	}
+
+	Config from_text;
+	try {
+		text_in >> from_text;
+	} catch (const StormByte::Exception& ex) {
+		std::cerr << ex.what() << std::endl;
+		RETURN_TEST("test_version_1_1_0_matches_text", 1);
+	}
+
+	std::ifstream bin_in(bin_path, std::ios::binary);
+	if (!bin_in) {
+		std::cerr << "cannot open " << bin_path << std::endl;
+		RETURN_TEST("test_version_1_1_0_matches_text", 1);
+	}
+
+	auto from_bin = Config::Load(bin_in, Mode::Binary);
+	if (!from_bin) {
+		std::cerr << from_bin.error()->what() << std::endl;
+		RETURN_TEST("test_version_1_1_0_matches_text", 1);
+	}
+
+	ASSERT_EQUAL("test_version_1_1_0_matches_text", from_text, from_bin.value());
+	RETURN_TEST("test_version_1_1_0_matches_text", result);
 }
 
 int main() {
-	const int result = test_version_1_1_0_matches_text();
+	int result = 0;
+
+	// -------------------
+	// Version
+	// -------------------
+	result += test_version_1_1_0_matches_text();
+
 	if (result == 0)
 		std::cout << "All tests passed!" << std::endl;
 	else

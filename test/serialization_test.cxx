@@ -38,159 +38,83 @@
  * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
  */
 
+#include <StormByte/binary_data.hxx>
 #include <StormByte/config/config.hxx>
 #include <StormByte/test_handlers.h>
+
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <random>
 #include <sstream>
+#include <vector>
+
 using namespace StormByte::Config;
+
 namespace {
-Config MakeSampleConfig() {
-	Config cfg;
-	cfg.Add(Item::Value<StormByte::String::String>("name", "StormByte"));
-	cfg.Add(Item::Value<int>("version", 42));
-	cfg.Add(Item::Value<bool>("enabled", true));
-	cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("a comment"));
-	cfg.Add(Item::Value<std::vector<std::byte>>("payload",
-		{std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}}));
-	Item::List list("items");
-	list.Add(Item::Value(1));
-	list.Add(Item::Value("two"));
-	list.Add(Item::Value(3.14));
-	cfg.Add(std::move(list));
-	return cfg;
-}
-
-Config MakeListConfig() {
-	Config cfg;
-	Item::List list("test");
-	list.Add(Item::Value(10));
-	list.Add(Item::Value("hello"));
-	list.Add(Item::Comment<Item::CommentType::SingleLineC>("note"));
-	list.Add(Item::Value(true));
-	cfg.Add(std::move(list));
-	return cfg;
-}
-
-std::vector<std::byte> SerializeConfig(const Config& cfg) {
-	std::ostringstream oss(std::ios::binary);
-	cfg.Save(oss, Mode::Binary);
-	const std::string& s = oss.str();
-	return std::vector<std::byte>(
-		reinterpret_cast<const std::byte*>(s.data()),
-		reinterpret_cast<const std::byte*>(s.data()) + s.size());
-}
-
-ExpectedConfig DeserializeConfig(const std::vector<std::byte>& buffer) {
-	std::string raw(reinterpret_cast<const char*>(buffer.data()), buffer.size());
-	std::istringstream iss(std::move(raw), std::ios::binary);
-	return Config::Load(iss, Mode::Binary);
-}
-
-void FlipBit(std::vector<std::byte>& buf, std::size_t byte_index, unsigned bit) {
-	if (byte_index >= buf.size() || bit > 7) return;
-	auto& b = reinterpret_cast<unsigned char&>(buf[byte_index]);
-	b ^= static_cast<unsigned char>(1u << bit);
-}
-
-void CorruptByte(std::vector<std::byte>& buf, std::size_t index, std::byte value) {
-	if (index < buf.size())
-		buf[index] = value;
-}
-
-std::vector<std::byte> Truncate(const std::vector<std::byte>& buf, std::size_t new_size) {
-	if (new_size >= buf.size()) return buf;
-	return std::vector<std::byte>(buf.begin(), buf.begin() + static_cast<std::ptrdiff_t>(new_size));
-}
-} // namespace
-// =============================================================================
-// Round-trip via Config::Save / Config::Load (Mode::Binary)
-// =============================================================================
-int test_serialize_value_string() {
-	Config cfg;
-	cfg.Add(Item::Value<StormByte::String::String>("test", "Hello, World!"));
-	auto buffer = SerializeConfig(cfg);
-	auto expected = DeserializeConfig(buffer);
-	if (!expected) {
-		std::cerr << expected.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_string", 1);
+	Config MakeSampleConfig() {
+		Config cfg;
+		cfg.Add(Item::Value("name", "StormByte"));
+		cfg.Add(Item::Value("version", 42));
+		cfg.Add(Item::Value("enabled", true));
+		cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("a comment"));
+		cfg.Add(Item::Value("payload", StormByte::BinaryData({
+			std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}
+		})));
+		Item::List list("items");
+		list.Add(Item::Value(1));
+		list.Add(Item::Value("two"));
+		list.Add(Item::Value(3.14));
+		cfg.Add(std::move(list));
+		return cfg;
 	}
 
-	ASSERT_TRUE("test_serialize_value_string", cfg == expected.value());
-	RETURN_TEST("test_serialize_value_string", 0);
-}
-
-int test_serialize_value_int() {
-	Config cfg;
-	cfg.Add(Item::Value<int>("test", 62));
-	auto buffer = SerializeConfig(cfg);
-	auto expected = DeserializeConfig(buffer);
-	if (!expected) {
-		std::cerr << expected.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_int", 1);
+	Config MakeListConfig() {
+		Config cfg;
+		Item::List list("test");
+		list.Add(Item::Value(10));
+		list.Add(Item::Value("hello"));
+		list.Add(Item::Comment<Item::CommentType::SingleLineC>("note"));
+		list.Add(Item::Value(true));
+		cfg.Add(std::move(list));
+		return cfg;
 	}
 
-	ASSERT_TRUE("test_serialize_value_int", cfg == expected.value());
-	RETURN_TEST("test_serialize_value_int", 0);
-}
-
-int test_serialize_value_double() {
-	Config cfg;
-	cfg.Add(Item::Value<double>("test", 62.78));
-	auto buffer = SerializeConfig(cfg);
-	auto expected = DeserializeConfig(buffer);
-	if (!expected) {
-		std::cerr << expected.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_double", 1);
+	std::vector<std::byte> SerializeConfig(const Config& cfg) {
+		std::ostringstream oss(std::ios::binary);
+		cfg.Save(oss, Mode::Binary);
+		const std::string& s = oss.str();
+		return std::vector<std::byte>(
+			reinterpret_cast<const std::byte*>(s.data()),
+			reinterpret_cast<const std::byte*>(s.data()) + s.size());
 	}
 
-	ASSERT_TRUE("test_serialize_value_double", cfg == expected.value());
-	RETURN_TEST("test_serialize_value_double", 0);
-}
-
-int test_serialize_value_bool() {
-	Config cfg;
-	cfg.Add(Item::Value<bool>("test", true));
-	auto buffer = SerializeConfig(cfg);
-	auto expected = DeserializeConfig(buffer);
-	if (!expected) {
-		std::cerr << expected.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_value_bool", 1);
+	ExpectedConfig DeserializeConfig(const std::vector<std::byte>& buffer) {
+		std::string raw(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+		std::istringstream iss(std::move(raw), std::ios::binary);
+		return Config::Load(iss, Mode::Binary);
 	}
 
-	ASSERT_TRUE("test_serialize_value_bool", cfg == expected.value());
-	RETURN_TEST("test_serialize_value_bool", 0);
-}
-
-int test_serialize_comment_single_bash() {
-	Config cfg;
-	cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("Single line comment in bash"));
-	auto buffer = SerializeConfig(cfg);
-	auto expected = DeserializeConfig(buffer);
-	if (!expected) {
-		std::cerr << expected.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_comment_single_bash", 1);
+	void FlipBit(std::vector<std::byte>& buf, std::size_t byte_index, unsigned bit) {
+		if (byte_index >= buf.size() || bit > 7) return;
+		auto& b = reinterpret_cast<unsigned char&>(buf[byte_index]);
+		b ^= static_cast<unsigned char>(1u << bit);
 	}
 
-	ASSERT_TRUE("test_serialize_comment_single_bash", cfg == expected.value());
-	RETURN_TEST("test_serialize_comment_single_bash", 0);
-}
-
-int test_serialize_comment_single_C() {
-	Config cfg;
-	cfg.Add(Item::Comment<Item::CommentType::SingleLineC>("Single line comment in C"));
-	auto buffer = SerializeConfig(cfg);
-	auto expected = DeserializeConfig(buffer);
-	if (!expected) {
-		std::cerr << expected.error()->what() << std::endl;
-		RETURN_TEST("test_serialize_comment_single_C", 1);
+	void CorruptByte(std::vector<std::byte>& buf, std::size_t index, std::byte value) {
+		if (index < buf.size())
+			buf[index] = value;
 	}
 
-	ASSERT_TRUE("test_serialize_comment_single_C", cfg == expected.value());
-	RETURN_TEST("test_serialize_comment_single_C", 0);
+	std::vector<std::byte> Truncate(const std::vector<std::byte>& buf, std::size_t new_size) {
+		if (new_size >= buf.size()) return buf;
+		return std::vector<std::byte>(buf.begin(), buf.begin() + static_cast<std::ptrdiff_t>(new_size));
+	}
 }
+
+// -------------------
+// Comments
+// -------------------
 
 int test_serialize_comment_multi_C() {
 	Config cfg;
@@ -207,12 +131,44 @@ int test_serialize_comment_multi_C() {
 	RETURN_TEST("test_serialize_comment_multi_C", 0);
 }
 
+int test_serialize_comment_single_C() {
+	Config cfg;
+	cfg.Add(Item::Comment<Item::CommentType::SingleLineC>("Single line comment in C"));
+	auto buffer = SerializeConfig(cfg);
+	auto expected = DeserializeConfig(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_comment_single_C", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_comment_single_C", cfg == expected.value());
+	RETURN_TEST("test_serialize_comment_single_C", 0);
+}
+
+int test_serialize_comment_single_bash() {
+	Config cfg;
+	cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("Single line comment in bash"));
+	auto buffer = SerializeConfig(cfg);
+	auto expected = DeserializeConfig(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_comment_single_bash", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_comment_single_bash", cfg == expected.value());
+	RETURN_TEST("test_serialize_comment_single_bash", 0);
+}
+
+// -------------------
+// Containers
+// -------------------
+
 int test_serialize_group() {
 	Config cfg;
-	cfg.Add(Item::Value<StormByte::String::String>("string", "Hello, World!"));
-	cfg.Add(Item::Value<int>("int", 62));
-	cfg.Add(Item::Value<double>("double", 62.78));
-	cfg.Add(Item::Value<bool>("bool", true));
+	cfg.Add(Item::Value("string", "Hello, World!"));
+	cfg.Add(Item::Value("int", 62));
+	cfg.Add(Item::Value("double", 62.78));
+	cfg.Add(Item::Value("bool", true));
 	cfg.Add(Item::Comment<Item::CommentType::SingleLineBash>("Single line comment in bash"));
 	cfg.Add(Item::Comment<Item::CommentType::SingleLineC>("Single line comment in C"));
 	cfg.Add(Item::Comment<Item::CommentType::MultiLineC>(
@@ -231,10 +187,10 @@ int test_serialize_group() {
 int test_serialize_list() {
 	Config cfg;
 	Item::List list("test");
-	list.Add(Item::Value<StormByte::String::String>("Hello, World!"));
-	list.Add(Item::Value<int>(62));
-	list.Add(Item::Value<double>(62.78));
-	list.Add(Item::Value<bool>(true));
+	list.Add(Item::Value("Hello, World!"));
+	list.Add(Item::Value(62));
+	list.Add(Item::Value(62.78));
+	list.Add(Item::Value(true));
 	list.Add(Item::Comment<Item::CommentType::SingleLineBash>("Single line comment in bash"));
 	list.Add(Item::Comment<Item::CommentType::SingleLineC>("Single line comment in C"));
 	list.Add(Item::Comment<Item::CommentType::MultiLineC>(
@@ -253,15 +209,15 @@ int test_serialize_list() {
 
 int test_serialize_nested_groups() {
 	Config cfg;
-	cfg.Add(Item::Value<StormByte::String::String>("string", "Hello, World!"));
-	cfg.Add(Item::Value<int>("int", 62));
-	cfg.Add(Item::Value<double>("double", 62.78));
-	cfg.Add(Item::Value<bool>("bool", true));
+	cfg.Add(Item::Value("string", "Hello, World!"));
+	cfg.Add(Item::Value("int", 62));
+	cfg.Add(Item::Value("double", 62.78));
+	cfg.Add(Item::Value("bool", true));
 	Item::Group nested("nested");
-	nested.Add(Item::Value<StormByte::String::String>("string", "Hello, World!"));
-	nested.Add(Item::Value<int>("int", 62));
-	nested.Add(Item::Value<double>("double", 62.78));
-	nested.Add(Item::Value<bool>("bool", true));
+	nested.Add(Item::Value("string", "Hello, World!"));
+	nested.Add(Item::Value("int", 62));
+	nested.Add(Item::Value("double", 62.78));
+	nested.Add(Item::Value("bool", true));
 	cfg.Add(std::move(nested));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
@@ -272,6 +228,66 @@ int test_serialize_nested_groups() {
 
 	ASSERT_TRUE("test_serialize_nested_groups", cfg == expected.value());
 	RETURN_TEST("test_serialize_nested_groups", 0);
+}
+
+// -------------------
+// Values
+// -------------------
+
+int test_serialize_value_bool() {
+	Config cfg;
+	cfg.Add(Item::Value("test", true));
+	auto buffer = SerializeConfig(cfg);
+	auto expected = DeserializeConfig(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_bool", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_value_bool", cfg == expected.value());
+	RETURN_TEST("test_serialize_value_bool", 0);
+}
+
+int test_serialize_value_double() {
+	Config cfg;
+	cfg.Add(Item::Value("test", 62.78));
+	auto buffer = SerializeConfig(cfg);
+	auto expected = DeserializeConfig(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_double", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_value_double", cfg == expected.value());
+	RETURN_TEST("test_serialize_value_double", 0);
+}
+
+int test_serialize_value_int() {
+	Config cfg;
+	cfg.Add(Item::Value("test", 62));
+	auto buffer = SerializeConfig(cfg);
+	auto expected = DeserializeConfig(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_int", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_value_int", cfg == expected.value());
+	RETURN_TEST("test_serialize_value_int", 0);
+}
+
+int test_serialize_value_string() {
+	Config cfg;
+	cfg.Add(Item::Value("test", "Hello, World!"));
+	auto buffer = SerializeConfig(cfg);
+	auto expected = DeserializeConfig(buffer);
+	if (!expected) {
+		std::cerr << expected.error()->what() << std::endl;
+		RETURN_TEST("test_serialize_value_string", 1);
+	}
+
+	ASSERT_TRUE("test_serialize_value_string", cfg == expected.value());
+	RETURN_TEST("test_serialize_value_string", 0);
 }
 
 int test_config_binary_deserialize() {
@@ -303,9 +319,7 @@ int test_config_binary_deserialize() {
 		file >> cfg_from_text;
 		file.close();
 		ASSERT_EQUAL("test_config_binary_deserialize", cfg_from_bin, cfg_from_text);
-	}
-
-	catch (const StormByte::Config::Exception& e) {
+	} catch (const StormByte::Config::Exception& e) {
 		std::cerr << e.what() << std::endl;
 		RETURN_TEST("test_config_binary_deserialize", 1);
 	}
@@ -315,11 +329,10 @@ int test_config_binary_deserialize() {
 
 int test_serialize_value_binary() {
 	Config cfg;
-	std::vector<std::byte> data = {
+	cfg.Add(Item::Value("test", StormByte::BinaryData({
 		std::byte{0x48}, std::byte{0x65}, std::byte{0x6C},
 		std::byte{0x6C}, std::byte{0x6F}
-	};
-	cfg.Add(Item::Value<std::vector<std::byte>>("test", data));
+	})));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -333,7 +346,7 @@ int test_serialize_value_binary() {
 
 int test_serialize_value_binary_empty() {
 	Config cfg;
-	cfg.Add(Item::Value<std::vector<std::byte>>("empty", std::vector<std::byte>{}));
+	cfg.Add(Item::Value("empty", StormByte::BinaryData{}));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -342,8 +355,9 @@ int test_serialize_value_binary_empty() {
 	}
 
 	ASSERT_TRUE("test_serialize_value_binary_empty", cfg == expected.value());
-	ASSERT_EQUAL("test_serialize_value_binary_empty", 0u,
-		expected.value()["empty"].Value<std::vector<std::byte>>().size());
+	ASSERT_EQUAL("test_serialize_value_binary_empty",
+		static_cast<std::size_t>(0),
+		static_cast<std::size_t>(expected.value()["empty"].As<Item::Binary>().size()));
 	RETURN_TEST("test_serialize_value_binary_empty", 0);
 }
 
@@ -352,7 +366,7 @@ int test_serialize_value_binary_all_bytes() {
 	for (std::size_t i = 0; i < 256; ++i)
 		data[i] = static_cast<std::byte>(i);
 	Config cfg;
-	cfg.Add(Item::Value<std::vector<std::byte>>("all_bytes", data));
+	cfg.Add(Item::Value("all_bytes", StormByte::BinaryData(std::move(data))));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -369,7 +383,7 @@ int test_serialize_value_binary_large() {
 	for (std::size_t i = 0; i < data.size(); ++i)
 		data[i] = static_cast<std::byte>(i % 256);
 	Config cfg;
-	cfg.Add(Item::Value<std::vector<std::byte>>("large", std::move(data)));
+	cfg.Add(Item::Value("large", StormByte::BinaryData(std::move(data))));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -383,11 +397,12 @@ int test_serialize_value_binary_large() {
 
 int test_serialize_group_with_binary() {
 	Config cfg;
-	cfg.Add(Item::Value<StormByte::String::String>("string", "Hello"));
-	cfg.Add(Item::Value<int>("int", 42));
-	cfg.Add(Item::Value<std::vector<std::byte>>("binary",
-		{std::byte{0x01}, std::byte{0x02}, std::byte{0x03}}));
-	cfg.Add(Item::Value<bool>("flag", true));
+	cfg.Add(Item::Value("string", "Hello"));
+	cfg.Add(Item::Value("int", 42));
+	cfg.Add(Item::Value("binary", StormByte::BinaryData({
+		std::byte{0x01}, std::byte{0x02}, std::byte{0x03}
+	})));
+	cfg.Add(Item::Value("flag", true));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -402,11 +417,12 @@ int test_serialize_group_with_binary() {
 int test_serialize_list_with_binary() {
 	Config cfg;
 	Item::List list("test");
-	list.Add(Item::Value<StormByte::String::String>("text"));
-	list.Add(Item::Value<int>(99));
-	list.Add(Item::Value<std::vector<std::byte>>(
-		{std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}}));
-	list.Add(Item::Value<bool>(false));
+	list.Add(Item::Value("text"));
+	list.Add(Item::Value(99));
+	list.Add(Item::Value(StormByte::BinaryData({
+		std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}
+	})));
+	list.Add(Item::Value(false));
 	cfg.Add(std::move(list));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
@@ -422,12 +438,13 @@ int test_serialize_list_with_binary() {
 int test_serialize_nested_with_binary() {
 	Config cfg;
 	Item::Group nested("nested");
-	nested.Add(Item::Value<std::vector<std::byte>>("secret",
-		{std::byte{0x53}, std::byte{0x65}, std::byte{0x63},
-		std::byte{0x72}, std::byte{0x65}, std::byte{0x74}}));
-	nested.Add(Item::Value<StormByte::String::String>("name", "hidden"));
+	nested.Add(Item::Value("secret", StormByte::BinaryData({
+		std::byte{0x53}, std::byte{0x65}, std::byte{0x63},
+		std::byte{0x72}, std::byte{0x65}, std::byte{0x74}
+	})));
+	nested.Add(Item::Value("name", "hidden"));
 	cfg.Add(std::move(nested));
-	cfg.Add(Item::Value<int>("version", 1));
+	cfg.Add(Item::Value("version", 1));
 	auto buffer = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buffer);
 	if (!expected) {
@@ -489,15 +506,13 @@ int test_text_to_binary_to_text_roundtrip() {
 		Config cfg2 = std::move(expected.value());
 		std::string regenerated_text = static_cast<std::string>(cfg2);
 		ASSERT_EQUAL("test_text_to_binary_to_text_roundtrip", original_text, regenerated_text);
-		const auto& payload = cfg2["payload"].Value<std::vector<std::byte>>();
-		std::string recovered(reinterpret_cast<const char*>(payload.data()), payload.size());
+		const StormByte::BinaryData& payload = cfg2["payload"].As<Item::Binary>();
+		std::string recovered(reinterpret_cast<const char*>(payload.span().data()), static_cast<std::size_t>(payload.size()));
 		ASSERT_EQUAL("test_text_to_binary_to_text_roundtrip", "Hello World", recovered);
-		const auto& secret = cfg2["settings/secret"].Value<std::vector<std::byte>>();
-		std::string recovered_secret(reinterpret_cast<const char*>(secret.data()), secret.size());
+		const StormByte::BinaryData& secret = cfg2["settings/secret"].As<Item::Binary>();
+		std::string recovered_secret(reinterpret_cast<const char*>(secret.span().data()), static_cast<std::size_t>(secret.size()));
 		ASSERT_EQUAL("test_text_to_binary_to_text_roundtrip", "SecretData", recovered_secret);
-	}
-
-	catch (const StormByte::Config::Exception& e) {
+	} catch (const StormByte::Config::Exception& e) {
 		std::cerr << e.what() << std::endl;
 		RETURN_TEST("test_text_to_binary_to_text_roundtrip", 1);
 	}
@@ -505,9 +520,10 @@ int test_text_to_binary_to_text_roundtrip() {
 	RETURN_TEST("test_text_to_binary_to_text_roundtrip", 0);
 }
 
-// =============================================================================
-// Corruption / robustness (Mode::Binary)
-// =============================================================================
+// -------------------
+// Corruption
+// -------------------
+
 int test_corruption_empty_buffer() {
 	std::vector<std::byte> empty;
 	auto r = DeserializeConfig(empty);
@@ -584,7 +600,7 @@ int test_corruption_no_crash_single_byte_overwrite() {
 
 int test_corruption_payload_still_safe() {
 	Config cfg;
-	cfg.Add(Item::Value<StormByte::String::String>("key", "Hello, StormByte!"));
+	cfg.Add(Item::Value("key", "Hello, StormByte!"));
 	auto clean = SerializeConfig(cfg);
 	std::size_t start = clean.size() / 2;
 	for (std::size_t i = start; i < clean.size(); ++i) {
@@ -601,7 +617,7 @@ int test_corruption_payload_binary_still_safe() {
 	for (std::size_t i = 0; i < data.size(); ++i)
 		data[i] = static_cast<std::byte>(i);
 	Config cfg;
-	cfg.Add(Item::Value<std::vector<std::byte>>("bin", data));
+	cfg.Add(Item::Value("bin", StormByte::BinaryData(std::move(data))));
 	auto clean = SerializeConfig(cfg);
 	std::size_t start = clean.size() / 3;
 	for (std::size_t i = start; i < clean.size(); ++i) {
@@ -687,8 +703,8 @@ int test_corruption_random_stress() {
 
 int test_serialize_idempotent_roundtrip() {
 	Config original;
-	original.Add(Item::Value<StormByte::String::String>("name", "StormByte"));
-	original.Add(Item::Value<int>("n", 7));
+	original.Add(Item::Value("name", "StormByte"));
+	original.Add(Item::Value("n", 7));
 	original.Add(Item::Comment<Item::CommentType::SingleLineBash>("note"));
 	auto buf1 = SerializeConfig(original);
 	auto d1 = DeserializeConfig(buf1);
@@ -718,10 +734,10 @@ int test_deep_nesting_group() {
 	for (int i = 1; i < DEPTH; ++i) {
 		Item::Group child("l" + std::to_string(i));
 		current->Add(std::move(child));
-		current = &current->Items().back()->Value<Item::Group>();
+		current = &current->Items().back()->As<Item::Group>();
 	}
 
-	current->Add(Item::Value<int>("leaf", 42));
+	current->Add(Item::Value("leaf", 42));
 	cfg.Add(std::move(root));
 	auto buf = SerializeConfig(cfg);
 	auto expected = DeserializeConfig(buf);
@@ -760,26 +776,45 @@ int test_double_corruption_size_and_payload() {
 
 int main() {
 	int result = 0;
-	result += test_serialize_value_string();
-	result += test_serialize_value_int();
-	result += test_serialize_value_double();
-	result += test_serialize_value_bool();
-	result += test_serialize_comment_single_bash();
-	result += test_serialize_comment_single_C();
+
+	// -------------------
+	// Comments
+	// -------------------
 	result += test_serialize_comment_multi_C();
+	result += test_serialize_comment_single_C();
+	result += test_serialize_comment_single_bash();
+	result += test_comment_name_survives_roundtrip();
+
+	// -------------------
+	// Containers
+	// -------------------
 	result += test_serialize_group();
 	result += test_serialize_list();
 	result += test_serialize_nested_groups();
+	result += test_serialize_group_with_binary();
+	result += test_serialize_list_with_binary();
+	result += test_serialize_nested_with_binary();
+	result += test_deep_nesting_group();
+
+	// -------------------
+	// Values
+	// -------------------
+	result += test_serialize_value_bool();
+	result += test_serialize_value_double();
+	result += test_serialize_value_int();
+	result += test_serialize_value_string();
 	result += test_config_binary_deserialize();
 	result += test_serialize_value_binary();
 	result += test_serialize_value_binary_empty();
 	result += test_serialize_value_binary_all_bytes();
 	result += test_serialize_value_binary_large();
-	result += test_serialize_group_with_binary();
-	result += test_serialize_list_with_binary();
-	result += test_serialize_nested_with_binary();
 	result += test_serialize_binary_roundtrip_text_and_binary();
 	result += test_text_to_binary_to_text_roundtrip();
+	result += test_serialize_idempotent_roundtrip();
+
+	// -------------------
+	// Corruption
+	// -------------------
 	result += test_corruption_empty_buffer();
 	result += test_corruption_truncated_all_lengths();
 	result += test_corruption_header_bytes();
@@ -789,12 +824,10 @@ int main() {
 	result += test_corruption_payload_binary_still_safe();
 	result += test_corruption_huge_claimed_size();
 	result += test_corruption_deep_nested();
-	result += test_comment_name_survives_roundtrip();
 	result += test_corruption_random_stress();
-	result += test_serialize_idempotent_roundtrip();
-	result += test_deep_nesting_group();
 	result += test_trailing_garbage_ignored_or_rejected();
 	result += test_double_corruption_size_and_payload();
+
 	if (result == 0)
 		std::cout << "All tests passed!" << std::endl;
 	else

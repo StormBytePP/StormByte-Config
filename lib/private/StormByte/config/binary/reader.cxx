@@ -45,64 +45,64 @@
 #include <cstring>
 #include <format>
 
-namespace StormByte::Config::Binary {
-	namespace {
-		bool MagicMatches(BufferView data) noexcept {
-			if (data.size() < Magic.size())
-				return false;
-			return std::memcmp(data.data(), Magic.data(), Magic.size()) == 0;
-		}
+using namespace StormByte;
+using namespace StormByte::Config;
+using namespace StormByte::Config::Binary;
+
+namespace {
+	bool MagicMatches(BufferView data) noexcept {
+		if (data.size() < Magic.size())
+			return false;
+		return std::memcmp(data.data(), Magic.data(), Magic.size()) == 0;
 	}
+}
 
-	Reader::Reader(BufferView data) noexcept: m_data(data) {}
+Reader::Reader(BufferView data) noexcept: m_data(data) {}
 
-	ExpectedConfig Reader::Deserialize() const noexcept {
-		try {
-			if (m_data.size() < HeaderSize)
-				return Unexpected<DeserializeError>("Truncated config binary header");
+Binary::ExpectedConfig Reader::Deserialize() const noexcept {
+	try {
+		if (m_data.size() < HeaderSize)
+			return Unexpected<DeserializeError>("Truncated config binary header");
 
-			if (!MagicMatches(m_data))
-				return Unexpected<DeserializeError>("Not a StormByte config binary (bad magic)");
+		if (!MagicMatches(m_data))
+			return Unexpected<DeserializeError>("Not a StormByte config binary (bad magic)");
 
-			auto version = Serializable<std::uint8_t>::Deserialize(m_data.subspan(Magic.size(), 1));
-			if (!version)
-				return Unexpected(version.error());
+		auto version = Serializable<std::uint8_t>::Deserialize(m_data.subspan(Magic.size(), 1));
+		if (!version)
+			return Unexpected(version.error());
 
-			if (version.value() > CurrentVersion) {
-				return Unexpected<DeserializeError>(std::format(
-					"Config binary version {} is newer than this library (max {})",
-					version.value(), CurrentVersion));
-			}
+		if (version.value() > CurrentVersion) {
+			return Unexpected<DeserializeError>(std::format(
+				"Config binary version {} is newer than this library (max {})",
+				version.value(), CurrentVersion));
+		}
 
-			if (version.value() < 1) {
+		if (version.value() < 1) {
+			return Unexpected<DeserializeError>(std::format(
+				"Unsupported config binary version {}", version.value()));
+		}
+
+		const BufferView payload = m_data.subspan(HeaderSize);
+
+		Expected<std::pair<OnExistingAction, Item::Group>, DeserializeError> body;
+		switch (version.value()) {
+			case 1:
+				body = ReaderV1::Read(payload);
+				break;
+			default:
 				return Unexpected<DeserializeError>(std::format(
 					"Unsupported config binary version {}", version.value()));
-			}
-
-			const BufferView payload = m_data.subspan(HeaderSize);
-
-			Expected<std::pair<OnExistingAction, Item::Group>, DeserializeError> body;
-			switch (version.value()) {
-				case 1:
-					body = ReaderV1::Read(payload);
-					break;
-				default:
-					return Unexpected<DeserializeError>(std::format(
-						"Unsupported config binary version {}", version.value()));
-			}
-
-			if (!body)
-				return Unexpected(body.error());
-
-			Config cfg;
-			cfg.m_on_existing_action = body.value().first;
-			cfg.m_root = std::move(body.value().second);
-			cfg.m_root.SetOnExistingAction(cfg.m_on_existing_action);
-			return cfg;
 		}
 
-		catch (const StormByte::Exception& e) {
-			return Unexpected<DeserializeError>(e.what());
-		}
+		if (!body)
+			return Unexpected(body.error());
+
+		Config cfg;
+		cfg.m_on_existing_action = body.value().first;
+		cfg.m_root = std::move(body.value().second);
+		cfg.m_root.SetOnExistingAction(cfg.m_on_existing_action);
+		return cfg;
+	} catch (const Exception& e) {
+		return Unexpected<DeserializeError>(e.what());
 	}
 }

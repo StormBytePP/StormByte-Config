@@ -1,241 +1,205 @@
 /*
-* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
-*
-* This file is part of StormByte-Config.
-*
-* StormByte-Config original source is dual-licensed:
-*
-* 1. GNU Lesser General Public License v3.0 (or later)
-*    You may redistribute and/or modify this file under the terms of the
-*    GNU Lesser General Public License as published by the Free Software
-*    Foundation, either version 3 of the License, or (at your option)
-*    any later version.
-*
-* 2. Commercial license
-*    Alternatively, this file may be used under the terms of a commercial
-*    license agreement with the copyright holder
-*    (David C. Manuelda <StormByte@gmail.com>).
-*
-* Both licenses apply only to original StormByte-Config source in this
-* repository. They do not cover other StormByte modules or any third-party
-* material shipped with this repository (including everything under
-* thirdparty/, and in particular the bundled StormByte-String tree and
-* the StormByte Base tree it vendors), which remains under its own license.
-*
-* Neither license grants any patent rights. Any patent licenses required
-* to use this software or third-party components must be obtained separately
-* from the patent holders.
-*
-* StormByte-Config is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* version 3 along with StormByte-Config. If not, see
-* <https://www.gnu.org/licenses/lgpl-3.0.html>.
-*
-* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
-*/
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config original source is dual-licensed:
+ *
+ * 1. GNU Lesser General Public License v3.0 (or later)
+ *    You may redistribute and/or modify this file under the terms of the
+ *    GNU Lesser General Public License as published by the Free Software
+ *    Foundation, either version 3 of the License, or (at your option)
+ *    any later version.
+ *
+ * 2. Commercial license
+ *    Alternatively, this file may be used under the terms of a commercial
+ *    license agreement with the copyright holder
+ *    (David C. Manuelda <StormByte@gmail.com>).
+ *
+ * Both licenses apply only to original StormByte-Config source in this
+ * repository. They do not cover other StormByte modules or any third-party
+ * material shipped with this repository (including everything under
+ * thirdparty/, and in particular the bundled StormByte-String tree and
+ * the StormByte Base tree it vendors), which remains under its own license.
+ *
+ * Neither license grants any patent rights. Any patent licenses required
+ * to use this software or third-party components must be obtained separately
+ * from the patent holders.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * version 3 along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ *
+ * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+ */
 
 #pragma once
 
 #include <StormByte/clonable.hxx>
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/type.hxx>
+#include <StormByte/config/visibility.h>
 #include <StormByte/string/string.hxx>
-#include <StormByte/type_traits.hxx>
 
-#include <optional>
-#include <string>
 #include <string_view>
-#include <type_traits>
 
 /**
- * @brief Configuration items (values, comments, groups, lists).
+ * @namespace Item
+ * @brief All the classes for item configuration
  */
 namespace StormByte::Config::Item {
 	class Container;
 	class Group;
 	class List;
-	template<AllowedValueType T> class Value;
-	bool STORMBYTE_CONFIG_PUBLIC IsNameValid(const StormByte::String::String&) noexcept;
+	class Value;
+	template<CommentType T> class Comment;
 
 	/**
 	 * @class Base
-	 * @brief The base class for all configuration items.
+	 * @brief Base class for all configuration items
 	 */
 	class STORMBYTE_CONFIG_PUBLIC Base: public Clonable<Base, StormByte::Shared<Base>> {
 		public:
 			/**
-			 * @brief Default constructor.
+			 * @brief Constructor
 			 */
-			Base() = default;
+			Base() noexcept;
 
 			/**
-			 * @brief Constructs a Base item with a name.
-			 * @param name The name of the item.
+			 * @brief Constructor
+			 * @param name	name of the item
 			 */
 			Base(const StormByte::String::String& name);
 
 			/**
-			 * @brief Copy constructor.
-			 * @param base Item to copy.
+			 * @brief Copy constructor
+			 * @param base	item to copy
 			 */
-			Base(const Base& base) = default;
+			Base(const Base& base) noexcept = default;
 
 			/**
-			 * @brief Move constructor.
-			 * @param base Item to move.
+			 * @brief Move constructor
+			 * @param base	item to move
 			 */
 			Base(Base&& base) noexcept = default;
 
 			/**
-			 * @brief Copy assignment operator.
-			 * @param base Item to copy.
-			 * @return Reference to this Base.
+			 * @brief Assignment operator
+			 * @param base	item to copy
+			 * @return		copied item
 			 */
-			Base& operator=(const Base& base) = default;
+			Base& operator=(const Base& base) noexcept = default;
 
 			/**
-			 * @brief Move assignment operator.
-			 * @param base Item to move.
-			 * @return Reference to this Base.
+			 * @brief Move assignment operator
+			 * @param base	item to move
+			 * @return		moved item
 			 */
 			Base& operator=(Base&& base) noexcept = default;
 
 			/**
-			 * @brief Destructor.
+			 * @brief Destructor
 			 */
-			virtual ~Base() noexcept = default;
+			~Base() noexcept override;
 
 			/**
-			 * @brief Equality operator.
-			 * @param other Item to compare.
-			 * @return true if both items are equal.
+			 * @brief Compares two items
+			 * @param base	item to compare
+			 * @return		bool
 			 */
-			bool operator==(const Base& other) const noexcept {
-				return this->Equals(other);
-			}
+			bool operator==(const Base& base) const noexcept;
 
 			/**
-			 * @brief Inequality operator.
-			 * @param other Item to compare.
-			 * @return true if items are not equal.
+			 * @brief Compares two items
+			 * @param base	item to compare
+			 * @return		bool
 			 */
-			bool operator!=(const Base& other) const noexcept {
-				return !(*this == other);
-			}
+			bool operator!=(const Base& base) const noexcept;
 
 			/**
-			 * @brief Polymorphic equality comparison.
-			 * @param other The other item to compare against.
-			 * @return true if both items are semantically equal.
+			 * @brief Gets the name of the item
+			 * @return	name
 			 */
-			virtual bool Equals(const Base& other) const noexcept = 0;
-
-			/**
-			 * @brief Gets the name of the item.
-			 * @return The name of the item.
-			 */
-			constexpr const std::optional<StormByte::String::String>& Name() const noexcept {
+			constexpr const StormByte::String::String& Name() const noexcept {
 				return m_name;
 			}
 
 			/**
-			 * @brief Sets the item name.
-			 * @param name New name.
+			 * @brief Sets the name of the item
+			 * @param name	name
 			 */
-			constexpr void Name(const StormByte::String::String& name) noexcept {
+			constexpr void Name(const StormByte::String::String& name) {
 				m_name = name;
 			}
 
 			/**
-			 * @brief Sets the item name from a view.
-			 * @param name New name. Copied into a @ref StormByte::String::String.
+			 * @brief Sets the name of the item
+			 * @param name	name
 			 */
-			void Name(std::string_view name) noexcept {
-				m_name = StormByte::String::String(name);
-			}
+			void Name(std::string_view name);
 
 			/**
-			 * @brief Checks if the current name is valid.
-			 * @return true if the name is valid.
+			 * @brief Gets the type of the item
+			 * @return	type
 			 */
-			inline bool IsNameValid() const noexcept {
-				return m_name.has_value() && Item::IsNameValid(m_name.value());
-			}
+			constexpr virtual Item::Type Type() const noexcept = 0;
 
 			/**
-			 * @brief Gets the item type.
-			 * @return Item type.
-			 */
-			constexpr virtual Type Type() const noexcept = 0;
-
-			/**
-			 * @brief Returns the comment type if this item is a Comment, otherwise std::nullopt.
-			 *
-			 * Used by the serialization layer to determine the concrete Comment specialization
-			 * without relying on RTTI / dynamic_cast.
-			 *
-			 * @return The CommentType if this is a comment, std::nullopt otherwise.
-			 */
-			virtual std::optional<CommentType> GetCommentType() const noexcept {
-				return std::nullopt;
-			}
-
-			/**
-			 * @brief Gets the item type as a string.
-			 * @return Item type as string.
+			 * @brief Gets the type as string
+			 * @return	type as string
 			 */
 			constexpr std::string_view TypeToString() const noexcept {
 				return Item::TypeToString(this->Type());
 			}
 
 			/**
-			 * @brief Serializes the item.
-			 * @param indent_level Indentation level.
-			 * @return Serialized text owned by StormByte-String.
+			 * @brief Checks if name is valid
+			 * @param name	name
+			 * @return		bool
 			 */
-			virtual StormByte::String::String Serialize(const int& indent_level) const noexcept;
+			static bool IsNameValid(const StormByte::String::String& name) noexcept;
 
 			/**
-			 * @brief Converts the item to a string.
-			 * @return Serialized representation on the caller heap.
+			 * @brief Checks if name is valid
+			 * @param name	name
+			 * @return		bool
 			 */
-			explicit operator std::string() const {
-				return static_cast<std::string>(this->Serialize(0));
-			}
+			static bool IsNameValid(std::string_view name) noexcept;
 
 			/**
-			 * @brief Gets the item value (const).
-			 * @tparam T Target value type.
-			 * @return Const reference to the value.
-			 * @throw WrongValueTypeConversion on type mismatch.
+			 * @brief Typed view of this item
+			 * @tparam T	node type, leaf tag or comment specialization
+			 * @return		reference or converted value depending on T
 			 */
-			template<typename T>
-			const T& Value() const {
-				if constexpr (StormByte::Type::DerivedFrom<T, std::remove_reference_t<decltype(*this)>>) {
-					return static_cast<const T&>(*this);
-				} else if constexpr (StormByte::Type::DerivedFrom<Item::Value<T>, std::remove_reference_t<decltype(*this)>>) {
-					return *static_cast<const Item::Value<T>&>(*this);
-				} else {
-					throw WrongValueTypeConversion("Wrong value type {} while expecting {}", this->TypeToString(), typeid(T).name());
-				}
-			}
+			template<class T> decltype(auto) As();
 
 			/**
-			 * @brief Gets the item value (mutable).
-			 * @tparam T Target value type.
-			 * @return Reference to the value.
-			 * @throw WrongValueTypeConversion on type mismatch.
+			 * @brief Typed view of this item
+			 * @tparam T	node type, leaf tag or comment specialization
+			 * @return		reference or converted value depending on T
 			 */
-			template<typename T>
-			T& Value() {
-				return const_cast<T&>(static_cast<const Base&>(*this).Value<T>());
-			}
+			template<class T> decltype(auto) As() const;
+
+			/**
+			 * @brief Serializes the item as text
+			 * @param indent_level	indent
+			 * @return				serialized item
+			 */
+			virtual StormByte::String::String Serialize(const int& indent_level = 0) const;
 
 		protected:
-			std::optional<StormByte::String::String> m_name; ///< Item name
+			StormByte::String::String m_name; ///< Name of the item
+
+			/**
+			 * @brief Equals
+			 * @param base	item
+			 * @return		bool
+			 */
+			virtual bool Equals(const Base& base) const = 0;
 	};
 }

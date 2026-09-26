@@ -1,57 +1,67 @@
 /*
-* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
-*
-* This file is part of StormByte-Config.
-*
-* StormByte-Config original source is dual-licensed:
-*
-* 1. GNU Lesser General Public License v3.0 (or later)
-*    You may redistribute and/or modify this file under the terms of the
-*    GNU Lesser General Public License as published by the Free Software
-*    Foundation, either version 3 of the License, or (at your option)
-*    any later version.
-*
-* 2. Commercial license
-*    Alternatively, this file may be used under the terms of a commercial
-*    license agreement with the copyright holder
-*    (David C. Manuelda <StormByte@gmail.com>).
-*
-* Both licenses apply only to original StormByte-Config source in this
-* repository. They do not cover other StormByte modules or any third-party
-* material shipped with this repository (including everything under
-* thirdparty/, and in particular the bundled StormByte-String tree and
-* the StormByte Base tree it vendors), which remains under its own license.
-*
-* Neither license grants any patent rights. Any patent licenses required
-* to use this software or third-party components must be obtained separately
-* from the patent holders.
-*
-* StormByte-Config is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* version 3 along with StormByte-Config. If not, see
-* <https://www.gnu.org/licenses/lgpl-3.0.html>.
-*
-* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
-*/
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config original source is dual-licensed:
+ *
+ * 1. GNU Lesser General Public License v3.0 (or later)
+ *    You may redistribute and/or modify this file under the terms of the
+ *    GNU Lesser General Public License as published by the Free Software
+ *    Foundation, either version 3 of the License, or (at your option)
+ *    any later version.
+ *
+ * 2. Commercial license
+ *    Alternatively, this file may be used under the terms of a commercial
+ *    license agreement with the copyright holder
+ *    (David C. Manuelda <StormByte@gmail.com>).
+ *
+ * Both licenses apply only to original StormByte-Config source in this
+ * repository. They do not cover other StormByte modules or any third-party
+ * material shipped with this repository (including everything under
+ * thirdparty/, and in particular the bundled StormByte-String tree and
+ * the StormByte Base tree it vendors), which remains under its own license.
+ *
+ * Neither license grants any patent rights. Any patent licenses required
+ * to use this software or third-party components must be obtained separately
+ * from the patent holders.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * version 3 along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ *
+ * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+ */
 
 #include <StormByte/base64.hxx>
+#include <StormByte/binary_data.hxx>
+#include <StormByte/config/item/comment.hxx>
+#include <StormByte/config/item/group.hxx>
+#include <StormByte/config/item/list.hxx>
+#include <StormByte/config/item/value.hxx>
 #include <StormByte/config/parser/parser.hxx>
 #include <StormByte/string/string.hxx>
 
 #include <sstream>
 #include <string_view>
 
+using namespace StormByte;
 using namespace StormByte::Config;
-using namespace StormByte::Config::Parser;
+using StormByte::Config::Parser::Token;
+using StormByte::Config::Parser::TokenType;
+using StormByte::Config::Parser::Tokenizer;
+using StormByte::Config::Parser::Mode;
+using StormByte::Config::Parser::CommentType;
 
-StormByte::Config::Parser::Parser::Parser(Tokenizer& tokenizer, const OnExistingAction& action)
+Parser::Parser::Parser(Tokenizer& tokenizer, const OnExistingAction& action)
 	: m_tokenizer(tokenizer), c_on_existing_action(action) {}
 
-StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
+Expected<void, ParseError> Parser::Parser::Parse(
 	std::istream& stream,
 	Item::Group& root,
 	const OnExistingAction& action,
@@ -77,7 +87,7 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
 	return {};
 }
 
-StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
+Expected<void, ParseError> Parser::Parser::Parse(
 	const std::string& string,
 	Item::Group& root,
 	const OnExistingAction& action,
@@ -88,23 +98,19 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(
 	return Parse(iss, root, action, before, after, on_failure);
 }
 
-StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(Item::Container& container, Mode mode) {
+Expected<void, ParseError> Parser::Parser::Parse(Item::Container& container, Mode mode) {
 	while (true) {
 		Token token = m_tokenizer.Next();
 		if (token.type == TokenType::RBrace || token.type == TokenType::RBracket) {
-			if (m_container_level == 0) {
+			if (m_container_level == 0)
 				return Unexpected<ParseError>("Unexpected container end on line {}", token.line);
-			}
-
 			--m_container_level;
 			return {};
 		}
 
 		if (token.type == TokenType::EndOfFile) {
-			if (m_container_level > 0) {
+			if (m_container_level > 0)
 				return Unexpected<ParseError>("Unexpected EOF (unclosed container)");
-			}
-
 			return {};
 		}
 
@@ -115,77 +121,68 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 
 		std::string name;
 		if (mode == Mode::Named) {
-			if (token.type != TokenType::Identifier) {
+			if (token.type != TokenType::Identifier)
 				return Unexpected<ParseError>("Expected item name on line {}, got something else", token.line);
-			}
-
 			name = std::move(token.value);
 			auto eq = Expect(TokenType::Equal);
-			if (!eq) return Unexpected(std::move(eq.error()));
+			if (!eq)
+				return Unexpected(std::move(eq.error()));
 			token = m_tokenizer.Next();
 		}
 
 		Expected<Item::Base::PointerType, ParseError> item_res;
 		switch (token.type) {
 			case TokenType::String:
-				item_res = Item::Base::MakePointer<Item::Value<StormByte::String::String>>(
-					StormByte::String::String(std::string_view(token.value)));
+				item_res = Item::Base::MakePointer<Item::Value>(StormByte::String::String(std::string_view(token.value)));
 				break;
 			case TokenType::Binary: {
 				try {
-					auto bytes = StormByte::Base64Decode(token.value);
-					item_res = Item::Base::MakePointer<Item::Value<std::vector<std::byte>>>(
-						static_cast<std::vector<std::byte>>(std::move(bytes)));
-				} catch (const StormByte::Base64Error& ex) {
+					BinaryData bytes = Base64Decode(token.value);
+					item_res = Item::Base::MakePointer<Item::Value>(std::move(bytes));
+				} catch (const Base64Error& ex) {
 					return Unexpected<ParseError>("Invalid Base64 data on line {}: {}", token.line, ex.what());
 				}
-
 				break;
 			}
-
 			case TokenType::Integer: {
 				try {
 					int v = std::stoi(token.value);
-					item_res = Item::Base::MakePointer<Item::Value<int>>(v);
+					item_res = Item::Base::MakePointer<Item::Value>(v);
 				} catch (...) {
 					return Unexpected<ParseError>("Invalid integer '{}' on line {}", token.value, token.line);
 				}
-
 				break;
 			}
-
 			case TokenType::Double: {
 				try {
 					double v = std::stod(token.value);
-					item_res = Item::Base::MakePointer<Item::Value<double>>(v);
+					item_res = Item::Base::MakePointer<Item::Value>(v);
 				} catch (...) {
 					return Unexpected<ParseError>("Invalid double '{}' on line {}", token.value, token.line);
 				}
-
 				break;
 			}
-
 			case TokenType::Bool:
-				item_res = Item::Base::MakePointer<Item::Value<bool>>(token.value == "true");
+				item_res = Item::Base::MakePointer<Item::Value>(token.value == "true");
 				break;
 			case TokenType::LBrace: {
 				++m_container_level;
 				Item::Group group;
 				auto res = Parse(group, Mode::Named);
-				if (!res) return Unexpected(std::move(res.error()));
+				if (!res)
+					return Unexpected(std::move(res.error()));
 				item_res = group.Move();
 				break;
 			}
-
 			case TokenType::LBracket: {
 				++m_container_level;
 				Item::List list;
 				auto res = Parse(list, Mode::Unnamed);
-				if (!res) return Unexpected(std::move(res.error()));
+				if (!res)
+					return Unexpected(std::move(res.error()));
 				item_res = list.Move();
 				break;
 			}
-
 			case TokenType::Comment:
 				item_res = MakeComment(token);
 				break;
@@ -193,7 +190,8 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 				return Unexpected<ParseError>("Unexpected token on line {}", token.line);
 		}
 
-		if (!item_res) return Unexpected(std::move(item_res.error()));
+		if (!item_res)
+			return Unexpected(std::move(item_res.error()));
 		auto item = std::move(item_res.value());
 		if (mode == Mode::Named)
 			item->Name(StormByte::String::String(std::string_view(name)));
@@ -201,16 +199,14 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 	}
 }
 
-StormByte::Expected<Token, ParseError> StormByte::Config::Parser::Parser::Expect(TokenType expected) {
+Expected<Token, ParseError> Parser::Parser::Expect(TokenType expected) {
 	Token token = m_tokenizer.Next();
-	if (token.type != expected) {
+	if (token.type != expected)
 		return Unexpected<ParseError>("Unexpected token on line {}", token.line);
-	}
-
 	return token;
 }
 
-Item::Base::PointerType StormByte::Config::Parser::Parser::MakeComment(const Token& token) {
+Item::Base::PointerType Parser::Parser::MakeComment(const Token& token) {
 	const StormByte::String::String text(std::string_view(token.value));
 	switch (token.comment_type) {
 		case CommentType::SingleLineBash:
@@ -225,7 +221,7 @@ Item::Base::PointerType StormByte::Config::Parser::Parser::MakeComment(const Tok
 }
 
 namespace StormByte::Config::Parser {
-	StormByte::Expected<void, ParseError> Parse(
+	Expected<void, ParseError> Parse(
 		std::istream& stream,
 		Item::Group& root,
 		const OnExistingAction& action,
@@ -235,7 +231,7 @@ namespace StormByte::Config::Parser {
 		return Parser::Parse(stream, root, action, before, after, on_failure);
 	}
 
-	StormByte::Expected<void, ParseError> Parse(
+	Expected<void, ParseError> Parse(
 		const std::string& string,
 		Item::Group& root,
 		const OnExistingAction& action,

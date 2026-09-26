@@ -9,7 +9,7 @@
 
 This repository is **StormByte Config**: human-readable text and versioned binary documents for the StormByte C++ suite.
 
-It depends on [StormByte Base](https://github.com/StormBytePP/StormByte). Public headers live under `StormByte/config/` and cover the document, items (values, comments, groups, lists), `Save` / `Load`, and collision / hook policy.
+It depends on [StormByte Base](https://github.com/StormBytePP/StormByte) ≥ 2.0.0 and [StormByte String](https://github.com/StormBytePP/StormByte-String) ≥ 1.0.0. Public headers live under `StormByte/config/` and cover the document, items (values, comments, groups, lists), `Save` / `Load`, and collision / hook policy.
 
 The suite is split on purpose. Base, Buffer, Crypto, Database, Logger, Multimedia, Network and System are **other repositories**. This one does not implement them.
 
@@ -17,11 +17,12 @@ The suite is split on purpose. Base, Buffer, Crypto, Database, Logger, Multimedi
 
 - **Text and binary I/O** — `Save` / `Load` with `Mode::Text` or `Mode::Binary` on any `std::ostream` / `std::istream`. Stream operators stay text-only.
 - **Versioned binary** — magic `STBTCF` + format version. Older layouts load; newer ones are rejected; save always writes the current version.
-- **Values** — string, integer, double, boolean, binary (`std::vector<std::byte>`: Base64 `b"..."` in text, raw bytes on the wire).
+- **Values** — one concrete `Item::Value` (text, integer, double, boolean, `StormByte::BinaryData`). Access is `Base::As<T>()`. Text binary form is Base64 `b"..."`; the binary document stores raw bytes.
 - **Comments** — `#`, `//`, `/* */`.
-- **Containers** — lists `[]` and groups `{}`.
+- **Containers** — lists `[]` and groups `{}`. Counts and indices use `StormByte::Size`.
 - **Hooks** — `AddHookBeforeRead` / `AddHookAfterRead`.
 - **On existing** — `Keep`, `Overwrite`, or `ThrowException` (default).
+- **Heap** — items are `Clonable<Base, Shared<Base>>`. Build them with `MakePointer` when you hold `PointerType`.
 
 ## The rest of the suite
 
@@ -44,14 +45,16 @@ The suite is split on purpose. Base, Buffer, Crypto, Database, Logger, Multimedi
 - [Installation](#installation)
 - [Usage](#usage)
   - [Load from a stream](#load-from-a-stream)
+  - [Build a document](#build-a-document)
+  - [As](#as)
   - [Binary Save / Load](#binary-save--load)
-  - [Values and containers](#values-and-containers)
+  - [Text syntax](#text-syntax)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Installation
 
-Needs a C++26 compiler, CMake 3.28 or newer, and [StormByte Base](https://github.com/StormBytePP/StormByte/releases/tag/1.1.0) ≥ 1.1.0.
+Needs a C++26 compiler, CMake 3.28 or newer, [StormByte Base](https://github.com/StormBytePP/StormByte/releases/tag/2.0.0) ≥ 2.0.0 and [StormByte String](https://github.com/StormBytePP/StormByte-String/releases/tag/1.0.0) ≥ 1.0.0.
 
 ```sh
 git clone --recursive https://github.com/StormBytePP/StormByte-Config.git
@@ -69,6 +72,7 @@ Headers are `#include <StormByte/config/….hxx>`. Namespace root is `StormByte:
 ```cpp
 #include <StormByte/config/config.hxx>
 #include <fstream>
+#include <iostream>
 
 using namespace StormByte::Config;
 
@@ -76,10 +80,76 @@ int main() {
 	Config config;
 	std::ifstream file("config.cfg");
 	file >> config;
+
+	const int timeout = config["timeout"].As<Item::Integer>();
+	const auto& user = config["settings/username"].As<Item::Text>();
+	std::cout << user << " " << timeout << std::endl;
 }
 ```
 
 Hooks: `AddHookBeforeRead` / `AddHookAfterRead`. Existing keys: `OnExistingAction` (`Keep`, `Overwrite`, `ThrowException`; default is throw).
+
+### Build a document
+
+```cpp
+#include <StormByte/config/config.hxx>
+#include <StormByte/binary_data.hxx>
+
+using namespace StormByte::Config;
+
+Config config;
+config.Add(Item::Value("username", "example_user"));
+config.Add(Item::Value("timeout", 30));
+config.Add(Item::Value("feature_timeout", 60.5));
+config.Add(Item::Value("enabled", true));
+config.Add(Item::Value("payload", StormByte::BinaryData({
+	std::byte{'H'}, std::byte{'i'}
+})));
+
+Item::Group& settings = config.Add(Item::Group("settings")).As<Item::Group>();
+settings.Add(Item::Value("retries", 3));
+
+Item::List& numbers = config.Add(Item::List("favorite_numbers")).As<Item::List>();
+numbers.Add(Item::Value(3));
+numbers.Add(Item::Value(14));
+numbers.Add(Item::Value("pi constant"));
+
+config.Add(Item::Comment<Item::CommentType::SingleLineBash>("bash comment"));
+```
+
+`Add` copies or moves the item onto the Config heap (`Shared<Base>`). After `Add`, look the node up and mutate it through `As`.
+
+### As
+
+`As<T>()` is the typed view of an item. `T` is either a node type or a leaf tag.
+
+| `T` | Meaning |
+| --- | --- |
+| `Item::Value` | The scalar leaf. Assignment writes the payload. |
+| `Item::Integer` | `int` |
+| `Item::Double` | `double` (an Integer is accepted) |
+| `Item::Bool` | `bool` |
+| `Item::Text` | `StormByte::String::String` |
+| `Item::Binary` | `StormByte::BinaryData` |
+| `Item::Group` / `Item::List` | Containers |
+| `Item::Comment<CommentType::…>` | Comment specializations |
+
+```cpp
+config["timeout"].As<Item::Integer>() = 45;
+int n = config["timeout"].As<Item::Integer>();
+double d = config["timeout"].As<Item::Double>();
+
+config["username"].As<Item::Value>() = "other";
+const auto& name = config["username"].As<Item::Text>();
+
+Item::Group& settings = config["settings"].As<Item::Group>();
+const int retries = settings["retries"].As<Item::Integer>();
+
+const StormByte::BinaryData& bytes = config["payload"].As<Item::Binary>();
+const auto first = numbers[StormByte::Size{0}].As<Item::Integer>();
+```
+
+Integer promotes to Double. Double does not narrow to Integer. A wrong tag throws `StormByte::Config::Exception`.
 
 ### Binary Save / Load
 
@@ -92,8 +162,8 @@ using namespace StormByte::Config;
 
 int main() {
 	Config config;
-	config.Add(Item::Value<std::string>("username", "example_user"));
-	config.Add(Item::Value<int>("timeout", 30));
+	config.Add(Item::Value("username", "example_user"));
+	config.Add(Item::Value("timeout", 30));
 
 	{
 		std::ofstream out("config.bin", std::ios::binary);
@@ -106,11 +176,15 @@ int main() {
 		std::cerr << loaded.error()->what() << std::endl;
 		return 1;
 	}
-	std::cout << loaded.value()["username"].Value<std::string>() << std::endl;
+
+	std::cout << loaded.value()["username"].As<Item::Text>() << std::endl;
+	std::cout << loaded.value()["timeout"].As<Item::Integer>() << std::endl;
 }
 ```
 
-### Values and containers
+`Load` returns `ExpectedConfig`. A bad magic or a newer format version is an error, not a thrown parse of the payload.
+
+### Text syntax
 
 ```plaintext
 username = "example_user"
@@ -128,7 +202,7 @@ settings = {
 /* multiline */
 ```
 
-Binary values are `std::vector<std::byte>`. Text form is Base64 with `b"..."`; the binary document stores raw bytes.
+String values are `StormByte::String::String`. Binary values are `StormByte::BinaryData`. Paths use `/`. List slots are numeric path segments (`list/0`).
 
 ## Contributing
 

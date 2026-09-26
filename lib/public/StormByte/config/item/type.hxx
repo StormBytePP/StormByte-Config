@@ -1,56 +1,50 @@
 /*
-* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
-*
-* This file is part of StormByte-Config.
-*
-* StormByte-Config original source is dual-licensed:
-*
-* 1. GNU Lesser General Public License v3.0 (or later)
-*    You may redistribute and/or modify this file under the terms of the
-*    GNU Lesser General Public License as published by the Free Software
-*    Foundation, either version 3 of the License, or (at your option)
-*    any later version.
-*
-* 2. Commercial license
-*    Alternatively, this file may be used under the terms of a commercial
-*    license agreement with the copyright holder
-*    (David C. Manuelda <StormByte@gmail.com>).
-*
-* Both licenses apply only to original StormByte-Config source in this
-* repository. They do not cover other StormByte modules or any third-party
-* material shipped with this repository (including everything under
-* thirdparty/, and in particular the bundled StormByte-String tree and
-* the StormByte Base tree it vendors), which remains under its own license.
-*
-* Neither license grants any patent rights. Any patent licenses required
-* to use this software or third-party components must be obtained separately
-* from the patent holders.
-*
-* StormByte-Config is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* version 3 along with StormByte-Config. If not, see
-* <https://www.gnu.org/licenses/lgpl-3.0.html>.
-*
-* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
-*/
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config original source is dual-licensed:
+ *
+ * 1. GNU Lesser General Public License v3.0 (or later)
+ *    You may redistribute and/or modify this file under the terms of the
+ *    GNU Lesser General Public License as published by the Free Software
+ *    Foundation, either version 3 of the License, or (at your option)
+ *    any later version.
+ *
+ * 2. Commercial license
+ *    Alternatively, this file may be used under the terms of a commercial
+ *    license agreement with the copyright holder
+ *    (David C. Manuelda <StormByte@gmail.com>).
+ *
+ * Both licenses apply only to original StormByte-Config source in this
+ * repository. They do not cover other StormByte modules or any third-party
+ * material shipped with this repository (including everything under
+ * thirdparty/, and in particular the bundled StormByte-String tree and
+ * the StormByte Base tree it vendors), which remains under its own license.
+ *
+ * Neither license grants any patent rights. Any patent licenses required
+ * to use this software or third-party components must be obtained separately
+ * from the patent holders.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * version 3 along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ *
+ * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+ */
 
 #pragma once
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/visibility.h>
 #include <StormByte/string/string.hxx>
-#include <StormByte/type_traits.hxx>
 
-#include <concepts>
-#include <cstddef>
-#include <string>
 #include <string_view>
-#include <type_traits>
-#include <vector>
 
 /**
  * @brief Configuration items (values, comments, groups, lists).
@@ -58,16 +52,17 @@
 namespace StormByte::Config::Item {
 	/**
 	 * @enum Type
-	 * @brief Represents the type of a configuration item.
+	 * @brief Node kind in the document tree.
 	 */
 	enum class Type: char {
-		Bool,       ///< Boolean item.
-		Comment,    ///< Comment item.
-		Container,  ///< Container item.
-		Double,     ///< Double-precision floating-point item.
-		Integer,    ///< Integer item.
-		String,     ///< String item (`StormByte::String::String`).
-		Binary      ///< Binary data (`std::vector<std::byte>`; text form is Base64 `b"..."`)
+		Bool,       ///< Boolean leaf.
+		Comment,    ///< Comment node.
+		Container,  ///< Group or list.
+		Double,     ///< Double leaf.
+		Integer,    ///< Integer leaf.
+		String,     ///< Text leaf (`StormByte::String::String`).
+		Binary,     ///< Binary leaf (`StormByte::BinaryData`).
+		Value       ///< Any leaf (`Value` node). Not used on the wire.
 	};
 
 	/**
@@ -84,6 +79,7 @@ namespace StormByte::Config::Item {
 			case Type::Bool:		return "Bool";
 			case Type::Container:	return "Container";
 			case Type::Binary:		return "Binary";
+			case Type::Value:		return "Value";
 			default:				return "Unknown";
 		}
 	}
@@ -144,18 +140,13 @@ namespace StormByte::Config::Item {
 		switch(start) {
 			case '{':	return ContainerType::Group;
 			case '[':	return ContainerType::List;
-			default:	throw Exception("Unknown start character " + std::string(1, start) + " for container");
+			default:	throw Exception("Unknown start character {} for container", start);
 		}
 	}
 
-	/**
-	 * @brief Value types allowed in `Item::Value<T>`.
-	 */
-	template<typename T>
-	concept AllowedValueType =
-		StormByte::Type::SameAs<T, int> ||
-		StormByte::Type::SameAs<T, double> ||
-		StormByte::Type::SameAs<T, bool> ||
-		StormByte::Type::SameAs<T, StormByte::String::String> ||
-		StormByte::Type::SameAs<T, std::vector<std::byte>>;
+	struct Integer {};	///< Tag for `As<Integer>()` → `int`.
+	struct Double {};	///< Tag for `As<Double>()` → `double` (Integer promotes).
+	struct Bool {};		///< Tag for `As<Bool>()` → `bool`.
+	struct Text {};		///< Tag for `As<Text>()` → `StormByte::String::String`.
+	struct Binary {};	///< Tag for `As<Binary>()` → `StormByte::BinaryData`.
 }

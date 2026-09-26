@@ -40,273 +40,346 @@
 
 #pragma once
 
+#include <StormByte/binary_data.hxx>
 #include <StormByte/config/item/base.hxx>
 #include <StormByte/config/visibility.h>
 #include <StormByte/string/string.hxx>
-#include <StormByte/type_traits.hxx>
 
-#include <cstddef>
-#include <vector>
+#include <string_view>
 
 /**
- * @brief Configuration items (values, comments, groups, lists).
+ * @namespace Item
+ * @brief All the classes for item configuration
  */
 namespace StormByte::Config::Item {
 	/**
 	 * @class Value
-	 * @brief Named or unnamed typed value.
-	 * @tparam T `StormByte::String::String`, `int`, `double`, `bool` or `std::vector<std::byte>`.
+	 * @brief Scalar configuration item
 	 */
-	template<AllowedValueType T>
 	class STORMBYTE_CONFIG_PUBLIC Value: public Base {
 		public:
 			/**
-			 * @name Construction
-			 * @{
+			 * @brief Constructor
+			 * @param value integer
 			 */
-			/**
-			 * @brief Constructs a Value with the given value.
-			 * @param value The value of the item.
-			 */
-			Value(const T& value): Base(), m_value(value) {}
+			explicit Value(int value);
 
 			/**
-			 * @brief Constructs a string Value from a C string.
-			 * @param value Source C string.
+			 * @brief Constructor
+			 * @param value double
 			 */
-			template <typename U = T>
-			Value(const char* value) requires StormByte::Type::SameAs<U, StormByte::String::String>
-				: Base(), m_value(StormByte::String::String(value)) {}
+			explicit Value(double value);
 
 			/**
-			 * @brief Constructs a named string Value from C strings.
-			 * @param name Item name.
-			 * @param value Source C string.
+			 * @brief Constructor
+			 * @param value bool
 			 */
-			template <typename U = T>
-			Value(const char* name, const char* value) requires StormByte::Type::SameAs<U, StormByte::String::String>
-				: Base(StormByte::String::String(name)), m_value(StormByte::String::String(value)) {}
+			explicit Value(bool value);
 
 			/**
-			 * @brief Constructs a named Value from a view of the name.
-			 * @param name Item name. Copied into a @ref StormByte::String::String.
-			 * @param value Item value.
+			 * @brief Constructor
+			 * @param value string
 			 */
-			Value(std::string_view name, const T& value)
-				: Base(StormByte::String::String(name)), m_value(value) {}
+			explicit Value(const StormByte::String::String& value);
 
 			/**
-			 * @brief Move constructor from value.
-			 * @param value Item value.
+			 * @brief Constructor
+			 * @param value string
 			 */
-			Value(T&& value): Base(), m_value(std::move(value)) {}
+			explicit Value(StormByte::String::String&& value);
 
 			/**
-			 * @brief Constructs a named Value.
-			 * @param name Item name.
-			 * @param value Item value.
+			 * @brief Constructor
+			 * @param value string
 			 */
-			Value(const StormByte::String::String& name, const T& value): Base(name), m_value(value) {}
+			explicit Value(const char* value);
 
 			/**
-			 * @brief Constructs a named Value (move).
-			 * @param name Item name.
-			 * @param value Item value.
+			 * @brief Constructor
+			 * @param value string
 			 */
-			Value(StormByte::String::String&& name, T&& value): Base(name), m_value(std::move(value)) {}
+			explicit Value(std::string_view value);
 
 			/**
-			 * @brief Named string constructor from C string value.
-			 * @param name Item name.
-			 * @param value C string value.
+			 * @brief Constructor
+			 * @param value bytes
 			 */
-			Value(const StormByte::String::String& name, const char* value) requires StormByte::Type::SameAs<T, StormByte::String::String>
-				: Base(name), m_value(StormByte::String::String(value)) {}
+			explicit Value(const StormByte::BinaryData& value);
 
 			/**
-			 * @brief Named string constructor (move name) from C string value.
-			 * @param name Item name.
-			 * @param value C string value.
+			 * @brief Constructor
+			 * @param value bytes
 			 */
-			Value(StormByte::String::String&& name, const char* value) requires StormByte::Type::SameAs<T, StormByte::String::String>
-				: Base(name), m_value(StormByte::String::String(value)) {}
+			explicit Value(StormByte::BinaryData&& value);
 
 			/**
-			 * @brief Copy constructor.
-			 * @param single Item to copy.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value integer
 			 */
-			Value(const Value& single) = default;
+			Value(const StormByte::String::String& name, int value);
 
 			/**
-			 * @brief Move constructor.
-			 * @param single Item to move.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value double
 			 */
-			Value(Value&& single) noexcept = default;
+			Value(const StormByte::String::String& name, double value);
 
 			/**
-			 * @brief Copy assignment operator.
-			 * @param single Item to copy.
-			 * @return Reference to this Value.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value bool
 			 */
-			Value& operator=(const Value& single) = default;
+			Value(const StormByte::String::String& name, bool value);
 
 			/**
-			 * @brief Move assignment operator.
-			 * @param single Item to move.
-			 * @return Reference to this Value.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value string
 			 */
-			Value& operator=(Value&& single) noexcept = default;
+			Value(const StormByte::String::String& name, const StormByte::String::String& value);
 
 			/**
-			 * @brief Destructor.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value string
 			 */
-			virtual ~Value() noexcept override = default;
-			/** @} */
+			Value(const StormByte::String::String& name, const char* value);
 
 			/**
-			 * @name Access
-			 * @{
+			 * @brief Constructor
+			 * @param name name
+			 * @param value bytes
 			 */
-			/**
-			 * @brief Polymorphic equality comparison.
-			 * @param other The other item to compare against.
-			 * @return true if both items are of the same type and hold the same value.
-			 */
-			bool Equals(const Base& other) const noexcept override {
-				if (this->Type() != other.Type())
-					return false;
-				if (this->Name() != other.Name())
-					return false;
-				const Value<T>& other_value = static_cast<const Value<T>&>(other);
-				return m_value == other_value.m_value;
-			}
+			Value(const StormByte::String::String& name, const StormByte::BinaryData& value);
 
 			/**
-			 * @brief Gets the type of the item.
-			 * @return Item::Type The type of the item.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value integer
 			 */
-			constexpr virtual Item::Type Type() const noexcept override {
-				if constexpr (StormByte::Type::SameAs<T, StormByte::String::String>) {
-					return Item::Type::String;
-				} else if constexpr (StormByte::Type::SameAs<T, int>) {
-					return Item::Type::Integer;
-				} else if constexpr (StormByte::Type::SameAs<T, double>) {
-					return Item::Type::Double;
-				} else if constexpr (StormByte::Type::SameAs<T, bool>) {
-					return Item::Type::Bool;
-				} else if constexpr (StormByte::Type::SameAs<T, std::vector<std::byte>>) {
-					return Item::Type::Binary;
-				}
-			}
+			Value(std::string_view name, int value);
 
 			/**
-			 * @brief Checks if two Value objects are equal.
-			 * @param single The Value object to compare.
-			 * @return true if equal.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value double
 			 */
-			bool operator==(const Value<T>& single) const noexcept {
-				return Equals(single);
-			}
+			Value(std::string_view name, double value);
 
 			/**
-			 * @brief Inequality operator.
-			 * @param single Item to compare.
-			 * @return true if not equal.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value bool
 			 */
-			bool operator!=(const Value<T>& single) const noexcept {
-				return !operator==(single);
-			}
+			Value(std::string_view name, bool value);
 
 			/**
-			 * @brief Gets the item value (mutable).
-			 * @return Item value.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value string
 			 */
-			T& operator*() noexcept {
-				return m_value;
-			}
+			Value(std::string_view name, std::string_view value);
 
 			/**
-			 * @brief Gets the item value (const).
-			 * @return Item value.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value string
 			 */
-			const T& operator*() const noexcept {
-				return m_value;
-			}
+			Value(std::string_view name, const char* value);
 
 			/**
-			 * @brief Serializes the item to a string.
-			 * @param indent_level The indentation level for serialization.
-			 * @return The serialized text.
+			 * @brief Constructor
+			 * @param name name
+			 * @param value bytes
 			 */
-			StormByte::String::String Serialize(const int& indent_level) const noexcept override;
+			Value(std::string_view name, const StormByte::BinaryData& value);
 
 			/**
-			 * @brief Clones the item.
-			 * @return Cloned item.
+			 * @brief Copy constructor
+			 * @param value item
 			 */
-			virtual PointerType Clone() const override {
-				return MakePointer<Value<T>>(*this);
-			}
+			Value(const Value& value);
 
 			/**
-			 * @brief Moves the item.
-			 * @return Moved item.
+			 * @brief Move constructor
+			 * @param value item
 			 */
-			virtual PointerType Move() override {
-				return MakePointer<Value<T>>(std::move(*this));
-			}
-			/** @} */
+			Value(Value&& value) noexcept;
+
+			/**
+			 * @brief Assignment operator
+			 * @param value item
+			 * @return this
+			 */
+			Value& operator=(const Value& value);
+
+			/**
+			 * @brief Move assignment operator
+			 * @param value item
+			 * @return this
+			 */
+			Value& operator=(Value&& value) noexcept;
+
+			/**
+			 * @brief Destructor
+			 */
+			~Value() noexcept override;
+
+			/**
+			 * @brief Payload kind
+			 * @return item type
+			 */
+			Item::Type Kind() const noexcept;
+
+			/**
+			 * @brief Item type
+			 * @return item type
+			 */
+			Item::Type Type() const noexcept override;
+
+			/**
+			 * @brief Assign integer
+			 * @param value integer
+			 * @return this
+			 */
+			Value& operator=(int value);
+
+			/**
+			 * @brief Assign double
+			 * @param value double
+			 * @return this
+			 */
+			Value& operator=(double value);
+
+			/**
+			 * @brief Assign bool
+			 * @param value bool
+			 * @return this
+			 */
+			Value& operator=(bool value);
+
+			/**
+			 * @brief Assign string
+			 * @param value string
+			 * @return this
+			 */
+			Value& operator=(const StormByte::String::String& value);
+
+			/**
+			 * @brief Assign string
+			 * @param value string
+			 * @return this
+			 */
+			Value& operator=(const char* value);
+
+			/**
+			 * @brief Assign bytes
+			 * @param value bytes
+			 * @return this
+			 */
+			Value& operator=(const StormByte::BinaryData& value);
+
+			/**
+			 * @brief Convert to integer
+			 */
+			operator int&();
+
+			/**
+			 * @brief Convert to integer
+			 */
+			operator const int&() const;
+
+			/**
+			 * @brief Convert to double (Integer promotes)
+			 */
+			operator double() const;
+
+			/**
+			 * @brief Convert to double reference
+			 */
+			operator double&();
+
+			/**
+			 * @brief Convert to bool
+			 */
+			operator bool&();
+
+			/**
+			 * @brief Convert to bool
+			 */
+			operator const bool&() const;
+
+			/**
+			 * @brief Convert to string
+			 */
+			operator StormByte::String::String&();
+
+			/**
+			 * @brief Convert to string
+			 */
+			operator const StormByte::String::String&() const;
+
+			/**
+			 * @brief Convert to bytes
+			 */
+			operator StormByte::BinaryData&();
+
+			/**
+			 * @brief Convert to bytes
+			 */
+			operator const StormByte::BinaryData&() const;
+
+			/**
+			 * @brief Clone
+			 * @return pointer
+			 */
+			PointerType Clone() const override;
+
+			/**
+			 * @brief Move
+			 * @return pointer
+			 */
+			PointerType Move() override;
+
+			/**
+			 * @brief Serialize
+			 * @param indent_level indent
+			 * @return text
+			 */
+			StormByte::String::String Serialize(const int& indent_level) const override;
 
 		protected:
-			T m_value; ///< The value of the item.
+			/**
+			 * @brief Equals
+			 * @param base item
+			 * @return bool
+			 */
+			bool Equals(const Base& base) const override;
+
+		private:
+			Item::Type m_kind; ///< Discriminator
+			union Storage {
+				int integer;
+				double floating;
+				bool boolean;
+				StormByte::String::String text;
+				StormByte::BinaryData bytes;
+				Storage() noexcept {}
+				~Storage() noexcept {}
+			} m_store; ///< Active payload
+
+			void Destroy() noexcept;
+			void CopyFrom(const Value& value);
+			void MoveFrom(Value&& value) noexcept;
+
+			/**
+			 * @brief Throw on kind mismatch
+			 * @param wanted expected kind name
+			 */
+			[[noreturn]] void Fail(const char* wanted) const;
 	};
-
-	Value(const char*) -> Value<StormByte::String::String>;
-	Value(const char*, const char*) -> Value<StormByte::String::String>;
-
-	/**
-	 * @brief Serializes a string value.
-	 * @param indent_level Indentation level.
-	 * @return Serialized text.
-	 */
-	template<>
-	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<StormByte::String::String>::Serialize(const int& indent_level) const noexcept;
-
-	/**
-	 * @brief Serializes an integer value.
-	 * @param indent_level Indentation level.
-	 * @return Serialized text.
-	 */
-	template<>
-	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<int>::Serialize(const int& indent_level) const noexcept;
-
-	/**
-	 * @brief Serializes a double value.
-	 * @param indent_level Indentation level.
-	 * @return Serialized text.
-	 */
-	template<>
-	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<double>::Serialize(const int& indent_level) const noexcept;
-
-	/**
-	 * @brief Serializes a boolean value.
-	 * @param indent_level Indentation level.
-	 * @return Serialized text.
-	 */
-	template<>
-	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<bool>::Serialize(const int& indent_level) const noexcept;
-
-	/**
-	 * @brief Serializes a binary value.
-	 * @param indent_level Indentation level.
-	 * @return Serialized text.
-	 */
-	template<>
-	STORMBYTE_CONFIG_PUBLIC StormByte::String::String Value<std::vector<std::byte>>::Serialize(const int& indent_level) const noexcept;
-
-	extern template class STORMBYTE_CONFIG_PUBLIC Value<StormByte::String::String>;
-	extern template class STORMBYTE_CONFIG_PUBLIC Value<int>;
-	extern template class STORMBYTE_CONFIG_PUBLIC Value<double>;
-	extern template class STORMBYTE_CONFIG_PUBLIC Value<bool>;
-	extern template class STORMBYTE_CONFIG_PUBLIC Value<std::vector<std::byte>>;
 }
+
+#include <StormByte/config/item/base.txx>

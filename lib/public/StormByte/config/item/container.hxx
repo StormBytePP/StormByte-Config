@@ -1,48 +1,49 @@
 /*
-* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
-*
-* This file is part of StormByte-Config.
-*
-* StormByte-Config original source is dual-licensed:
-*
-* 1. GNU Lesser General Public License v3.0 (or later)
-*    You may redistribute and/or modify this file under the terms of the
-*    GNU Lesser General Public License as published by the Free Software
-*    Foundation, either version 3 of the License, or (at your option)
-*    any later version.
-*
-* 2. Commercial license
-*    Alternatively, this file may be used under the terms of a commercial
-*    license agreement with the copyright holder
-*    (David C. Manuelda <StormByte@gmail.com>).
-*
-* Both licenses apply only to original StormByte-Config source in this
-* repository. They do not cover other StormByte modules or any third-party
-* material shipped with this repository (including everything under
-* thirdparty/, and in particular the bundled StormByte-String tree and
-* the StormByte Base tree it vendors), which remains under its own license.
-*
-* Neither license grants any patent rights. Any patent licenses required
-* to use this software or third-party components must be obtained separately
-* from the patent holders.
-*
-* StormByte-Config is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* version 3 along with StormByte-Config. If not, see
-* <https://www.gnu.org/licenses/lgpl-3.0.html>.
-*
-* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
-*/
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config original source is dual-licensed:
+ *
+ * 1. GNU Lesser General Public License v3.0 (or later)
+ *    You may redistribute and/or modify this file under the terms of the
+ *    GNU Lesser General Public License as published by the Free Software
+ *    Foundation, either version 3 of the License, or (at your option)
+ *    any later version.
+ *
+ * 2. Commercial license
+ *    Alternatively, this file may be used under the terms of a commercial
+ *    license agreement with the copyright holder
+ *    (David C. Manuelda <StormByte@gmail.com>).
+ *
+ * Both licenses apply only to original StormByte-Config source in this
+ * repository. They do not cover other StormByte modules or any third-party
+ * material shipped with this repository (including everything under
+ * thirdparty/, and in particular the bundled StormByte-String tree and
+ * the StormByte Base tree it vendors), which remains under its own license.
+ *
+ * Neither license grants any patent rights. Any patent licenses required
+ * to use this software or third-party components must be obtained separately
+ * from the patent holders.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * version 3 along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ *
+ * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+ */
 
 #pragma once
 
 #include <StormByte/config/exception.hxx>
 #include <StormByte/config/item/base.hxx>
 #include <StormByte/config/typedefs.hxx>
+#include <StormByte/size.hxx>
 #include <StormByte/string/string.hxx>
 
 #include <queue>
@@ -108,9 +109,9 @@ namespace StormByte::Config::Item {
 			Container& operator=(Container&& base) noexcept = default;
 
 			/**
-			 * @brief Destructor.
+			 * @brief Destructor. Defined in this module so `catch` matches across a DLL.
 			 */
-			virtual ~Container() noexcept override = default;
+			virtual ~Container() noexcept override;
 			/** @} */
 
 			/**
@@ -130,7 +131,7 @@ namespace StormByte::Config::Item {
 			 * @throw OutOfBounds if index is out of bounds.
 			 * @return Reference to the item.
 			 */
-			Base& operator[](const size_t& index);
+			Base& operator[](const StormByte::Size& index);
 
 			/**
 			 * @brief Gets a const reference to an item by index.
@@ -138,7 +139,7 @@ namespace StormByte::Config::Item {
 			 * @throw OutOfBounds if index is out of bounds.
 			 * @return Const reference to the item.
 			 */
-			const Base& operator[](const size_t& index) const;
+			const Base& operator[](const StormByte::Size& index) const;
 
 			/**
 			 * @brief Gets a reference to an item by path.
@@ -312,9 +313,7 @@ namespace StormByte::Config::Item {
 			/**
 			 * @brief Clears all items from the container.
 			 */
-			inline void Clear() noexcept {
-				m_items.clear();
-			}
+			void Clear() noexcept;
 
 			/**
 			 * @brief Checks if an item exists by path.
@@ -337,7 +336,7 @@ namespace StormByte::Config::Item {
 			 * @param index Index of the item to remove.
 			 * @throw OutOfBounds if index is out of bounds.
 			 */
-			void Remove(const size_t& index);
+			void Remove(const StormByte::Size& index);
 
 			/**
 			 * @brief Removes an item by path.
@@ -375,15 +374,13 @@ namespace StormByte::Config::Item {
 			 * @brief Gets the number of items in the current level.
 			 * @return Number of items.
 			 */
-			constexpr size_t Size() const noexcept {
-				return m_items.size();
-			}
+			StormByte::Size Size() const noexcept;
 
 			/**
 			 * @brief Gets the total number of items including nested ones.
 			 * @return Total number of items.
 			 */
-			size_t Count() const noexcept;
+			StormByte::Size Count() const noexcept;
 			/** @} */
 
 			/**

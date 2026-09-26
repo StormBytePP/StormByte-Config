@@ -43,72 +43,362 @@
 #include <StormByte/string/string.hxx>
 
 #include <format>
+#include <new>
 #include <string>
 #include <string_view>
+#include <utility>
 
-namespace StormByte::Config::Item {
-	template<>
-	StormByte::String::String Value<StormByte::String::String>::Serialize(const int& indent_level) const noexcept {
-		std::string escaped;
-		const std::string_view raw = m_value;
-		escaped.reserve(raw.size() + 8);
-		for (char c : raw) {
-			switch (c) {
-				case '"':  escaped += "\\\""; break;
-				case '\\': escaped += "\\\\"; break;
-				case '\n': escaped += "\\n";  break;
-				case '\r': escaped += "\\r";  break;
-				case '\t': escaped += "\\t";  break;
-				default:   escaped += c;      break;
-			}
-		}
+using namespace StormByte::Config::Item;
 
-		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
-		out += '"';
-		out += escaped;
-		out += '"';
-		return StormByte::String::String(std::string_view(out));
+namespace {
+	[[noreturn]] void FailKind(const char* wanted) {
+		throw StormByte::Config::Exception("Value is not {}", wanted);
 	}
+}
 
-	template<>
-	StormByte::String::String Value<int>::Serialize(const int& indent_level) const noexcept {
-		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
-		out += std::to_string(m_value);
-		return StormByte::String::String(std::string_view(out));
+void Value::Destroy() noexcept {
+	switch (m_kind) {
+		case Type::String:
+			m_store.text.~String();
+			break;
+		case Type::Binary:
+			m_store.bytes.~BinaryData();
+			break;
+		default:
+			break;
 	}
+}
 
-	template<>
-	StormByte::String::String Value<double>::Serialize(const int& indent_level) const noexcept {
-		std::string str = std::format("{}", m_value);
-		if (str.find('.') == std::string::npos && str.find('e') == std::string::npos && str.find('E') == std::string::npos) {
-			str += ".0";
-		}
-
-		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
-		out += str;
-		return StormByte::String::String(std::string_view(out));
+void Value::CopyFrom(const Value& value) {
+	m_kind = value.m_kind;
+	switch (m_kind) {
+		case Type::Integer:
+			m_store.integer = value.m_store.integer;
+			break;
+		case Type::Double:
+			m_store.floating = value.m_store.floating;
+			break;
+		case Type::Bool:
+			m_store.boolean = value.m_store.boolean;
+			break;
+		case Type::String:
+			new (&m_store.text) StormByte::String::String(value.m_store.text);
+			break;
+		case Type::Binary:
+			new (&m_store.bytes) StormByte::BinaryData(value.m_store.bytes);
+			break;
+		default:
+			break;
 	}
+}
 
-	template<>
-	StormByte::String::String Value<bool>::Serialize(const int& indent_level) const noexcept {
-		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
-		out += m_value ? "true" : "false";
-		return StormByte::String::String(std::string_view(out));
+void Value::MoveFrom(Value&& value) noexcept {
+	m_kind = value.m_kind;
+	switch (m_kind) {
+		case Type::Integer:
+			m_store.integer = value.m_store.integer;
+			break;
+		case Type::Double:
+			m_store.floating = value.m_store.floating;
+			break;
+		case Type::Bool:
+			m_store.boolean = value.m_store.boolean;
+			break;
+		case Type::String:
+			new (&m_store.text) StormByte::String::String(std::move(value.m_store.text));
+			break;
+		case Type::Binary:
+			new (&m_store.bytes) StormByte::BinaryData(std::move(value.m_store.bytes));
+			break;
+		default:
+			break;
 	}
+}
 
-	template<>
-	StormByte::String::String Value<std::vector<std::byte>>::Serialize(const int& indent_level) const noexcept {
-		const std::string base64 = StormByte::Base64Encode(m_value);
-		std::string out = static_cast<std::string>(Base::Serialize(indent_level));
-		out += "b\"";
-		out += base64;
-		out += '"';
-		return StormByte::String::String(std::string_view(out));
+Value::Value(int value): Base(), m_kind(Type::Integer) {
+	m_store.integer = value;
+}
+
+Value::Value(double value): Base(), m_kind(Type::Double) {
+	m_store.floating = value;
+}
+
+Value::Value(bool value): Base(), m_kind(Type::Bool) {
+	m_store.boolean = value;
+}
+
+Value::Value(const StormByte::String::String& value): Base(), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(StormByte::String::String&& value): Base(), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(std::move(value));
+}
+
+Value::Value(const char* value): Base(), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(std::string_view value): Base(), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(const StormByte::BinaryData& value): Base(), m_kind(Type::Binary) {
+	new (&m_store.bytes) StormByte::BinaryData(value);
+}
+
+Value::Value(StormByte::BinaryData&& value): Base(), m_kind(Type::Binary) {
+	new (&m_store.bytes) StormByte::BinaryData(std::move(value));
+}
+
+Value::Value(const StormByte::String::String& name, int value): Base(name), m_kind(Type::Integer) {
+	m_store.integer = value;
+}
+
+Value::Value(const StormByte::String::String& name, double value): Base(name), m_kind(Type::Double) {
+	m_store.floating = value;
+}
+
+Value::Value(const StormByte::String::String& name, bool value): Base(name), m_kind(Type::Bool) {
+	m_store.boolean = value;
+}
+
+Value::Value(const StormByte::String::String& name, const StormByte::String::String& value): Base(name), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(const StormByte::String::String& name, const char* value): Base(name), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(const StormByte::String::String& name, const StormByte::BinaryData& value): Base(name), m_kind(Type::Binary) {
+	new (&m_store.bytes) StormByte::BinaryData(value);
+}
+
+Value::Value(std::string_view name, int value): Base(StormByte::String::String(name)), m_kind(Type::Integer) {
+	m_store.integer = value;
+}
+
+Value::Value(std::string_view name, double value): Base(StormByte::String::String(name)), m_kind(Type::Double) {
+	m_store.floating = value;
+}
+
+Value::Value(std::string_view name, bool value): Base(StormByte::String::String(name)), m_kind(Type::Bool) {
+	m_store.boolean = value;
+}
+
+Value::Value(std::string_view name, std::string_view value): Base(StormByte::String::String(name)), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(std::string_view name, const char* value): Base(StormByte::String::String(name)), m_kind(Type::String) {
+	new (&m_store.text) StormByte::String::String(value);
+}
+
+Value::Value(std::string_view name, const StormByte::BinaryData& value): Base(StormByte::String::String(name)), m_kind(Type::Binary) {
+	new (&m_store.bytes) StormByte::BinaryData(value);
+}
+
+Value::Value(const Value& value): Base(value), m_kind(Type::Integer) {
+	CopyFrom(value);
+}
+
+Value::Value(Value&& value) noexcept: Base(std::move(value)), m_kind(Type::Integer) {
+	MoveFrom(std::move(value));
+}
+
+Value& Value::operator=(const Value& value) {
+	if (this == &value)
+		return *this;
+	Base::operator=(value);
+	Destroy();
+	CopyFrom(value);
+	return *this;
+}
+
+Value& Value::operator=(Value&& value) noexcept {
+	if (this == &value)
+		return *this;
+	Base::operator=(std::move(value));
+	Destroy();
+	MoveFrom(std::move(value));
+	return *this;
+}
+
+Value::~Value() noexcept {
+	Destroy();
+}
+
+Type Value::Kind() const noexcept {
+	return m_kind;
+}
+
+Type Value::Type() const noexcept {
+	return m_kind;
+}
+
+bool Value::Equals(const Base& base) const {
+	const auto& value = static_cast<const Value&>(base);
+	if (m_kind != value.m_kind)
+		return false;
+	switch (m_kind) {
+		case Type::Integer:
+			return m_store.integer == value.m_store.integer;
+		case Type::Double:
+			return m_store.floating == value.m_store.floating;
+		case Type::Bool:
+			return m_store.boolean == value.m_store.boolean;
+		case Type::String:
+			return m_store.text == value.m_store.text;
+		case Type::Binary:
+			return m_store.bytes == value.m_store.bytes;
+		default:
+			return false;
 	}
+}
 
-	template class STORMBYTE_CONFIG_INSTANTIATE Value<StormByte::String::String>;
-	template class STORMBYTE_CONFIG_INSTANTIATE Value<int>;
-	template class STORMBYTE_CONFIG_INSTANTIATE Value<double>;
-	template class STORMBYTE_CONFIG_INSTANTIATE Value<bool>;
-	template class STORMBYTE_CONFIG_INSTANTIATE Value<std::vector<std::byte>>;
+Value& Value::operator=(int value) {
+	if (m_kind != Type::Integer)
+		FailKind("Integer");
+	m_store.integer = value;
+	return *this;
+}
+
+Value& Value::operator=(double value) {
+	if (m_kind != Type::Double)
+		FailKind("Double");
+	m_store.floating = value;
+	return *this;
+}
+
+Value& Value::operator=(bool value) {
+	if (m_kind != Type::Bool)
+		FailKind("Bool");
+	m_store.boolean = value;
+	return *this;
+}
+
+Value& Value::operator=(const StormByte::String::String& value) {
+	if (m_kind != Type::String)
+		FailKind("String");
+	m_store.text = value;
+	return *this;
+}
+
+Value& Value::operator=(const char* value) {
+	if (m_kind != Type::String)
+		FailKind("String");
+	m_store.text = StormByte::String::String(value);
+	return *this;
+}
+
+Value& Value::operator=(const StormByte::BinaryData& value) {
+	if (m_kind != Type::Binary)
+		FailKind("Binary");
+	m_store.bytes = value;
+	return *this;
+}
+
+Value::operator int&() {
+	if (m_kind != Type::Integer)
+		FailKind("Integer");
+	return m_store.integer;
+}
+
+Value::operator const int&() const {
+	if (m_kind != Type::Integer)
+		FailKind("Integer");
+	return m_store.integer;
+}
+
+Value::operator double() const {
+	if (m_kind == Type::Double)
+		return m_store.floating;
+	if (m_kind == Type::Integer)
+		return static_cast<double>(m_store.integer);
+	FailKind("Double");
+}
+
+Value::operator double&() {
+	if (m_kind != Type::Double)
+		FailKind("Double");
+	return m_store.floating;
+}
+
+Value::operator bool&() {
+	if (m_kind != Type::Bool)
+		FailKind("Bool");
+	return m_store.boolean;
+}
+
+Value::operator const bool&() const {
+	if (m_kind != Type::Bool)
+		FailKind("Bool");
+	return m_store.boolean;
+}
+
+Value::operator StormByte::String::String&() {
+	if (m_kind != Type::String)
+		FailKind("String");
+	return m_store.text;
+}
+
+Value::operator const StormByte::String::String&() const {
+	if (m_kind != Type::String)
+		FailKind("String");
+	return m_store.text;
+}
+
+Value::operator StormByte::BinaryData&() {
+	if (m_kind != Type::Binary)
+		FailKind("Binary");
+	return m_store.bytes;
+}
+
+Value::operator const StormByte::BinaryData&() const {
+	if (m_kind != Type::Binary)
+		FailKind("Binary");
+	return m_store.bytes;
+}
+
+void Value::Fail(const char* wanted) const {
+	FailKind(wanted);
+}
+
+StormByte::String::String Value::Serialize(const int& indent_level) const {
+	std::string out;
+	if (!m_name.empty())
+		out += std::string(static_cast<std::size_t>(indent_level > 0 ? indent_level : 0), '\t') + static_cast<std::string>(m_name) + " = ";
+	else
+		out += std::string(static_cast<std::size_t>(indent_level > 0 ? indent_level : 0), '\t');
+	switch (m_kind) {
+		case Type::Integer:
+			out += std::format("{}", m_store.integer);
+			break;
+		case Type::Double:
+			out += std::format("{}", m_store.floating);
+			if (out.find('.') == std::string::npos && out.find('e') == std::string::npos && out.find('E') == std::string::npos)
+				out += ".0";
+			break;
+		case Type::Bool:
+			out += m_store.boolean ? "true" : "false";
+			break;
+		case Type::String:
+			out += "\"" + static_cast<std::string>(m_store.text) + "\"";
+			break;
+		case Type::Binary:
+			out += "b\"" + static_cast<std::string>(StormByte::Base64Encode(m_store.bytes)) + "\"";
+			break;
+		default:
+			break;
+	}
+	return StormByte::String::String(std::string_view(out));
+}
+
+Base::PointerType Value::Clone() const {
+	return MakePointer<Value>(*this);
+}
+
+Base::PointerType Value::Move() {
+	return MakePointer<Value>(std::move(*this));
 }
