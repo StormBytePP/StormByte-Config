@@ -42,6 +42,10 @@
 
 #include <StormByte/config/binary/typedefs.hxx>
 #include <StormByte/config/visibility.h>
+#include <StormByte/serializable.hxx>
+
+#include <cstddef>
+#include <utility>
 
 /**
  * @namespace StormByte::Config::Binary
@@ -49,36 +53,70 @@
  */
 namespace StormByte::Config::Binary {
 	/**
-	 * @class Reader
-	 * @brief Deserializes a versioned binary buffer into a @ref Config.
+	 * @class Cursor
+	 * @brief Read position over one payload.
 	 *
-	 * Checks the magic and the version byte, then dispatches to the
-	 * matching private reader (ReaderV1, and a new class per format).
-	 * Rejects bad magic, truncated headers, version 0 and versions greater
-	 * than @ref CurrentVersion. Friend of @ref Config.
+	 * Knows nothing about format versions. A versioned reader advances it
+	 * with Take. The caller keeps its own "not enough bytes" message when
+	 * the format had one; Take itself only forwards Serializable.
 	 */
-	class STORMBYTE_CONFIG_PRIVATE Reader {
+	class STORMBYTE_CONFIG_PRIVATE Cursor {
 		public:
 			/**
-			 * @brief Construct a reader over @p data.
-			 * @param data Binary input (must remain valid for Deserialize).
+			 * @brief Start at the first byte of @p data.
+			 * @param data Bytes to read. Must outlive the cursor.
 			 */
-			explicit Reader(BufferView data) noexcept;
-
-			Reader(const Reader&) = delete;
-			Reader(Reader&&) noexcept = delete;
-			~Reader() noexcept = default;
-
-			Reader& operator=(const Reader&) = delete;
-			Reader& operator=(Reader&&) noexcept = delete;
+			explicit Cursor(BufferView data) noexcept: m_data(data), m_offset(0) {}
 
 			/**
-			 * @brief Parse header and payload.
-			 * @return Config or DeserializeError.
+			 * @brief Decode one @p T and advance past it.
+			 * @tparam T Type known to Serializable.
+			 * @return The value, or the error Serializable reported.
 			 */
-			ExpectedConfig Deserialize() const noexcept;
+			template<typename T>
+			Expected<T, DeserializeError> Take() {
+				auto value = Serializable<T>::Deserialize(m_data.subspan(m_offset));
+				if (!value)
+					return Unexpected(value.error());
+
+				m_offset += Serializable<T>::Size(value.value());
+				return std::move(value.value());
+			}
+
+			/**
+			 * @brief Bytes this cursor reads.
+			 * @return The original view.
+			 */
+			BufferView data() const noexcept {
+				return m_data;
+			}
+
+			/**
+			 * @brief Current position.
+			 * @return Offset from the start of @ref data.
+			 */
+			std::size_t offset() const noexcept {
+				return m_offset;
+			}
+
+			/**
+			 * @brief Move the position.
+			 * @param offset New offset from the start of @ref data.
+			 */
+			void offset(std::size_t offset) noexcept {
+				m_offset = offset;
+			}
+
+			/**
+			 * @brief Bytes not yet consumed.
+			 * @return `data.size() - offset`.
+			 */
+			std::size_t remaining() const noexcept {
+				return m_data.size() - m_offset;
+			}
 
 		private:
-			BufferView m_data; ///< Input buffer.
+			BufferView m_data;		///< Bytes being read.
+			std::size_t m_offset;	///< Next byte to decode.
 	};
 }

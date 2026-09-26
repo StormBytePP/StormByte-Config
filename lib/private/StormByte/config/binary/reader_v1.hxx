@@ -40,8 +40,14 @@
 
 #pragma once
 
-#include <StormByte/config/binary/typedefs.hxx>
+#include <StormByte/config/binary/cursor.hxx>
+#include <StormByte/config/item/container.hxx>
+#include <StormByte/config/item/group.hxx>
 #include <StormByte/config/visibility.h>
+#include <StormByte/string/string.hxx>
+
+#include <optional>
+#include <utility>
 
 /**
  * @namespace StormByte::Config::Binary
@@ -49,36 +55,52 @@
  */
 namespace StormByte::Config::Binary {
 	/**
-	 * @class Reader
-	 * @brief Deserializes a versioned binary buffer into a @ref Config.
+	 * @class ReaderV1
+	 * @brief Reads format version 1 (library 1.1.0 and the current writer).
 	 *
-	 * Checks the magic and the version byte, then dispatches to the
-	 * matching private reader (ReaderV1, and a new class per format).
-	 * Rejects bad magic, truncated headers, version 0 and versions greater
-	 * than @ref CurrentVersion. Friend of @ref Config.
+	 * Not a base class. A later format is a new reader, selected by
+	 * @ref Reader, not an override of this one.
 	 */
-	class STORMBYTE_CONFIG_PRIVATE Reader {
+	class STORMBYTE_CONFIG_PRIVATE ReaderV1 final {
 		public:
-			/**
-			 * @brief Construct a reader over @p data.
-			 * @param data Binary input (must remain valid for Deserialize).
-			 */
-			explicit Reader(BufferView data) noexcept;
-
-			Reader(const Reader&) = delete;
-			Reader(Reader&&) noexcept = delete;
-			~Reader() noexcept = default;
-
-			Reader& operator=(const Reader&) = delete;
-			Reader& operator=(Reader&&) noexcept = delete;
+			ReaderV1() = delete;
 
 			/**
-			 * @brief Parse header and payload.
-			 * @return Config or DeserializeError.
+			 * @brief Read one version-1 payload.
+			 * @param payload Bytes after the magic and the version byte.
+			 * @return Collision policy and root group, or a deserialize error.
 			 */
-			ExpectedConfig Deserialize() const noexcept;
+			static Expected<std::pair<OnExistingAction, Item::Group>, DeserializeError> Read(BufferView payload);
 
 		private:
-			BufferView m_data; ///< Input buffer.
+			/**
+			 * @brief Read the type tag and the optional name.
+			 * @param cursor Read position. Advanced past both fields.
+			 * @return Type and name.
+			 */
+			static Expected<std::pair<Item::Type, std::optional<StormByte::String::String>>, DeserializeError>
+			ReadBase(Cursor& cursor);
+
+			/**
+			 * @brief Assign @p name when it is present.
+			 * @param item Item to name.
+			 * @param name Decoded name. Empty means the item stays unnamed.
+			 */
+			static void ApplyName(Item::Base& item, std::optional<StormByte::String::String>& name);
+
+			/**
+			 * @brief Read one item, including a nested container.
+			 * @param cursor Read position. Advanced past the item.
+			 * @return The item.
+			 */
+			static Expected<StormByte::Shared<Item::Base>, DeserializeError> ReadItem(Cursor& cursor);
+
+			/**
+			 * @brief Fill @p container from its header and its children.
+			 * @param cursor Read position, at the container's type tag.
+			 * @param container Group or list to fill. Its kind must match the wire.
+			 * @return Nothing, or a deserialize error.
+			 */
+			static Expected<void, DeserializeError> ReadContainerInto(Cursor& cursor, Item::Container& container);
 	};
 }

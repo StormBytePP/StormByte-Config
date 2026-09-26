@@ -1,289 +1,56 @@
 /*
-* Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
-*
-* This file is part of StormByte-Config.
-*
-* StormByte-Config original source is dual-licensed:
-*
-* 1. GNU Lesser General Public License v3.0 (or later)
-*    You may redistribute and/or modify this file under the terms of the
-*    GNU Lesser General Public License as published by the Free Software
-*    Foundation, either version 3 of the License, or (at your option)
-*    any later version.
-*
-* 2. Commercial license
-*    Alternatively, this file may be used under the terms of a commercial
-*    license agreement with the copyright holder
-*    (David C. Manuelda <StormByte@gmail.com>).
-*
-* Both licenses apply only to original StormByte-Config source in this
-* repository. They do not cover other StormByte modules or any third-party
-* material shipped with this repository (including everything under
-* thirdparty/, and in particular the bundled StormByte-String tree and
-* the StormByte Base tree it vendors), which remains under its own license.
-*
-* Neither license grants any patent rights. Any patent licenses required
-* to use this software or third-party components must be obtained separately
-* from the patent holders.
-*
-* StormByte-Config is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* version 3 along with StormByte-Config. If not, see
-* <https://www.gnu.org/licenses/lgpl-3.0.html>.
-*
-* SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
-*/
+ * Copyright (C) 2024-2026 David C. Manuelda (StormBytePP)
+ *
+ * This file is part of StormByte-Config.
+ *
+ * StormByte-Config original source is dual-licensed:
+ *
+ * 1. GNU Lesser General Public License v3.0 (or later)
+ *    You may redistribute and/or modify this file under the terms of the
+ *    GNU Lesser General Public License as published by the Free Software
+ *    Foundation, either version 3 of the License, or (at your option)
+ *    any later version.
+ *
+ * 2. Commercial license
+ *    Alternatively, this file may be used under the terms of a commercial
+ *    license agreement with the copyright holder
+ *    (David C. Manuelda <StormByte@gmail.com>).
+ *
+ * Both licenses apply only to original StormByte-Config source in this
+ * repository. They do not cover other StormByte modules or any third-party
+ * material shipped with this repository (including everything under
+ * thirdparty/, and in particular the bundled StormByte-String tree and
+ * the StormByte Base tree it vendors), which remains under its own license.
+ *
+ * Neither license grants any patent rights. Any patent licenses required
+ * to use this software or third-party components must be obtained separately
+ * from the patent holders.
+ *
+ * StormByte-Config is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * version 3 along with StormByte-Config. If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ *
+ * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
+ */
 
 #include <StormByte/config/binary/reader.hxx>
-#include <StormByte/config/item/comment.hxx>
-#include <StormByte/config/item/group.hxx>
-#include <StormByte/config/item/list.hxx>
-#include <StormByte/config/item/value.hxx>
+#include <StormByte/config/binary/reader_v1.hxx>
 #include <StormByte/serializable.hxx>
-#include <StormByte/string/serializable.hxx>
-#include <StormByte/string/string.hxx>
 
 #include <cstring>
 #include <format>
-#include <memory>
-#include <optional>
-#include <utility>
 
 namespace StormByte::Config::Binary {
 	namespace {
-		using namespace StormByte::Config::Item;
-
 		bool MagicMatches(BufferView data) noexcept {
 			if (data.size() < Magic.size())
 				return false;
 			return std::memcmp(data.data(), Magic.data(), Magic.size()) == 0;
-		}
-
-		Expected<std::pair<Type, std::optional<StormByte::String::String>>, DeserializeError>
-		ReadBase(BufferView data, std::size_t& offset) {
-			if (offset >= data.size())
-				return Unexpected<DeserializeError>("Insufficient data for item type");
-
-			auto type = Serializable<Type>::Deserialize(data.subspan(offset));
-			if (!type)
-				return Unexpected(type.error());
-			offset += Serializable<Type>::Size(type.value());
-
-			if (offset >= data.size())
-				return Unexpected<DeserializeError>("Insufficient data for item name");
-
-			auto name = Serializable<std::optional<StormByte::String::String>>::Deserialize(data.subspan(offset));
-			if (!name)
-				return Unexpected(name.error());
-			offset += Serializable<std::optional<StormByte::String::String>>::Size(name.value());
-
-			return std::make_pair(type.value(), std::move(name.value()));
-		}
-
-		void ApplyName(Base& item, std::optional<StormByte::String::String>& name) {
-			if (name)
-				item.Name(*name);
-		}
-
-		Expected<StormByte::Shared<Base>, DeserializeError>
-		ReadItem(BufferView data, std::size_t& offset, std::uint8_t version);
-
-		Expected<void, DeserializeError>
-		ReadContainerInto(BufferView data, std::size_t& offset, Container& container, std::uint8_t version) {
-			(void)version;
-			auto basic = ReadBase(data, offset);
-			if (!basic)
-				return Unexpected(basic.error());
-
-			auto [type, name] = std::move(basic.value());
-			if (type != Type::Container)
-				return Unexpected<DeserializeError>("Expected container item");
-			ApplyName(container, name);
-
-			if (offset >= data.size())
-				return Unexpected<DeserializeError>("Insufficient data for container type");
-
-			auto ctype = Serializable<ContainerType>::Deserialize(data.subspan(offset));
-			if (!ctype)
-				return Unexpected(ctype.error());
-			offset += Serializable<ContainerType>::Size(ctype.value());
-
-			if (ctype.value() != container.ContainerType())
-				return Unexpected<DeserializeError>("Container type mismatch");
-
-			if (offset >= data.size())
-				return Unexpected<DeserializeError>("Insufficient data for container size");
-
-			auto count = Serializable<std::uint64_t>::Deserialize(data.subspan(offset));
-			if (!count)
-				return Unexpected(count.error());
-			offset += Serializable<std::uint64_t>::Size(count.value());
-
-			if (count.value() > static_cast<std::uint64_t>(data.size() - offset))
-				return Unexpected<DeserializeError>("Claimed container size exceeds buffer");
-
-			for (std::uint64_t i = 0; i < count.value(); ++i) {
-				auto child = ReadItem(data, offset, version);
-				if (!child)
-					return Unexpected(child.error());
-				container.Add(std::move(child.value()), container.GetOnExistingAction());
-			}
-
-			return {};
-		}
-
-		Expected<StormByte::Shared<Base>, DeserializeError>
-		ReadItem(BufferView data, std::size_t& offset, std::uint8_t version) {
-			(void)version;
-			const std::size_t start = offset;
-
-			auto basic = ReadBase(data, offset);
-			if (!basic)
-				return Unexpected(basic.error());
-
-			auto [type, name] = std::move(basic.value());
-
-			switch (type) {
-				case Type::String: {
-					auto value = Serializable<StormByte::String::String>::Deserialize(data.subspan(offset));
-					if (!value)
-						return Unexpected(value.error());
-					offset += Serializable<StormByte::String::String>::Size(value.value());
-					auto item = StormByte::Shared<Base>::MakePointer<Value<StormByte::String::String>>(std::move(value.value()));
-					ApplyName(*item, name);
-					return item;
-				}
-
-				case Type::Integer: {
-					auto value = Serializable<int>::Deserialize(data.subspan(offset));
-					if (!value)
-						return Unexpected(value.error());
-					offset += Serializable<int>::Size(value.value());
-					auto item = StormByte::Shared<Base>::MakePointer<Value<int>>(value.value());
-					ApplyName(*item, name);
-					return item;
-				}
-
-				case Type::Double: {
-					auto value = Serializable<double>::Deserialize(data.subspan(offset));
-					if (!value)
-						return Unexpected(value.error());
-					offset += Serializable<double>::Size(value.value());
-					auto item = StormByte::Shared<Base>::MakePointer<Value<double>>(value.value());
-					ApplyName(*item, name);
-					return item;
-				}
-
-				case Type::Bool: {
-					auto value = Serializable<bool>::Deserialize(data.subspan(offset));
-					if (!value)
-						return Unexpected(value.error());
-					offset += Serializable<bool>::Size(value.value());
-					auto item = StormByte::Shared<Base>::MakePointer<Value<bool>>(value.value());
-					ApplyName(*item, name);
-					return item;
-				}
-
-				case Type::Binary: {
-					auto value = Serializable<std::vector<std::byte>>::Deserialize(data.subspan(offset));
-					if (!value)
-						return Unexpected(value.error());
-					offset += Serializable<std::vector<std::byte>>::Size(value.value());
-					auto item = StormByte::Shared<Base>::MakePointer<Value<std::vector<std::byte>>>(std::move(value.value()));
-					ApplyName(*item, name);
-					return item;
-				}
-
-				case Type::Comment: {
-					auto ct = Serializable<CommentType>::Deserialize(data.subspan(offset));
-					if (!ct)
-						return Unexpected(ct.error());
-					offset += Serializable<CommentType>::Size(ct.value());
-
-					auto text = Serializable<StormByte::String::String>::Deserialize(data.subspan(offset));
-					if (!text)
-						return Unexpected(text.error());
-					offset += Serializable<StormByte::String::String>::Size(text.value());
-
-					StormByte::Shared<Base> item;
-					switch (ct.value()) {
-						case CommentType::SingleLineBash:
-							item = StormByte::Shared<Base>::MakePointer<Comment<CommentType::SingleLineBash>>(std::move(text.value()));
-							break;
-						case CommentType::SingleLineC:
-							item = StormByte::Shared<Base>::MakePointer<Comment<CommentType::SingleLineC>>(std::move(text.value()));
-							break;
-						case CommentType::MultiLineC:
-							item = StormByte::Shared<Base>::MakePointer<Comment<CommentType::MultiLineC>>(std::move(text.value()));
-							break;
-						default:
-							return Unexpected<DeserializeError>("Unknown comment type");
-					}
-
-					ApplyName(*item, name);
-					return item;
-				}
-
-				case Type::Container: {
-					offset = start;
-					std::size_t peek = start;
-					auto peek_basic = ReadBase(data, peek);
-					if (!peek_basic)
-						return Unexpected(peek_basic.error());
-					if (peek >= data.size())
-						return Unexpected<DeserializeError>("Insufficient data for container type");
-
-					auto ctype = Serializable<ContainerType>::Deserialize(data.subspan(peek));
-					if (!ctype)
-						return Unexpected(ctype.error());
-
-					StormByte::Shared<Container> container;
-					if (ctype.value() == ContainerType::Group)
-						container = StormByte::Shared<Container>::MakePointer<Group>();
-					else if (ctype.value() == ContainerType::List)
-						container = StormByte::Shared<Container>::MakePointer<List>();
-					else
-						return Unexpected<DeserializeError>("Unknown container type");
-
-					auto filled = ReadContainerInto(data, offset, *container, version);
-					if (!filled)
-						return Unexpected(filled.error());
-					return StormByte::Shared<Base>(std::move(container));
-				}
-
-				default:
-					return Unexpected<DeserializeError>("Unhandled item type");
-			}
-		}
-
-		Expected<std::pair<OnExistingAction, Group>, DeserializeError>
-		ReadPayload(BufferView data, std::uint8_t version) {
-			(void)version;
-			std::size_t offset = 0;
-
-			if (offset >= data.size())
-				return Unexpected<DeserializeError>("Insufficient data for on_existing_action");
-
-			auto policy = Serializable<std::optional<OnExistingAction>>::Deserialize(data.subspan(offset));
-			if (!policy)
-				return Unexpected(policy.error());
-			offset += Serializable<std::optional<OnExistingAction>>::Size(policy.value());
-
-			OnExistingAction resolved = OnExistingAction::ThrowException;
-			if (policy.value())
-				resolved = *policy.value();
-
-			Group root;
-			root.SetOnExistingAction(resolved);
-			auto root_read = ReadContainerInto(data, offset, root, version);
-			if (!root_read)
-				return Unexpected(root_read.error());
-
-			return std::make_pair(resolved, std::move(root));
 		}
 	}
 
@@ -317,7 +84,7 @@ namespace StormByte::Config::Binary {
 			Expected<std::pair<OnExistingAction, Item::Group>, DeserializeError> body;
 			switch (version.value()) {
 				case 1:
-					body = ReadPayload(payload, version.value());
+					body = ReaderV1::Read(payload);
 					break;
 				default:
 					return Unexpected<DeserializeError>(std::format(
