@@ -42,15 +42,27 @@
 // FILE: test/config_test.cxx
 //==============================================================================
 #include <StormByte/config/config.hxx>
-#include <StormByte/system.hxx>
 #include <StormByte/test_handlers.h>
 #include <iostream>
 #include <cassert>
 #include <filesystem>
 #include <fstream>
+#include <random>
 #include <sstream>
 #include <climits>
 using namespace StormByte::Config;
+
+namespace {
+	std::filesystem::path TempConfigFile() {
+		const std::filesystem::path dir = std::filesystem::temp_directory_path();
+		std::random_device device;
+		for (;;) {
+			const std::filesystem::path path = dir / ("config-" + std::to_string(device()) + ".conf");
+			if (!std::filesystem::exists(path))
+				return path;
+		}
+	}
+}
 int test_comment_types() {
 	int result = 0;
 	Item::Comment<Item::CommentType::SingleLineBash> singleline("This is a single line comment");
@@ -87,7 +99,7 @@ int test_add_and_lookup() {
 
 int test_write_and_read() {
 	int result = 0;
-	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	const std::filesystem::path temp_file = TempConfigFile();
 	std::string config_content = 
 		"TestInt = 42\n"
 		"TestStr = \"Hello, World!\"\n";
@@ -164,7 +176,7 @@ int test_add_remove_group() {
 
 int test_write_nested_groups() {
 	int result = 0;
-	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	const std::filesystem::path temp_file = TempConfigFile();
 	std::string config_content = 
 		"Group1 = {\n"
 		"    Group2 = {\n"
@@ -204,7 +216,7 @@ int test_write_nested_groups() {
 
 int test_complex_config_creation() {
 	int result = 0;
-	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	const std::filesystem::path temp_file = TempConfigFile();
 	Config config;
 	try {
 		Item::Group& group1 = config.Add(Item::Group("Group1")).Value<Item::Group>();
@@ -340,7 +352,7 @@ int good_double_conf2() {
 
 int commented_config() {
 	int result = 0;
-	const std::filesystem::path temp_file = StormByte::System::TempFileName("config");
+	const std::filesystem::path temp_file = TempConfigFile();
 	Config config;
 	const std::string config_str = "# The following is a test integer\n"
 		"test_integer = 666\n"

@@ -39,7 +39,6 @@
  */
 
 #include <StormByte/config/config.hxx>
-#include <StormByte/system.hxx>
 #include <StormByte/test_handlers.h>
 #include <algorithm>
 #include <cstring>

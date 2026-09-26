@@ -40,7 +40,6 @@
 
 #include <StormByte/config/config.hxx>
 #include <StormByte/string/string.hxx>
-#include <StormByte/system.hxx>
 #include <StormByte/test_handlers.h>
 
 #include <fstream>
