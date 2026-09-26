@@ -72,7 +72,7 @@ namespace StormByte::Config {
 			 * @param message Exception text. Not a format string.
 			 */
 			explicit Exception(std::string message)
-				: Exception("{}", std::move(message)) {}
+				: StormByte::Exception(StormByte::Exception::Path{"Config"}, "{}", std::move(message)) {}
 
 			/**
 			 * @brief Plain message under an explicit path.
