@@ -291,7 +291,7 @@ namespace StormByte::Config {
 			 * @param file	Config to get data from.
 			 * @return		Reference to the string.
 			 */
-			friend STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string&, const Config&);
+			friend STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string& str, const Config& file);
 
 			/**
 			 * @brief Serialized document as StormByte text.
@@ -546,5 +546,5 @@ namespace StormByte::Config {
 	 * @param file	Config to get data from.
 	 * @return		Reference to the string.
 	 */
-	STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string&, const Config&);
+	STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string& str, const Config& file);
 }
