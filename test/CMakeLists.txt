@@ -13,4 +13,8 @@ if(ENABLE_TEST)
 	add_executable(SerializationTests serialization_test.cxx)
 	target_link_libraries(SerializationTests StormByte::Config)
 	add_test(NAME SerializationTests COMMAND SerializationTests)
+
+	add_executable(VersionBinReadTests version_bin_read.cxx)
+	target_link_libraries(VersionBinReadTests StormByte::Config)
+	add_test(NAME VersionBinReadTests COMMAND VersionBinReadTests)
 endif()
