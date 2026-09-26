@@ -134,7 +134,8 @@ StormByte::Expected<void, ParseError> StormByte::Config::Parser::Parser::Parse(I
 			case TokenType::Binary: {
 				try {
 					auto bytes = StormByte::Base64Decode(token.value);
-					item_res = Item::Base::MakePointer<Item::Value<std::vector<std::byte>>>(std::move(bytes));
+					item_res = Item::Base::MakePointer<Item::Value<std::vector<std::byte>>>(
+						static_cast<std::vector<std::byte>>(std::move(bytes)));
 				} catch (const StormByte::Base64Error& ex) {
 					return Unexpected<ParseError>("Invalid Base64 data on line {}: {}", token.line, ex.what());
 				}

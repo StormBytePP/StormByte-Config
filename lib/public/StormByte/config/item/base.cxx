@@ -61,7 +61,7 @@ namespace {
 
 Base::Base(const class String& name): m_name(name) {}
 
-String::String Base::Serialize(const int& indent_level) const noexcept {
+class String Base::Serialize(const int& indent_level) const noexcept {
 	std::string serialized = static_cast<std::string>(Indent(indent_level));
 	if (m_name) {
 		serialized += static_cast<std::string>(*m_name);

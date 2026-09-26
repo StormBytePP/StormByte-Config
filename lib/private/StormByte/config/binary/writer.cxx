@@ -38,6 +38,7 @@
 * SPDX-License-Identifier: LGPL-3.0-or-later OR LicenseRef-StormByte-Commercial
 */
 
+#include <StormByte/binary_data.hxx>
 #include <StormByte/config/binary/writer.hxx>
 #include <StormByte/config/item/comment.hxx>
 #include <StormByte/config/item/group.hxx>
@@ -54,9 +55,13 @@ namespace StormByte::Config::Binary {
 	namespace {
 		using namespace StormByte::Config::Item;
 
+		void Append(Buffer& out, const StormByte::BinaryData& bytes) noexcept {
+			append_vector(out, bytes.span());
+		}
+
 		void WriteBase(Buffer& out, const Base& item) {
-			append_vector(out, Serializable<Type>(item.Type()).Serialize());
-			append_vector(out, Serializable<std::optional<StormByte::String::String>>(item.Name()).Serialize());
+			Append(out, Serializable<Type>(item.Type()).Serialize());
+			Append(out, Serializable<std::optional<StormByte::String::String>>(item.Name()).Serialize());
 		}
 
 		void WriteItem(Buffer& out, const Base& item, std::uint8_t version);
@@ -65,9 +70,9 @@ namespace StormByte::Config::Binary {
 		void WriteContainer(Buffer& out, const Container& container, std::uint8_t version) {
 			(void)version;
 			WriteBase(out, container);
-			append_vector(out, Serializable<ContainerType>(container.ContainerType()).Serialize());
+			Append(out, Serializable<ContainerType>(container.ContainerType()).Serialize());
 			const auto count = static_cast<std::uint64_t>(container.Items().size());
-			append_vector(out, Serializable<std::uint64_t>(count).Serialize());
+			Append(out, Serializable<std::uint64_t>(count).Serialize());
 			for (const auto& child : container.Items())
 				WriteItem(out, *child, version);
 		}
@@ -77,30 +82,30 @@ namespace StormByte::Config::Binary {
 			switch (item.Type()) {
 				case Type::String:
 					WriteBase(out, item);
-					append_vector(out, Serializable<StormByte::String::String>(item.Value<StormByte::String::String>()).Serialize());
+					Append(out, Serializable<StormByte::String::String>(item.Value<StormByte::String::String>()).Serialize());
 					break;
 				case Type::Integer:
 					WriteBase(out, item);
-					append_vector(out, Serializable<int>(item.Value<int>()).Serialize());
+					Append(out, Serializable<int>(item.Value<int>()).Serialize());
 					break;
 				case Type::Double:
 					WriteBase(out, item);
-					append_vector(out, Serializable<double>(item.Value<double>()).Serialize());
+					Append(out, Serializable<double>(item.Value<double>()).Serialize());
 					break;
 				case Type::Bool:
 					WriteBase(out, item);
-					append_vector(out, Serializable<bool>(item.Value<bool>()).Serialize());
+					Append(out, Serializable<bool>(item.Value<bool>()).Serialize());
 					break;
 				case Type::Binary:
 					WriteBase(out, item);
-					append_vector(out, Serializable<std::vector<std::byte>>(
+					Append(out, Serializable<std::vector<std::byte>>(
 						item.Value<std::vector<std::byte>>()).Serialize());
 					break;
 				case Type::Comment: {
 					WriteBase(out, item);
 					const CommentType ct = *item.GetCommentType();
-					append_vector(out, Serializable<CommentType>(ct).Serialize());
-					append_vector(out, Serializable<StormByte::String::String>(item.Value<StormByte::String::String>()).Serialize());
+					Append(out, Serializable<CommentType>(ct).Serialize());
+					Append(out, Serializable<StormByte::String::String>(item.Value<StormByte::String::String>()).Serialize());
 					break;
 				}
 
@@ -113,7 +118,7 @@ namespace StormByte::Config::Binary {
 		void WriteConfig(Buffer& out, OnExistingAction policy, const Group& root, std::uint8_t version) {
 			(void)version;
 			std::optional<OnExistingAction> pol = policy;
-			append_vector(out, Serializable<std::optional<OnExistingAction>>(pol).Serialize());
+			Append(out, Serializable<std::optional<OnExistingAction>>(pol).Serialize());
 			WriteContainer(out, root, version);
 		}
 	}
@@ -124,7 +129,7 @@ namespace StormByte::Config::Binary {
 		Buffer out;
 		out.reserve(HeaderSize + 64);
 		out.insert(out.end(), Magic.begin(), Magic.end());
-		append_vector(out, Serializable<std::uint8_t>(CurrentVersion).Serialize());
+		Append(out, Serializable<std::uint8_t>(CurrentVersion).Serialize());
 
 		const OnExistingAction policy = m_config.m_on_existing_action;
 		const Item::Group& root = m_config.m_root;

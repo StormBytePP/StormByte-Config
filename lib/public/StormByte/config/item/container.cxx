@@ -136,7 +136,7 @@ void Container::Remove(const class String& path) {
 	Remove(path_queue);
 }
 
-String::String Container::Serialize(const int& indent_level) const noexcept {
+class String Container::Serialize(const int& indent_level) const noexcept {
 	const auto enclosure_characters = EnclosureCharacters(ContainerType());
 	std::string serial = static_cast<std::string>(Base::Serialize(indent_level));
 	serial += enclosure_characters.first;
@@ -163,7 +163,7 @@ size_t Container::Count() const noexcept {
 	return count;
 }
 
-String::String Container::ContentsToString(const int& indent_level) const noexcept {
+class String Container::ContentsToString(const int& indent_level) const noexcept {
 	std::string serial;
 	for (const auto& item : m_items) {
 		serial += static_cast<std::string>(item->Serialize(indent_level));
@@ -172,12 +172,12 @@ String::String Container::ContentsToString(const int& indent_level) const noexce
 	return String::String(std::string_view(serial));
 }
 
-bool Container::IsPathValid(const String::String& name) noexcept {
+bool Container::IsPathValid(const class String& name) noexcept {
 	static const std::regex name_regex(R"(^[A-Za-z0-9_]+(/([A-Za-z0-9_]+))*$)");
 	return std::regex_match(static_cast<std::string>(name), name_regex);
 }
 
-const Base& Container::LookUp(const String::String& path) const {
+const Base& Container::LookUp(const class String& path) const {
 	if (!IsPathValid(path)) {
 		throw InvalidPath("Invalid path '{}'", static_cast<std::string_view>(path));
 	}
@@ -186,12 +186,12 @@ const Base& Container::LookUp(const String::String& path) const {
 	return LookUp(path_queue);
 }
 
-const Base& Container::LookUp(std::queue<String::String>& path) const {
+const Base& Container::LookUp(std::queue<class String>& path) const {
 	if (path.empty()) {
 		throw InvalidPath("Empty path given for lookup");
 	}
 
-	const String::String item_path = path.front();
+	const class String item_path = path.front();
 	path.pop();
 	const std::string_view item_view = item_path;
 	if (path.empty()) {
@@ -242,12 +242,12 @@ const Base& Container::LookUp(std::queue<String::String>& path) const {
 	}
 }
 
-void Container::Remove(std::queue<String::String>& path) {
+void Container::Remove(std::queue<class String>& path) {
 	if (path.empty()) {
 		throw InvalidPath("Empty path given for remove");
 	}
 
-	String::String item_path = path.front();
+	class String item_path = path.front();
 	path.pop();
 	const std::string_view item_view = item_path;
 	if (path.empty()) {

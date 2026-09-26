@@ -117,7 +117,7 @@ std::string& operator<<(std::string& str, const Config& config) {
 	return str;
 }
 
-String::String Config::Text() const {
+class String Config::Text() const {
 	std::string serialized;
 	for (const auto& item : Items()) {
 		serialized += static_cast<std::string>(item->Serialize(0));

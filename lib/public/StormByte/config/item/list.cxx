@@ -46,9 +46,9 @@
 using namespace StormByte::Config::Item;
 using StormByte::String::String;
 
-List::List(const String::String& name) : Container(name) {}
+List::List(const class String& name) : Container(name) {}
 
-List::List(String::String&& name) : Container(std::move(name)) {}
+List::List(class String&& name) : Container(std::move(name)) {}
 
 Base::PointerType List::BeforeAdditionActions(Base::PointerType item, const StormByte::Config::OnExistingAction on_existing) {
 	if (!item) {
