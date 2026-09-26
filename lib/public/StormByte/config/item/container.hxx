@@ -161,20 +161,20 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Gets a reference to an item by a C string path.
+			 * @brief Gets a reference to an item by a path view.
 			 * @param path Path to the item.
 			 * @return Reference to the item.
 			 */
-			inline Base& operator[](const char* path) {
+			inline Base& operator[](std::string_view path) {
 				return operator[](StormByte::String::String(path));
 			}
 
 			/**
-			 * @brief Gets a const reference to an item by a C string path.
+			 * @brief Gets a const reference to an item by a path view.
 			 * @param path Path to the item.
 			 * @return Const reference to the item.
 			 */
-			inline const Base& operator[](const char* path) const {
+			inline const Base& operator[](std::string_view path) const {
 				return operator[](StormByte::String::String(path));
 			}
 
@@ -324,11 +324,11 @@ namespace StormByte::Config::Item {
 			bool Exists(const StormByte::String::String& path) const;
 
 			/**
-			 * @brief Checks if an item exists by a C string path.
+			 * @brief Checks if an item exists by a path view.
 			 * @param path Path to the item.
 			 * @return true if the item exists.
 			 */
-			inline bool Exists(const char* path) const {
+			inline bool Exists(std::string_view path) const {
 				return Exists(StormByte::String::String(path));
 			}
 
@@ -348,10 +348,10 @@ namespace StormByte::Config::Item {
 			void Remove(const StormByte::String::String& path);
 
 			/**
-			 * @brief Removes an item by a C string path.
+			 * @brief Removes an item by a path view.
 			 * @param path Path to the item to remove.
 			 */
-			inline void Remove(const char* path) {
+			inline void Remove(std::string_view path) {
 				Remove(StormByte::String::String(path));
 			}
 

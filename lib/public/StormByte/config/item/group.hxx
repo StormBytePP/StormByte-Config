@@ -81,10 +81,10 @@ namespace StormByte::Config::Item {
 			Group(StormByte::String::String&& name);
 
 			/**
-			 * @brief Constructs a Group from a C string name.
+			 * @brief Constructs a Group from a view of the name.
 			 * @param name The name of the group.
 			 */
-			Group(const char* name): Group(StormByte::String::String(name)) {}
+			Group(std::string_view name): Group(StormByte::String::String(name)) {}
 
 			/**
 			 * @brief Copy constructor.

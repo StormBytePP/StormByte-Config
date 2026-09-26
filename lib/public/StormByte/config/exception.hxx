@@ -44,6 +44,7 @@
 #include <StormByte/config/visibility.h>
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 /**
@@ -74,15 +75,15 @@ namespace StormByte::Config {
 				: Exception("{}", std::move(message)) {}
 
 			/**
-			 * @brief Format under an explicit path.
-			 * @tparam Args Format argument types.
-			 * @param path Segments under `StormByte`.
-			 * @param fmt Format string.
-			 * @param args Format arguments.
+			 * @brief Plain message under an explicit path.
+			 * @param path Segments under `StormByte`. Not a format string.
+			 * @param message Exception text. Not a format string.
+			 *
+			 * `StormByte::Exception::Path` is protected, so callers pass the
+			 * segments as a view. The view only needs to live for this call.
 			 */
-			template <typename... Args>
-			Exception(StormByte::Exception::Path path, std::format_string<Args...> fmt, Args&&... args)
-				: StormByte::Exception(path, fmt, std::forward<Args>(args)...) {}
+			Exception(std::string_view path, std::string message)
+				: StormByte::Exception(StormByte::Exception::Path{path}, "{}", std::move(message)) {}
 
 			/**
 			 * @brief Copy constructor.

@@ -527,7 +527,8 @@ int test_long_string() {
 		cfg << file;
 		file.close();
 		const Item::Base& lookup_long = cfg["long_string"];
-		ASSERT_EQUAL("test_long_string", std::string(1000, 'a'), lookup_long.Value<StormByte::String::String>());
+		const std::string expected_long(1000, 'a');
+		ASSERT_EQUAL("test_long_string", StormByte::String::String(std::string_view(expected_long)), lookup_long.Value<StormByte::String::String>());
 	} catch (const StormByte::Config::Exception& ex) {
 		std::cerr << ex.what() << std::endl;
 		result = 1;
@@ -1361,7 +1362,7 @@ int test_exception_component() {
 	StormByte::Config::InvalidName ex_derived("invalid item name");
 	ASSERT_EQUAL("test_exception_component", std::string("StormByte.Config: invalid item name"), std::string(ex_derived.what()));
 
-	StormByte::Config::Exception ex_custom(StormByte::Exception::Path{"Custom"}, "custom message");
+	StormByte::Config::Exception ex_custom("Custom", std::string("custom message"));
 	ASSERT_EQUAL("test_exception_component", std::string("StormByte.Custom: custom message"), std::string(ex_custom.what()));
 
 	RETURN_TEST("test_exception_component", result);
@@ -1406,11 +1407,11 @@ int test_numeric_path_overflow_exceptions() {
 int test_double_precision_serialization() {
 	int result = 0;
 	Item::Value<double> v("pi", 3.141592653589793);
-	std::string serialized = v.Serialize(0);
+	std::string serialized = static_cast<std::string>(v.Serialize(0));
 	ASSERT_EQUAL("test_double_precision_serialization", std::string("pi = 3.141592653589793"), serialized);
 
 	Item::Value<double> integer_double("val", 42.0);
-	std::string serialized_int = integer_double.Serialize(0);
+	std::string serialized_int = static_cast<std::string>(integer_double.Serialize(0));
 	ASSERT_EQUAL("test_double_precision_serialization", std::string("val = 42.0"), serialized_int);
 
 	RETURN_TEST("test_double_precision_serialization", result);

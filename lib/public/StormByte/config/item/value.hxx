@@ -88,11 +88,11 @@ namespace StormByte::Config::Item {
 				: Base(StormByte::String::String(name)), m_value(StormByte::String::String(value)) {}
 
 			/**
-			 * @brief Constructs a named Value from a C string name.
-			 * @param name Item name.
+			 * @brief Constructs a named Value from a view of the name.
+			 * @param name Item name. Copied into a @ref StormByte::String::String.
 			 * @param value Item value.
 			 */
-			Value(const char* name, const T& value)
+			Value(std::string_view name, const T& value)
 				: Base(StormByte::String::String(name)), m_value(value) {}
 
 			/**

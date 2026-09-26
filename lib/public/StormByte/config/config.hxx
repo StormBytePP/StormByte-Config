@@ -142,20 +142,20 @@ namespace StormByte::Config {
 			}
 
 			/**
-			 * @brief Gets a reference to an item by a C string path.
+			 * @brief Gets a reference to an item by a path view.
 			 * @param path Path to the item.
 			 * @return Item reference.
 			 */
-			inline Item::Base& operator[](const char* path) {
+			inline Item::Base& operator[](std::string_view path) {
 				return m_root.operator[](path);
 			}
 
 			/**
-			 * @brief Gets a const reference to an item by a C string path.
+			 * @brief Gets a const reference to an item by a path view.
 			 * @param path Path to the item.
 			 * @return Item const reference.
 			 */
-			inline const Item::Base& operator[](const char* path) const {
+			inline const Item::Base& operator[](std::string_view path) const {
 				return m_root.operator[](path);
 			}
 
@@ -384,11 +384,11 @@ namespace StormByte::Config {
 			}
 
 			/**
-			 * @brief Checks if an item exists by a C string path.
+			 * @brief Checks if an item exists by a path view.
 			 * @param path Path to the item.
 			 * @return true if the item exists.
 			 */
-			inline bool Exists(const char* path) const {
+			inline bool Exists(std::string_view path) const {
 				return m_root.Exists(path);
 			}
 
@@ -402,10 +402,10 @@ namespace StormByte::Config {
 			}
 
 			/**
-			 * @brief Removes an item by a C string path.
+			 * @brief Removes an item by a path view.
 			 * @param path Item path.
 			 */
-			inline void Remove(const char* path) {
+			inline void Remove(std::string_view path) {
 				m_root.Remove(path);
 			}
 

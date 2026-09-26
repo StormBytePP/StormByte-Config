@@ -151,10 +151,10 @@ namespace StormByte::Config::Item {
 			}
 
 			/**
-			 * @brief Sets the item name from a C string.
+			 * @brief Sets the item name from a view.
 			 * @param name New name. Copied into a @ref StormByte::String::String.
 			 */
-			void Name(const char* name) noexcept {
+			void Name(std::string_view name) noexcept {
 				m_name = StormByte::String::String(name);
 			}
 

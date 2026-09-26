@@ -23,7 +23,7 @@ If you landed here from a release link and have not read the tree:
 ### Changed
 
 - **Breaking:** `StormByte::Config::Exception` takes `StormByte::Exception::Path`. `Component` is gone. `what()` is `StormByte.Config: message`. Destructors are defined in this module so `catch` matches across a DLL.
-- Names, paths, `Group`, `List` and `Value` accept a C string. The `StormByte::String::String` is built inside Config. String values are `StormByte::String::String`, not `std::string`.
+- Names, paths, `Group`, `List` and `Value` accept `std::string_view` (a literal or a `std::string`). The `StormByte::String::String` is built inside Config. Index `operator[]` stays `size_t`, so `0` is not a path. String values are `StormByte::String::String`, not `std::string`. A custom exception path is a view plus a plain message; `StormByte::Exception::Path` stays protected.
 - **Breaking:** `Item::Base` is `Clonable<Base, StormByte::Shared<Base>>`. `PointerType` is no longer `std::shared_ptr`. Binary load allocates items with `Shared::MakePointer`. `Serializable::Serialize` is `BinaryData`; the on-disk buffer stays a local `std::vector<std::byte>`.
 - Bundled StormByte Base is [1.1.1](https://github.com/StormBytePP/StormByte/releases/tag/1.1.1). The declared requirement stays [1.1.0](https://github.com/StormBytePP/StormByte/releases/tag/1.1.0) or newer.
 
