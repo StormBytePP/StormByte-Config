@@ -70,8 +70,10 @@ Expected<void, ParseError> Parser::Parser::Parse(
 	const OptionalFailureHook& on_failure) {
 	Tokenizer tokenizer(stream);
 	Parser parser(tokenizer, action);
-	for (const auto& hook : before)
-		hook(root);
+	for (const auto& hook : before) {
+		if (hook)
+			(*hook)(root);
+	}
 	auto res = parser.Parse(root, Mode::Named);
 	if (!res) {
 		bool should_throw = true;
@@ -82,8 +84,10 @@ Expected<void, ParseError> Parser::Parser::Parse(
 		return {};
 	}
 
-	for (const auto& hook : after)
-		hook(root);
+	for (const auto& hook : after) {
+		if (hook)
+			(*hook)(root);
+	}
 	return {};
 }
 

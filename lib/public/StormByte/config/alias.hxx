@@ -40,20 +40,16 @@
 
 #pragma once
 
-#include <functional>
-#include <optional>
+#include <StormByte/config/hook.hxx>
+
 #include <vector>
 
 /**
  * @brief Config module of the StormByte suite.
  */
 namespace StormByte::Config {
-	namespace Item {
-		class Group; ///< Forward declaration of Group.
-	}
-
-	using HookFunction 			= std::function<void(Item::Group&)>;		///< Function executed as a hook.
-	using HookFunctions 		= std::vector<HookFunction>;				///< List of hook functions.
-	using OnFailureHook			= std::function<bool(const Item::Group&)>;	///< Function executed on failure.
-	using OptionalFailureHook	= std::optional<OnFailureHook>;				///< Optional failure hook.
+	using HookFunction = ReadHookFunction; 							///< Stateless read hook.
+	using HookFunctions = std::vector<StormByte::Shared<ReadHook>>; ///< Read hooks owned by Config.
+	using OnFailureHook = FailureHookFunction; 						///< Stateless failure hook.
+	using OptionalFailureHook = StormByte::Shared<FailureHook>; 	///< Failure hook, empty if unset.
 }

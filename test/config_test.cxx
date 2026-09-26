@@ -61,6 +61,14 @@ namespace {
 				return path;
 		}
 	}
+
+	void HookAfterClear(Item::Group& root) {
+		root.Clear();
+	}
+
+	bool HookSwallowFailure(const Item::Group&) {
+		return false;
+	}
 }
 
 // -------------------
@@ -906,9 +914,7 @@ int good_comment_multi_conf1() {
 int test_config_hooks() {
 	int result = 0;
 	Config cfg1;
-	cfg1.AddHookAfterRead([](Item::Group& root) {
-		root.Clear();
-	});
+	cfg1.AddHookAfterRead(&HookAfterClear);
 	try {
 		std::fstream file;
 		file.open(CurrentFileDirectory / "files" / "complex_conf1.conf", std::ios::in);
@@ -965,7 +971,7 @@ int all_comment_types_test() {
 int test_on_failure_hook() {
 	int result = 0;
 	Config cfg;
-	cfg.OnParseFailure([](const Item::Base&) { return false; });
+	cfg.OnParseFailure(&HookSwallowFailure);
 	try {
 		std::fstream file;
 		file.open(CurrentFileDirectory / "files" / "bad_config1.conf", std::ios::in);

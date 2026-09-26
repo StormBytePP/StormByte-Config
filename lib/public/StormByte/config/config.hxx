@@ -459,44 +459,51 @@ namespace StormByte::Config {
 			 * The policy is applied to the root container and will be inherited by all nested containers.
 			 * @param on_existing The policy to use.
 			 */
-			void OnExistingAction(const OnExistingAction& on_existing) {
-				m_on_existing_action = on_existing;
-				m_root.SetOnExistingAction(on_existing);
-			}
+			void OnExistingAction(const OnExistingAction& on_existing);
 
 			/**
-			 * @brief Sets a function to execute on parse failure.
-			 * @param hook Function to execute.
+			 * @brief Sets a stateless function to execute on parse failure.
+			 * @param hook Function to execute. Return false to swallow the error.
 			 */
-			constexpr void OnParseFailure(OnFailureHook hook) {
-				m_on_parse_failure_hook = hook;
-			}
+			void OnParseFailure(OnFailureHook hook);
 
 			/**
-			 * @brief Adds a hook executed before reading starts.
-			 * Hooks run in order.
-			 * @param hook Hook function.
+			 * @brief Sets a stateful hook to execute on parse failure.
+			 * @param hook Hook allocated with MakePointer / MakeFailureHook.
 			 */
-			constexpr void AddHookBeforeRead(HookFunction hook) {
-				m_before_read_hooks.push_back(hook);
-			}
+			void OnParseFailure(StormByte::Shared<FailureHook> hook);
 
 			/**
-			 * @brief Adds a hook executed after a successful read.
-			 * Hooks run in order.
-			 * @param hook Hook function.
+			 * @brief Adds a stateless hook executed before reading starts.
+			 * @param hook Function pointer.
 			 */
-			constexpr void AddHookAfterRead(HookFunction hook) {
-				m_after_read_hooks.push_back(hook);
-			}
+			void AddHookBeforeRead(HookFunction hook);
+
+			/**
+			 * @brief Adds a stateful hook executed before reading starts.
+			 * @param hook Hook allocated with MakePointer / MakeReadHook.
+			 */
+			void AddHookBeforeRead(StormByte::Shared<ReadHook> hook);
+
+			/**
+			 * @brief Adds a stateless hook executed after a successful read.
+			 * @param hook Function pointer.
+			 */
+			void AddHookAfterRead(HookFunction hook);
+
+			/**
+			 * @brief Adds a stateful hook executed after a successful read.
+			 * @param hook Hook allocated with MakePointer / MakeReadHook.
+			 */
+			void AddHookAfterRead(StormByte::Shared<ReadHook> hook);
 			/** @} */
 
 		protected:
 			Item::Group m_root; ///< Root group
 
-			HookFunctions m_before_read_hooks;				///< Hooks executed before reading
-			HookFunctions m_after_read_hooks;				///< Hooks executed after successful reading
-			OptionalFailureHook m_on_parse_failure_hook;	///< Hook executed on failure
+			HookFunctions m_before_read_hooks; ///< Hooks executed before reading
+			HookFunctions m_after_read_hooks; ///< Hooks executed after successful reading
+			OptionalFailureHook m_on_parse_failure_hook; ///< Hook executed on failure
 			StormByte::Config::OnExistingAction m_on_existing_action; ///< Collision policy
 	};
 
@@ -538,5 +545,5 @@ namespace StormByte::Config {
 	 * @param file Config to get data from.
 	 * @return Reference to the string.
 	 */
-	STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string& str, const Config& file);
+	STORMBYTE_CONFIG_PUBLIC std::string& operator<<(std::string&, const Config&);
 }
